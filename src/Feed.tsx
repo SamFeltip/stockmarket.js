@@ -1,3 +1,4 @@
+import { FeedMessage } from "./FeedMessage";
 import type { Board } from "./types";
 export function Feed({ board, busy, onPass }: { board: Board; busy: boolean; onPass: () => void })
 {
@@ -17,7 +18,7 @@ export function Feed({ board, busy, onPass }: { board: Board; busy: boolean; onP
                             <img height={56} width={56} className={`rounded bg-secondary ${item.colour === "grey" ? "p-2" : ""}`} src={item.imageRoot} alt={item.title} />
                             <div>
                                 <h3 style={{ fontSize: "1.4rem" }} className="fw-bold text-capitalize text-black mb-0">{item.title}</h3>
-                                <p>{item.message}</p>
+                                <FeedMessage item={item} stocks={board.stocks} />
                             </div>
                         </div>
                     ))}

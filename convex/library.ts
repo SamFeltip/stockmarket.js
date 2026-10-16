@@ -106,9 +106,9 @@ export async function deal(context: MutationContext, game: Document_<"games">, p
 }
 
 export async function feedItem(context: MutationContext, game: Document_<"games">, title: string,
-    message: string, imageRoot: string, colour = "")
+    message: string, imageRoot: string, colour = "", trade: { stockKey?: number; quantity?: number } = {})
 {
-    await context.db.insert("feed", { gameId: game._id, period: game.currentPeriod, title, message, imageRoot, colour });
+    await context.db.insert("feed", { gameId: game._id, period: game.currentPeriod, title, message, imageRoot, colour, ...trade });
 }
 
 export function netWorth(player: Document_<"players">, game: Document_<"games">)

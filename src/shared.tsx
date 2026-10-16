@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { ConvexError } from "convex/values";
+import { modalInstance } from "./bootstrap";
+import { friendlyError } from "./errors";
 import type { Insight, Stock } from "./types";
 
 export const money = (value: number) => value.toLocaleString("en-GB", { maximumFractionDigits: 2 });
@@ -23,8 +24,7 @@ export function useAction()
         }
         catch (error_)
         {
-            setError(error_ instanceof ConvexError ? String(error_.data)
-                : (error_ instanceof Error ? error_.message : "Something went wrong. Please try again."));
+            setError(friendlyError(error_));
 
             return false;
         }
@@ -55,8 +55,23 @@ export function Alert({ message }: { message: string })
 
 export function Modal({ id, title, children }: { id: string; title: string; children: ReactNode })
 {
+    const reference = useRef<HTMLDivElement>(null);
+
+    useEffect(() =>
+    {
+        const element = reference.current;
+
+        return () =>
+        {
+            if (element)
+            {
+                modalInstance(element)?.hide();
+            }
+        };
+    }, []);
+
     return (
-        <div className="modal fade" id={id} tabIndex={-1} aria-labelledby={`${id}Label`} aria-hidden="true">
+        <div ref={reference} className="modal fade" id={id} tabIndex={-1} aria-labelledby={`${id}Label`} aria-hidden="true">
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content">
                     <div className="modal-header">

@@ -3,85 +3,27 @@ import { useMutation } from "convex/react";
 import { Link } from "react-router-dom";
 import { api } from "../convex/_generated/api";
 import { Alert, Change, money, useAction } from "./shared";
-import type { Board, Insight } from "./types";
-
-function HoldStock({ board, insight }: { board: Board; insight: Insight })
-{
-    const hold = useMutation(api.rounds.hold);
-    const [stockKey, setStockKey] = useState<number | undefined>();
-    const { run, busy, error } = useAction();
-    const player = board.players.find((seat) => seat._id === insight.playerId);
-    const own = insight.playerId === board.player._id;
-
-    return (
-        <div className="bg-white text-black rounded p-4">
-            <h2 className="text-black">{own ? "Would you like to suspend a share?" : `Waiting for ${player?.name} to suspend a share`}</h2>
-            <Alert message={error} />
-            <div className="d-grid gap-2" style={{ gridTemplateColumns: "1fr 1fr 1fr" }}>
-                {board.stocks.filter((stock) => stock.display).map((stock) => (
-                    <label className="btn btn-outline-secondary" key={stock.key}>
-                        <input
-                            type="radio"
-                            name={`hold-${insight._id}`}
-                            disabled={!own || busy}
-                            checked={stockKey === stock.key}
-                            onChange={() =>
-                            {
-                                setStockKey(stock.key);
-                            }}
-                        />
-                        <img height={64} src={stock.imagePath} alt={stock.name} />
-                        <p>
-                            £
-                            {board.game.prices.find((price) => price.stockKey === stock.key)?.value.toFixed(2)}
-                        </p>
-                    </label>
-                ))}
-            </div>
-            {own && (
-                <div className="d-flex gap-2 mt-3">
-                    <button
-                        className="btn btn-secondary flex-fill"
-                        disabled={busy}
-                        onClick={() =>
-                        {
-                            void run(() => hold({ code: board.game.code, insightId: insight._id }));
-                        }}
-                    >
-                        Skip
-                    </button>
-                    <button
-                        className="btn btn-success flex-fill"
-                        disabled={busy || stockKey === undefined}
-                        onClick={() =>
-                        {
-                            void run(() => hold({ code: board.game.code, insightId: insight._id, stockKey }));
-                        }}
-                    >
-                        Confirm
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-}
+import { revealStocks } from "./reveals";
+import { HoldStock } from "./HoldStock";
+import type { Board } from "./types";
 
 export function RoundEnd({ board }: { board: Board })
 {
     const { game, stocks, insights, players } = board;
-    const show = useMutation(api.rounds.showSpecial);
     const next = useMutation(api.rounds.next);
     const { run, busy, error } = useAction();
+    const [step, setStep] = useState(0);
     const [index, setIndex] = useState(0);
-    const special = game.status === "special_insights";
-    const visible = insights.filter((insight) =>
-    {
-        const stock = stocks.find((item) => item.key === insight.stockKey);
-
-        return special ? !stock?.display : stock?.display;
-    });
-    const unresolved = visible.find((insight) => !insight.resolved
+    const groups = revealStocks(stocks, insights);
+    const activeStock = groups[step];
+    const special = Boolean(activeStock && !activeStock.display);
+    const visible = insights.filter((insight) => insight.stockKey === activeStock?.key);
+    const holds = activeStock?.name === "Hold Stock Price" ? visible.filter((insight) => !insight.resolved) : [];
+    const unresolved = holds.find((insight) => insight.playerId === board.player._id) ?? holds[0];
+    const pendingHolds = insights.some((insight) => !insight.resolved
       && stocks.find((stock) => stock.key === insight.stockKey)?.name === "Hold Stock Price");
+    const reviewed = step >= groups.length;
+    const host = game.hostId === board.user._id;
 
     useEffect(() =>
     {
@@ -99,9 +41,8 @@ export function RoundEnd({ board }: { board: Board })
         {
             clearTimeout(timer);
         };
-    }, [index, visible.length, unresolved]);
+    }, [index, visible.length, unresolved, step]);
     const active = visible[Math.min(index, visible.length - 1)];
-    const activeStock = stocks.find((stock) => stock.key === active?.stockKey);
     if (game.status === "finished")
     {
         return (
@@ -166,7 +107,12 @@ export function RoundEnd({ board }: { board: Board })
                                     <p>{active.description}</p>
                                 </div>
                             </div>
-                        ) : <div className="d-flex align-items-center justify-content-center h-100"><p>No additional insights this round</p></div>)}
+                        ) : (
+                            <div className="d-flex flex-column align-items-center justify-content-center h-100">
+                                {activeStock && <img height={80} src={activeStock.imagePath} alt={activeStock.name} />}
+                                <p>{reviewed ? "All insights revealed" : `No insights for ${activeStock?.name ?? "this stock"}`}</p>
+                            </div>
+                        ))}
                 </div>
                 <div id="stock-view" className="card card-green px-5 py-4 rounded border-5 border-white flex-sm-row align-items-center">
                     <h2>Stock Values:</h2>
@@ -199,20 +145,35 @@ export function RoundEnd({ board }: { board: Board })
             </div>
             <div id="next-step-wrapper" className="position-absolute bottom-0 end-0 p-3">
                 <Alert message={error} />
-                <button
-                    className="btn btn-primary d-flex flex-row gap-2 align-items-center"
-                    disabled={busy || Boolean(unresolved)}
-                    onClick={() =>
-                    {
-                        void run(() => special
-                            ? next({ code: game.code, expectedPeriod: game.currentPeriod })
-                            : show({ code: game.code }));
-                    }}
-                >
-                    {special ? (game.currentPeriod >= game.periodCount ? "Finish Game" : "Next Period") : "Show Special Insights"}
-                    {" "}
-                    →
-                </button>
+                {reviewed ? (host ? (
+                    <>
+                        {pendingHolds && <p>Waiting for players to resolve their hold-stock insights.</p>}
+                        <button
+                            className="btn btn-primary"
+                            disabled={busy || pendingHolds}
+                            onClick={() =>
+                            {
+                                void run(() => next({ code: game.code, expectedPeriod: game.currentPeriod }));
+                            }}
+                        >
+                            {game.currentPeriod >= game.periodCount ? "Finish Game" : "Next Period"}
+                            {" →"}
+                        </button>
+                    </>
+                ) : <p>Waiting for the game creator to continue.</p>) : (
+                    <button
+                        className="btn btn-primary d-flex flex-row gap-2 align-items-center"
+                        disabled={Boolean(unresolved && unresolved.playerId === board.player._id)}
+                        onClick={() =>
+                        {
+                            setStep((current) => current + 1);
+                            setIndex(0);
+                        }}
+                    >
+                        {step < groups.length - 1 ? `Next: ${groups[step + 1].name}` : "View round summary"}
+                        {" →"}
+                    </button>
+                )}
             </div>
         </>
     );

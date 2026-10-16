@@ -68,7 +68,7 @@ export const play = mutation({
             fail("Choose a stock");
         }
 
-        await feedItem(context, game, user.name, message, user.profileRoot);
+        await feedItem(context, game, user.name, message, user.profileRoot, "", stockKey === undefined ? {} : { stockKey, quantity });
         const turn = game.turn + 1;
         const index = players.findIndex((seat) => seat.userId === user._id);
 

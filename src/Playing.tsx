@@ -1,11 +1,13 @@
 import { GameHeader, Profile } from "./GameHeader";
+import { FeedMessage } from "./FeedMessage";
 import { Feed } from "./Feed";
 import { useEffect, useRef, useState } from "react";
 import { useMutation } from "convex/react";
 import { Link } from "react-router-dom";
 import { api } from "../convex/_generated/api";
 import { Alert, Insights, Modal, money, useAction } from "./shared";
-import { StockPanel, StockPreview } from "./StockPanel";
+import { StockPanel } from "./StockPanel";
+import { StockPreview } from "./StockPreview";
 import { Portfolio } from "./Portfolio";
 import type { Board } from "./types";
 
@@ -172,7 +174,7 @@ export function Playing({ board }: { board: Board })
                         <img className="rounded bg-secondary" src={notification.imageRoot} height={300} width={300} alt="profile" />
                         <div className="text-center">
                             <h1>{notification.title}</h1>
-                            <p>{notification.message}</p>
+                            <FeedMessage item={notification} stocks={board.stocks} />
                         </div>
                     </div>
                 </div>

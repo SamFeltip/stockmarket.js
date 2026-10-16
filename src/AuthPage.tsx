@@ -1,5 +1,7 @@
+import { ConvexError } from "convex/values";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Link, useNavigate } from "react-router-dom";
+import { usernameHelp } from "./errors";
 import { Alert, useAction, formText } from "./shared";
 
 export function AuthPage({ signup = false }: { signup?: boolean })
@@ -29,6 +31,16 @@ export function AuthPage({ signup = false }: { signup?: boolean })
                             form.set("flow", signup ? "signUp" : "signIn");
                             void run(async () =>
                             {
+                                if (!/^[a-z0-9_-]{1,32}$/.test(formText(form, "email")))
+                                {
+                                    throw new ConvexError(usernameHelp);
+                                }
+
+                                if (signup && formText(form, "password").length < 8)
+                                {
+                                    throw new Error("Invalid password");
+                                }
+
                                 await signIn("password", form);
                                 await navigate("/");
                             });
@@ -54,7 +66,7 @@ export function AuthPage({ signup = false }: { signup?: boolean })
                             autoComplete="username"
                             required
                             maxLength={32}
-                            pattern="[a-zA-Z0-9_-]+"
+
                         />
                         <input
                             id="password"
@@ -65,12 +77,17 @@ export function AuthPage({ signup = false }: { signup?: boolean })
                             aria-label="Password"
                             autoComplete={signup ? "new-password" : "current-password"}
                             required
-                            minLength={signup ? 8 : 1}
+
                         />
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                            <Link to={signup ? "/login" : "/signup"} className="btn btn-secondary">{signup ? "Log in" : "Create account"}</Link>
-                            <button className="btn btn-primary" type="submit" disabled={busy}>{signup ? "Sign up" : "Login"}</button>
-                        </div>
+                        <p className="auth-switch text-center mb-3">
+                            {signup ? "already have an account? " : "don’t have an account? "}
+                            <Link to={signup ? "/login" : "/signup"}>
+                                {signup ? "Click here to log in" : "Click here to create one"}
+                            </Link>
+                        </p>
+                        <button className="btn btn-primary w-100" type="submit" disabled={busy}>
+                            {busy ? "Please wait…" : (signup ? "Sign up" : "Login")}
+                        </button>
                     </form>
                 </div>
             </div>

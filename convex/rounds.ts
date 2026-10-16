@@ -12,7 +12,7 @@ export const showSpecial = mutation({
             fail("The market must be closed");
         }
 
-        await context.db.patch(game._id, { status: "special_insights" });
+        // Compatibility endpoint: reveal progress belongs to each browser, not the shared game.
     },
 });
 
@@ -21,7 +21,7 @@ export const hold = mutation({
     handler: async (context, { code, insightId, stockKey }) =>
     {
         const { game, player } = await member(context, code);
-        if (game.status !== "special_insights")
+        if (game.status !== "closed" && game.status !== "special_insights")
         {
             fail("Wait for special insights");
         }
@@ -58,8 +58,13 @@ export const next = mutation({
     args: { code: v.string(), expectedPeriod: v.number() },
     handler: async (context, { code, expectedPeriod }) =>
     {
-        const { game } = await member(context, code);
-        if (game.status !== "special_insights" || game.currentPeriod !== expectedPeriod)
+        const { game, user } = await member(context, code);
+        if (game.hostId !== user._id)
+        {
+            fail("Only the lobby host can advance the round");
+        }
+
+        if ((game.status !== "closed" && game.status !== "special_insights") || game.currentPeriod !== expectedPeriod)
         {
             fail("The round has already changed");
         }

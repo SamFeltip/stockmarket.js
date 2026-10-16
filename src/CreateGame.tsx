@@ -50,8 +50,7 @@ export function CreateGame()
                         disabled={busy}
                     />
                     <p id="lobby-code-help" className="lobby-hint mt-2">
-                        Share this code with your friends to let them join.
-                        Use letters, numbers, hyphens or underscores.
+                        Share with friends. Use letters, numbers, hyphens or underscores.
                     </p>
                 </div>
                 <fieldset disabled={busy}>

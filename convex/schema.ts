@@ -39,5 +39,6 @@ export default defineSchema({
     feed: defineTable({
         gameId: v.id("games"), period: v.number(), title: v.string(),
         message: v.string(), imageRoot: v.string(), colour: v.string(),
+        stockKey: v.optional(v.number()), quantity: v.optional(v.number()),
     }).index("by_game", ["gameId"]),
 });

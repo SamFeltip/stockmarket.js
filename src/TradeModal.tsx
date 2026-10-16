@@ -1,0 +1,186 @@
+import { useState } from "react";
+import { useMutation } from "convex/react";
+import { api } from "../convex/_generated/api";
+import { Alert, Modal, money, useAction } from "./shared";
+import { StockPreview } from "./StockPreview";
+import { sharesForCash } from "./trades";
+import type { Board, Stock } from "./types";
+
+export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock; mode: "buy" | "sell" })
+{
+    const play = useMutation(api.trading.play);
+    const { run, busy, error } = useAction();
+    const [draft, setDraft] = useState({ shares: "0", cash: "0" });
+    const quantity = Number(draft.shares);
+
+    function setQuantity(value: number)
+    {
+        setDraft({ shares: String(value), cash: String(Number((value * price).toFixed(2))) });
+    }
+
+    const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
+    const held = board.player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0;
+    const available = 100_000 - board.players.reduce((sum, player) => sum
+      + (player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0), 0);
+    const limit = mode === "buy" ? Math.min(available, price > 0 ? Math.floor(board.player.cash / price / 1000) * 1000 : 0) : held;
+    const valid = Number.isSafeInteger(quantity) && quantity % 1000 === 0
+      && quantity > 0 && quantity <= limit && price > 0;
+    const label = mode === "buy" ? "Buy" : "Sell";
+
+    return (
+        <Modal id={`${mode}Modal`} title={`${label} ${stock.name}`}>
+            <div className="modal-body d-flex flex-column gap-2">
+                <StockPreview board={board} stock={stock} large />
+                <h3 className="text-black">
+                    {label}
+                    {" "}
+                    stocks
+                </h3>
+                <p className="small">Shares trade in lots of 1,000. Entering a cash value selects whole lots.</p>
+                <p className="small">{`Maximum: ${money(limit)} shares`}</p>
+                <Alert message={error} />
+                <form
+                    id={`${mode}Stock`}
+                    onSubmit={(event) =>
+                    {
+                        event.preventDefault();
+
+                        if (!valid || busy)
+                        {
+                            return;
+                        }
+
+                        void run(async () =>
+                        {
+                            await play({ code: board.game.code, expectedTurn: board.game.turn, stockKey: stock.key,
+                                quantity: mode === "buy" ? quantity : -quantity });
+                            document.querySelector<HTMLButtonElement>(`#${mode}Modal .btn-close`)?.click();
+                            setQuantity(0);
+                        });
+                    }}
+                >
+                    <div className="purchase-form flex-fill">
+                        <h6 className="mb-0 header-amount-of-stocks">Amount of stocks</h6>
+                        <h6 className="mb-0 header-value">Value</h6>
+                        <div className="input-stock-group input-group mb-0">
+                            <input
+                                aria-label="Amount of stocks"
+                                type="number"
+                                step={1000}
+                                min={0}
+                                max={limit}
+                                disabled={busy}
+                                className="form-control input-stock"
+                                value={draft.shares}
+                                onChange={(event) =>
+                                {
+                                    const shares = event.target.value;
+
+                                    setDraft({ shares, cash: String(Number((Number(shares) * price).toFixed(2))) });
+                                }}
+                            />
+                        </div>
+                        <p className="equals d-flex justify-content-center align-items-center flex-fill">=</p>
+                        <div className="input-cash-group input-group mb-0">
+                            <span className="input-group-text text-black bg-white pe-1 border-end-0">£</span>
+                            <input
+                                className="form-control input-cash border-start-0 ps-0"
+                                type="number"
+                                min={0}
+                                step="0.01"
+                                disabled={busy}
+                                value={draft.cash}
+                                aria-label="Value"
+                                onChange={(event) =>
+                                {
+                                    const cash = event.target.value;
+                                    const shares = sharesForCash(Number(cash), price);
+
+                                    setDraft({ cash, shares: String(shares) });
+                                }}
+                                onBlur={() =>
+                                {
+                                    setQuantity(quantity);
+                                }}
+                            />
+                        </div>
+                        <div className="stock-btns d-flex gap-2">
+                            <button
+                                type="button"
+                                className="btn btn-danger flex-fill"
+                                aria-label="Decrease amount"
+                                disabled={busy}
+                                onClick={() =>
+                                {
+                                    setQuantity(Math.max(0, Math.ceil(quantity / 1000) * 1000 - 1000));
+                                }}
+                            >
+                                -
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-success flex-fill"
+                                aria-label="Increase amount"
+                                disabled={busy}
+                                onClick={() =>
+                                {
+                                    setQuantity(Math.min(limit, Math.floor(quantity / 1000) * 1000 + 1000));
+                                }}
+                            >
+                                +
+                            </button>
+                        </div>
+                        <div className="cash-btns d-flex gap-2">
+                            <button
+                                type="button"
+                                className="btn btn-danger flex-fill"
+                                aria-label="Decrease amount"
+                                disabled={busy}
+                                onClick={() =>
+                                {
+                                    setQuantity(Math.max(0, Math.ceil(quantity / 1000) * 1000 - 1000));
+                                }}
+                            >
+                                -
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-success flex-fill"
+                                aria-label="Increase amount"
+                                disabled={busy}
+                                onClick={() =>
+                                {
+                                    setQuantity(Math.min(limit, Math.floor(quantity / 1000) * 1000 + 1000));
+                                }}
+                            >
+                                +
+                            </button>
+                        </div>
+                        <div className="transaction-body">
+                            <p>
+                                Cash £
+                                {money(board.player.cash + (mode === "buy" ? -1 : 1) * quantity * price)}
+                            </p>
+                            <p>
+                                Shares held
+                                {" "}
+                                {held + (mode === "buy" ? quantity : -quantity)}
+                            </p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div className="modal-footer d-flex flex-row">
+                <button type="button" className="btn btn-secondary flex-fill" data-bs-dismiss="modal">Cancel</button>
+                <button
+                    className={`btn btn-${mode === "buy" ? "success" : "danger"} flex-fill`}
+                    type="submit"
+                    form={`${mode}Stock`}
+                    disabled={busy || !valid}
+                >
+                    {label}
+                </button>
+            </div>
+        </Modal>
+    );
+}

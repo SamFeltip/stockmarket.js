@@ -63,9 +63,11 @@ describe("Stockmarket transactions", () =>
         expect(board.player.holdings.find((holding) => holding.stockKey === 8)?.quantity).toBe(1000);
         expect(board.game.turn).toBe(1);
         expect(board.feed[0].message).toBe("bought 1000 shares in UB");
+        expect(board.feed[0]).toMatchObject({ stockKey: 8, quantity: 1000 });
         await bob.mutation(api.trading.play, { code: "test", expectedTurn: 1 });
         await sam.mutation(api.trading.play, { code: "test", expectedTurn: 2, stockKey: 8, quantity: -1000 });
         board = await sam.query(api.board.get, { code: "test" });
+        expect(board.feed[0]).toMatchObject({ stockKey: 8, quantity: -1000 });
         expect(board.player.cash).toBe(100_000);
         expect(board.player.holdings.find((holding) => holding.stockKey === 8)?.quantity).toBe(0);
     });
@@ -85,7 +87,10 @@ describe("Stockmarket transactions", () =>
         expect(closed.game.status).toBe("closed");
         expect(closed.insights).toHaveLength(20);
         await sam.mutation(api.rounds.showSpecial, { code: "test" });
-        await bob.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
+        expect((await bob.query(api.board.get, { code: "test" })).game.status).toBe("closed");
+        await expect(bob.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 }))
+            .rejects.toThrow("Only the lobby host");
+        await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
         const next = await sam.query(api.board.get, { code: "test" });
 
         expect(next.game.status).toBe("playing");

@@ -8,6 +8,7 @@ import { AuthPage } from "./AuthPage";
 import { Home, GameList, Users, CatalogEditor } from "./Pages";
 import { CreateGame } from "./CreateGame";
 import { GamePage } from "./GamePage";
+import { friendlyError } from "./errors";
 import { Loading } from "./shared";
 
 class Boundary extends Component<{ children: ReactNode }, { message: string }>
@@ -15,7 +16,7 @@ class Boundary extends Component<{ children: ReactNode }, { message: string }>
     state = { message: "" };
     static getDerivedStateFromError(error: Error)
     {
-        return { message: error.message };
+        return { message: friendlyError(error) };
     }
 
     componentDidCatch(_error: Error, _info: ErrorInfo)

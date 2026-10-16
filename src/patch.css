@@ -45,8 +45,23 @@ button.nav-link { cursor: pointer; }
     .create-game-form .lobby-lengths span { font-size: 1rem; }
     .create-game-form .lobby-length-detail { font-size: 0.8rem !important; }
 }
-@media (max-height: 450px) and (min-width: 576px) {
+@media (max-height: 450px) and (min-width: 480px) {
     .create-game-form { grid-template-columns: 1fr 1fr; align-items: start; }
     .create-game-form .lobby-player-hint { display: none; }
     .create-game-form .alert, .create-game-form .lobby-actions { grid-column: 1 / -1; }
+}
+
+.auth-switch, .auth-switch a { font-family: "Big Caslon", serif; color: white; font-size: 1rem; }
+.stock-btns .btn, .cash-btns .btn { display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0.5rem; min-height: 2.75rem; }
+.trade-message { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+.trade-message img { width: 1.5rem; height: 1.5rem; object-fit: contain; }
+
+@media (max-height: 760px), (max-width: 375px) {
+    .create-game-form .lobby-actions .btn { font-size: 0.95rem; }
+}
+
+.modal .purchase-form { grid-template-rows: auto auto auto auto; grid-template-columns: minmax(0, 1fr) 1rem minmax(0, 1fr); }
+@media (max-height: 450px) and (min-width: 480px) {
+    .lobby-page:has(.create-game-form) .card-header { display: flex; justify-content: center; align-items: center; gap: 1rem; }
+    .create-game-form #lobby-code-help { display: none; }
 }
