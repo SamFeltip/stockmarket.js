@@ -52,18 +52,20 @@ Cloudflare's newer `cf` CLI does not currently offer Pages direct upload; Wrangl
 
 For future Git-connected Cloudflare Pages builds, set the root to this directory, the output to `dist`, and the build command to `npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name VITE_CONVEX_URL`. Add a production `CONVEX_DEPLOY_KEY` as a secret in Cloudflare; never commit it. This directory can also be used as its own repository root.
 
-## Preserved features
+## Game features
 
 - Username/password sign-up, five original profile pictures, sign-in and sign-out.
 - Original routes: `/`, `/login`, `/signup`, `/logout`, `/games`, `/games/new`, `/games/show/:code`, `/users`, `/users/show/:id`, `/insights`.
-- Case-insensitive lobby codes, up to six players, host-controlled game length and launch, live lobby updates.
-- £100,000 starting cash; all six original stocks, prices, volatility and SQL insight templates; ten private insights per player per period.
-- Rotating turns with three actions per player per period; buying/selling in lots of 1,000; passing; stock availability, investor lists and portfolio rankings.
+- Case-insensitive lobby codes, two to six players, host-controlled six-to-ten-period game length and launch, live lobby updates.
+- £60,000 starting cash; all six original stocks, prices, volatility and SQL insight templates; ten private insights per player per period.
+- Rotating turns with three actions per player per period and a new opening seat each period; buying/selling 1,000–5,000 shares in steps of 1,000, then multiples of 10,000; 200,000 shares per company; passing; investor lists and portfolio rankings.
 - Private insights, stock/player tabs, special insight display, activity feed, mobile offcanvas/menu and trade notifications.
 - Animated round-end insight reveals, aggregate price changes floored at zero, special currency and hold-stock handling, next rounds and final rankings.
 - Insight-description editor; editing now requires sign-in. User lists expose display names only.
 
-Convex mutations validate identity, membership, ownership, turn, quantities, cash and supply on the server. Trades and settlements are atomic. Stale turn/period guards reject duplicate clicks. The legacy implementation stored game length but never finished a game; this migration honors its displayed 1/2/3-period lengths and shows final rankings. Leaving a lobby removes the seat and transfers hosting if necessary. Leaving during play retains the seat for reconnection, as the old disconnect path did not remove players.
+Convex mutations validate identity, membership, ownership, turn, quantities, cash and supply on the server. Trades and settlements are atomic. Stale turn/period guards reject duplicate clicks. The legacy implementation stored game length but never finished a game; this implementation settles the final selected period and shows final rankings. Existing active games keep their stored length and balances; existing lobbies with a shorter length must choose 6–10 periods before launch. Leaving a lobby removes the seat and transfers hosting if necessary. Leaving during play retains the seat for reconnection, as the old disconnect path did not remove players.
+
+The six simpler board-game rule changes are implemented and tested. See [the current board-game comparison](BOARD_GAME_DIFFERENCES_CURRENT.md) for completed changes and remaining differences, including special cards and shareholder powers.
 
 ## Original assets and missing source data
 
