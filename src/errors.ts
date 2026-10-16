@@ -3,7 +3,8 @@ import { ConvexError } from "convex/values";
 export const usernameHelp = "Choose a username with 1–32 letters, numbers, hyphens or underscores.";
 
 const messages: Record<string, string> = {
-    "Invalid game length": "Choose a game length: Short, Medium or Long.",
+    "At least two players are required": "Invite another player before launching the game.",
+    "Invalid game length": "Choose a game length between 6 and 10 periods.",
     "This game has already started": "This game has started. Please join a new lobby instead.",
     "The game has already started": "This game has already started. You can continue on the game board.",
     "This lobby is full": "All six places in this lobby are taken. Try another lobby or create your own.",

@@ -1,4 +1,4 @@
-import { startingCash } from "../shared/rules";
+import { minimumPlayers, startingCash, validGameLength } from "../shared/rules";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { currentUser, deal, fail, feedItem, gameByCode, member, members, normalizeCode, seedCatalog } from "./library";
@@ -9,7 +9,7 @@ export const create = mutation({
     {
         const user = await currentUser(context);
         const code = normalizeCode(arguments_.code);
-        if (![0, 1, 2].includes(arguments_.periodCount))
+        if (!validGameLength(arguments_.periodCount))
         {
             fail("Invalid game length");
         }
@@ -102,7 +102,7 @@ export const setLength = mutation({
             fail("Only the lobby host can change game length");
         }
 
-        if (![0, 1, 2].includes(periodCount))
+        if (!validGameLength(periodCount))
         {
             fail("Invalid game length");
         }
@@ -127,6 +127,15 @@ export const start = mutation({
         }
 
         const players = await members(context, game._id);
+        if (players.length < minimumPlayers)
+        {
+            fail("At least two players are required");
+        }
+
+        if (!validGameLength(game.periodCount))
+        {
+            fail("Invalid game length");
+        }
 
         await deal(context, game, players);
         await context.db.patch(game._id, { status: "playing", currentUserId: players[0].userId });

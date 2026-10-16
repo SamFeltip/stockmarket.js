@@ -1,3 +1,4 @@
+import { gameLengths, minimumPlayers } from "../shared/rules";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -47,29 +48,29 @@ function Waiting({ board }: { board: Board })
                     <p className="pb-2">Game length</p>
                     {host ? (
                         <div className="radio-row" id="difficulty-options-setter">
-                            {["Short", "Medium", "Long"].map((label, index) => (
-                                <span key={label}>
+                            {gameLengths.map((periods) => (
+                                <span key={periods}>
                                     <input
                                         type="radio"
                                         className="btn-check"
                                         name="game-length"
-                                        id={`option${index + 1}`}
-                                        checked={game.periodCount === index}
+                                        id={`option${periods}`}
+                                        checked={game.periodCount === periods - 1}
                                         disabled={busy}
                                         onChange={() =>
                                         {
-                                            void run(() => setLength({ code: game.code, periodCount: index }));
+                                            void run(() => setLength({ code: game.code, periodCount: periods - 1 }));
                                         }}
                                     />
-                                    <label className="btn bg-dark" htmlFor={`option${index + 1}`}>{label}</label>
+                                    <label className="btn bg-dark" htmlFor={`option${periods}`}>{`${periods} periods`}</label>
                                 </span>
                             ))}
                         </div>
                     )
-                        : <div className="btn bg-dark" id="game-difficulty">{["Short", "Medium", "Long"][game.periodCount]}</div>}
+                        : <div className="btn bg-dark" id="game-difficulty">{`${game.periodCount + 1} periods`}</div>}
                 </div>
                 <div className="py-3">
-                    <p className="pb-2">Launch game when all players have joined</p>
+                    <p className="pb-2">{players.length < minimumPlayers ? "At least two players are required" : "Launch game when all players have joined"}</p>
                     <div id="game-actions" className="d-flex flex-row w-100 justify-content-center gap-3">
                         <button
                             className="btn btn-secondary w-100"
@@ -90,7 +91,7 @@ function Waiting({ board }: { board: Board })
                             <button
                                 className="btn btn-primary w-100"
                                 style={{ maxWidth: "14rem" }}
-                                disabled={busy}
+                                disabled={busy || players.length < minimumPlayers}
                                 onClick={() =>
                                 {
                                     void run(() => start({ code: game.code }));

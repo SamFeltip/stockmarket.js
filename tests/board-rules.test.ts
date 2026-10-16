@@ -4,6 +4,78 @@ import { setup } from "./game-setup";
 
 describe("Board-game rules", () =>
 {
+    it("requires two players before dealing or starting", async () =>
+    {
+        const { sam, bob } = await setup();
+
+        await bob.mutation(api.games.leave, { code: "test" });
+        await expect(sam.mutation(api.games.start, { code: "test" })).rejects.toThrow("At least two players");
+        const waiting = await sam.query(api.board.get, { code: "test" });
+
+        expect(waiting.game.status).toBe("waiting");
+        expect(waiting.insights).toHaveLength(0);
+        await bob.mutation(api.games.join, { code: "test" });
+        await sam.mutation(api.games.start, { code: "test" });
+        expect((await sam.query(api.board.get, { code: "test" })).game.status).toBe("playing");
+    });
+    it("accepts six through ten periods and rejects invalid lengths on creation and changes", async () =>
+    {
+        const { sam, bob } = await setup();
+        for (const periodCount of [5, 6, 7, 8, 9])
+        {
+            await sam.mutation(api.games.create, { code: `length-${periodCount}`, periodCount });
+            await sam.mutation(api.games.setLength, { code: "test", periodCount });
+            expect((await sam.query(api.board.get, { code: "test" })).game.periodCount).toBe(periodCount);
+        }
+
+        for (const periodCount of [-1, 0, 4, 5.5, 10])
+        {
+            await expect(sam.mutation(api.games.create, { code: "invalid", periodCount }))
+                .rejects.toThrow("Invalid game length");
+            await expect(sam.mutation(api.games.setLength, { code: "test", periodCount }))
+                .rejects.toThrow("Invalid game length");
+        }
+
+        await expect(bob.mutation(api.games.setLength, { code: "test", periodCount: 5 }))
+            .rejects.toThrow("Only the lobby host");
+    });
+
+    for (const lastPeriod of [5, 9])
+    {
+        it(`rotates first and last traders and finishes after index ${lastPeriod}`, async () =>
+        {
+            const { sam, bob, outsider } = await setup(lastPeriod);
+            const clients = [sam, bob, outsider];
+
+            await outsider.mutation(api.games.join, { code: "test" });
+            await sam.mutation(api.games.start, { code: "test" });
+            const seats = (await sam.query(api.board.get, { code: "test" })).players;
+            for (let period = 0; period <= lastPeriod; period++)
+            {
+                const opened = await sam.query(api.board.get, { code: "test" });
+
+                expect(opened.game.currentPeriod).toBe(period);
+                expect(opened.game.currentUserId).toBe(seats[period % 3].userId);
+                expect(opened.game.turn).toBe(0);
+                expect(opened.insights).toHaveLength(10);
+
+                for (let turn = 0; turn < 9; turn++)
+                {
+                    const client = clients[(turn + period) % 3];
+                    const board = await client.query(api.board.get, { code: "test" });
+
+                    expect(board.game.currentUserId).toBe(board.user._id);
+                    await client.mutation(api.trading.play, { code: "test", expectedTurn: turn });
+                }
+
+                expect((await sam.query(api.board.get, { code: "test" })).game.status).toBe("closed");
+                await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: period });
+                expect((await sam.query(api.board.get, { code: "test" })).game.status)
+                    .toBe(period === lastPeriod ? "finished" : "playing");
+            }
+        });
+    }
+
     it("starts both host and guest with £60,000", async () =>
     {
         const { sam, bob } = await setup();

@@ -1,10 +1,9 @@
+import { gameLengths } from "../shared/rules";
 import { useMutation } from "convex/react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../convex/_generated/api";
 import { Alert, formText, useAction } from "./shared";
 import { LobbyCard } from "./LobbyCard";
-
-const lengths = ["Short", "Medium", "Long"];
 
 export function CreateGame()
 {
@@ -56,21 +55,18 @@ export function CreateGame()
                 <fieldset disabled={busy}>
                     <legend className="form-label fs-5">Game length</legend>
                     <div className="d-grid gap-2 lobby-lengths">
-                        {lengths.map((label, index) => (
-                            <div key={label}>
+                        {gameLengths.map((periods, index) => (
+                            <div key={periods}>
                                 <input
                                     type="radio"
                                     className="btn-check"
                                     name="difficulty"
                                     id={`length-${index}`}
-                                    value={index}
+                                    value={periods - 1}
                                     defaultChecked={index === 0}
                                 />
                                 <label className="btn btn-outline-light w-100 py-3" htmlFor={`length-${index}`}>
-                                    <span className="d-block">{label}</span>
-                                    <span className="d-block lobby-length-detail">
-                                        {`${index + 1} ${index === 0 ? "period" : "periods"}`}
-                                    </span>
+                                    <span className="d-block">{`${periods} periods`}</span>
                                 </label>
                             </div>
                         ))}

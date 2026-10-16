@@ -4,7 +4,7 @@ import { api } from "../convex/_generated/api";
 
 const modules = import.meta.glob("../convex/**/*.ts");
 
-export async function setup(periodCount = 0)
+export async function setup(periodCount = 5)
 {
     const t = convexTest(schema, modules);
     const [samId, bobId, outsiderId] = await t.run(async (context) =>

@@ -47,7 +47,7 @@ describe("Stockmarket transactions", () =>
     });
     it("closes after three actions each, settles all insights exactly once, then redeals or finishes", async () =>
     {
-        const { sam, bob } = await setup(1);
+        const { sam, bob } = await setup(5);
 
         await sam.mutation(api.games.start, { code: "test" });
 
@@ -82,15 +82,18 @@ describe("Stockmarket transactions", () =>
 
         await expect(sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 })).rejects.toThrow();
 
-        for (let turn = 0; turn < 6; turn++)
+        for (let period = 1; period < 6; period++)
         {
-            const client = turn % 2 === 0 ? sam : bob;
+            for (let turn = 0; turn < 6; turn++)
+            {
+                const client = (turn + period) % 2 === 0 ? sam : bob;
 
-            await client.mutation(api.trading.play, { code: "test", expectedTurn: turn });
+                await client.mutation(api.trading.play, { code: "test", expectedTurn: turn });
+            }
+
+            await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: period });
         }
 
-        await sam.mutation(api.rounds.showSpecial, { code: "test" });
-        await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 1 });
         expect((await bob.query(api.board.get, { code: "test" })).game.status).toBe("finished");
     });
     it("rejects duplicate requests and overcapacity lobbies", async () =>
