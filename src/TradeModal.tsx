@@ -1,10 +1,10 @@
-import { sharesPerCompany } from "../shared/rules";
+import { floorTradeQuantity, sharesPerCompany, validTradeQuantity } from "../shared/rules";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Alert, Modal, money, useAction } from "./shared";
 import { StockPreview } from "./StockPreview";
-import { sharesForCash } from "./trades";
+import { sharesForCash, stepShares } from "./trades";
 import type { Board, Stock } from "./types";
 
 export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock; mode: "buy" | "sell" })
@@ -23,8 +23,9 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
     const held = board.player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0;
     const available = sharesPerCompany - board.players.reduce((sum, player) => sum
       + (player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0), 0);
-    const limit = mode === "buy" ? Math.min(available, price > 0 ? Math.floor(board.player.cash / price / 1000) * 1000 : 0) : held;
-    const valid = Number.isSafeInteger(quantity) && quantity % 1000 === 0
+    const limit = floorTradeQuantity(mode === "buy"
+        ? Math.min(available, sharesForCash(board.player.cash, price)) : held);
+    const valid = validTradeQuantity(quantity)
       && quantity > 0 && quantity <= limit && price > 0;
     const label = mode === "buy" ? "Buy" : "Sell";
 
@@ -37,7 +38,10 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                     {" "}
                     stocks
                 </h3>
-                <p className="small">Shares trade in lots of 1,000. Entering a cash value selects whole lots.</p>
+                <p className="small" id={`${mode}-quantity-help`}>
+                    Trade 1,000–5,000 shares in steps of 1,000; larger trades must be multiples of 10,000.
+                    Entering cash selects the largest permitted trade within that amount.
+                </p>
                 <p className="small">{`Maximum: ${money(limit)} shares`}</p>
                 <Alert message={error} />
                 <form
@@ -66,6 +70,8 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                         <div className="input-stock-group input-group mb-0">
                             <input
                                 aria-label="Amount of stocks"
+                                aria-describedby={`${mode}-quantity-help`}
+                                aria-invalid={quantity !== 0 && !valid}
                                 type="number"
                                 step={1000}
                                 min={0}
@@ -113,7 +119,7 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                                 disabled={busy}
                                 onClick={() =>
                                 {
-                                    setQuantity(Math.max(0, Math.ceil(quantity / 1000) * 1000 - 1000));
+                                    setQuantity(stepShares(quantity, -1));
                                 }}
                             >
                                 -
@@ -125,7 +131,7 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                                 disabled={busy}
                                 onClick={() =>
                                 {
-                                    setQuantity(Math.min(limit, Math.floor(quantity / 1000) * 1000 + 1000));
+                                    setQuantity(Math.min(limit, stepShares(quantity, 1)));
                                 }}
                             >
                                 +
@@ -139,7 +145,7 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                                 disabled={busy}
                                 onClick={() =>
                                 {
-                                    setQuantity(Math.max(0, Math.ceil(quantity / 1000) * 1000 - 1000));
+                                    setQuantity(stepShares(quantity, -1));
                                 }}
                             >
                                 -
@@ -151,7 +157,7 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                                 disabled={busy}
                                 onClick={() =>
                                 {
-                                    setQuantity(Math.min(limit, Math.floor(quantity / 1000) * 1000 + 1000));
+                                    setQuantity(Math.min(limit, stepShares(quantity, 1)));
                                 }}
                             >
                                 +

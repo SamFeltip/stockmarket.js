@@ -1,4 +1,4 @@
-import { sharesPerCompany } from "../shared/rules";
+import { sharesPerCompany, validTradeQuantity } from "../shared/rules";
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { fail, feedItem, member, members } from "./library";
@@ -34,9 +34,9 @@ export const play = mutation({
                 fail("This stock cannot be traded");
             }
 
-            if (!quantity || !Number.isSafeInteger(quantity) || quantity % 1000 !== 0)
+            if (quantity === undefined || !validTradeQuantity(quantity))
             {
-                fail("Trade a positive number of shares in lots of 1000");
+                fail("Trade 1000 to 5000 shares in steps of 1000, or multiples of 10000");
             }
 
             const available = sharesPerCompany - players.reduce((sum, item) => sum

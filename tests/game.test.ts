@@ -18,14 +18,14 @@ describe("Stockmarket transactions", () =>
         await expect(t.query(api.board.get, { code: "test" })).rejects.toThrow("Please log in");
         await expect(outsider.mutation(api.games.join, { code: "test" })).rejects.toThrow("already started");
     });
-    it("buys and sells in lots of 1000, rotates turns and rejects invalid trades without changing state", async () =>
+    it("buys and sells permitted quantities, rotates turns and rejects invalid trades without changing state", async () =>
     {
         const { sam, bob } = await setup();
 
         await sam.mutation(api.games.start, { code: "test" });
         await expect(bob.mutation(api.trading.play, { code: "test", expectedTurn: 0 })).rejects.toThrow("not your turn");
 
-        for (const quantity of [1, 1.5, 1_000_000, -1000, 0])
+        for (const quantity of [1, 1.5, 6000, 15_000, -6000, -15_000, 1_000_000, -1000, 0])
         {
             await expect(sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, stockKey: 8, quantity })).rejects.toThrow();
         }

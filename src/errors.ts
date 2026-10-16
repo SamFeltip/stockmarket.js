@@ -24,7 +24,8 @@ const messages: Record<string, string> = {
     "Not enough cash": "You don't have enough cash for this purchase. Try fewer shares.",
     "Not enough shares available": "There aren't enough shares available. Try a smaller purchase.",
     "Not enough shares to sell": "You can't sell more shares than you own.",
-    "Trade a positive number of shares in lots of 1000": "Enter a share amount in multiples of 1,000.",
+    "Trade 1000 to 5000 shares in steps of 1000, or multiples of 10000":
+        "Enter 1,000–5,000 shares in steps of 1,000, or a multiple of 10,000 for larger trades.",
     "The turn has changed; try again": "The turn has moved on. Please check the board and try again.",
     "It is not your turn": "Please wait for your turn before trading.",
     "The round has already changed": "The round has moved on. Please check the updated board.",

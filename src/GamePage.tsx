@@ -47,7 +47,7 @@ function Waiting({ board }: { board: Board })
                 <div className="py-3">
                     <p className="pb-2">Game length</p>
                     {host ? (
-                        <div className="radio-row" id="difficulty-options-setter">
+                        <div className="radio-row d-flex flex-wrap justify-content-center gap-2" id="difficulty-options-setter">
                             {gameLengths.map((periods) => (
                                 <span key={periods}>
                                     <input

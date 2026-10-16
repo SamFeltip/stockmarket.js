@@ -4,6 +4,40 @@ import { setup } from "./game-setup";
 
 describe("Board-game rules", () =>
 {
+    it("accepts permitted purchases and sales and rejects larger nonstandard sales atomically", async () =>
+    {
+        for (const quantity of [1000, 2000, 3000, 4000, 5000, 10_000, 20_000])
+        {
+            const { sam, bob } = await setup();
+
+            await sam.mutation(api.games.start, { code: "test" });
+            await sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, stockKey: 8, quantity });
+            await bob.mutation(api.trading.play, { code: "test", expectedTurn: 1 });
+
+            if (quantity === 20_000)
+            {
+                const before = await sam.query(api.board.get, { code: "test" });
+                for (const invalid of [-6000, -15_000])
+                {
+                    await expect(sam.mutation(api.trading.play, {
+                        code: "test", expectedTurn: 2, stockKey: 8, quantity: invalid,
+                    })).rejects.toThrow("Trade 1000 to 5000");
+                }
+
+                const after = await sam.query(api.board.get, { code: "test" });
+
+                expect(after.player).toEqual(before.player);
+                expect(after.game).toEqual(before.game);
+                expect(after.feed).toEqual(before.feed);
+            }
+
+            await sam.mutation(api.trading.play, { code: "test", expectedTurn: 2, stockKey: 8, quantity: -quantity });
+            const board = await sam.query(api.board.get, { code: "test" });
+
+            expect(board.player.cash).toBe(60_000);
+            expect(board.player.holdings.find((holding) => holding.stockKey === 8)?.quantity).toBe(0);
+        }
+    });
     it("requires two players before dealing or starting", async () =>
     {
         const { sam, bob } = await setup();
