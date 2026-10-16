@@ -76,7 +76,6 @@ export function CreateGame()
                         ))}
                     </div>
                 </fieldset>
-                <p className="lobby-hint lobby-player-hint text-center">Up to 6 players. Launch when everyone has joined.</p>
                 <Alert message={error} />
                 <div className="d-grid gap-3 lobby-actions">
                     <Link to="/" className="btn btn-secondary d-flex align-items-center justify-content-center">Back</Link>

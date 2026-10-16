@@ -47,7 +47,6 @@ button.nav-link { cursor: pointer; }
 }
 @media (max-height: 450px) and (min-width: 480px) {
     .create-game-form { grid-template-columns: 1fr 1fr; align-items: start; }
-    .create-game-form .lobby-player-hint { display: none; }
     .create-game-form .alert, .create-game-form .lobby-actions { grid-column: 1 / -1; }
 }
 
