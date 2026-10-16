@@ -89,6 +89,7 @@ describe("Board-game rules", () =>
                 const opened = await sam.query(api.board.get, { code: "test" });
 
                 expect(opened.game.currentPeriod).toBe(period);
+                expect(opened.game.priceHistory).toHaveLength(period + 1);
                 expect(opened.game.currentUserId).toBe(seats[period % 3].userId);
                 expect(opened.game.turn).toBe(0);
                 expect(opened.insights).toHaveLength(10);
@@ -104,8 +105,11 @@ describe("Board-game rules", () =>
 
                 expect((await sam.query(api.board.get, { code: "test" })).game.status).toBe("closed");
                 await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: period });
-                expect((await sam.query(api.board.get, { code: "test" })).game.status)
-                    .toBe(period === lastPeriod ? "finished" : "playing");
+                const settled = await sam.query(api.board.get, { code: "test" });
+
+                expect(settled.game.status).toBe(period === lastPeriod ? "finished" : "playing");
+                expect(settled.game.priceHistory).toHaveLength(period + 2);
+                expect(settled.game.priceHistory?.at(-1)).toEqual({ period: period + 1, prices: settled.game.prices });
             }
         });
     }

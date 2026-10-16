@@ -25,6 +25,9 @@ export default defineSchema({
         status: v.union(v.literal("waiting"), v.literal("playing"), v.literal("closed"),
             v.literal("special_insights"), v.literal("finished")),
         prices: v.array(v.object({ stockKey: v.number(), value: v.number() })),
+        priceHistory: v.optional(v.array(v.object({
+            period: v.number(), prices: v.array(v.object({ stockKey: v.number(), value: v.number() })),
+        }))),
         suspended: v.array(v.number()),
     }).index("by_code", ["code"]),
     players: defineTable({

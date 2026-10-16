@@ -99,8 +99,12 @@ export const next = mutation({
 
         const finished = game.currentPeriod >= game.periodCount;
         const currentPeriod = finished ? game.currentPeriod : game.currentPeriod + 1;
+        const priceHistory = [
+            ...game.priceHistory ?? [{ period: game.currentPeriod, prices: game.prices }],
+            { period: game.currentPeriod + 1, prices },
+        ];
 
-        await context.db.patch(game._id, { prices, status: finished ? "finished" : "playing", currentPeriod,
+        await context.db.patch(game._id, { prices, priceHistory, status: finished ? "finished" : "playing", currentPeriod,
             turn: 0, suspended: [], currentUserId: players[currentPeriod % players.length].userId });
 
         if (!finished)

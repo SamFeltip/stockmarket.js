@@ -21,10 +21,11 @@ export const create = mutation({
 
         await seedCatalog(context);
         const stocks = await context.db.query("stocks").collect();
+        const prices = stocks.map((stock) => ({ stockKey: stock.key, value: stock.startingValue }));
         const gameId = await context.db.insert("games", {
             code, hostId: user._id, currentUserId: user._id, periodCount: arguments_.periodCount,
             currentPeriod: 0, turn: 0, status: "waiting", suspended: [],
-            prices: stocks.map((stock) => ({ stockKey: stock.key, value: stock.startingValue })),
+            prices, priceHistory: [{ period: 0, prices }],
         });
 
         await context.db.insert("players", {
