@@ -1,3 +1,4 @@
+import { sharesPerCompany } from "../shared/rules";
 import { Change, Insights } from "./shared";
 import { StockPreview } from "./StockPreview";
 import { TradeModal } from "./TradeModal";
@@ -10,7 +11,7 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
     const held = player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0;
     const ownInsights = insights.filter((insight) => insight.stockKey === stock.key);
     const value = ownInsights.reduce((sum, insight) => sum + insight.value, 0);
-    const available = 100_000 - players.reduce((sum, seat) => sum
+    const available = sharesPerCompany - players.reduce((sum, seat) => sum
       + (seat.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0), 0);
     const myTurn = game.currentUserId === board.user._id;
 

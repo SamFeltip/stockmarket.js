@@ -1,3 +1,4 @@
+import { sharesPerCompany } from "../shared/rules";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
@@ -20,7 +21,7 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
 
     const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
     const held = board.player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0;
-    const available = 100_000 - board.players.reduce((sum, player) => sum
+    const available = sharesPerCompany - board.players.reduce((sum, player) => sum
       + (player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0), 0);
     const limit = mode === "buy" ? Math.min(available, price > 0 ? Math.floor(board.player.cash / price / 1000) * 1000 : 0) : held;
     const valid = Number.isSafeInteger(quantity) && quantity % 1000 === 0

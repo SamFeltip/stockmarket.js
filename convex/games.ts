@@ -1,3 +1,4 @@
+import { startingCash } from "../shared/rules";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { currentUser, deal, fail, feedItem, gameByCode, member, members, normalizeCode, seedCatalog } from "./library";
@@ -27,7 +28,7 @@ export const create = mutation({
         });
 
         await context.db.insert("players", {
-            gameId, userId: user._id, active: true, cash: 100_000,
+            gameId, userId: user._id, active: true, cash: startingCash,
             holdings: stocks.map((stock) => ({ stockKey: stock.key, quantity: 0 })),
         });
 
@@ -61,7 +62,7 @@ export const join = mutation({
         }
 
         await context.db.insert("players", {
-            gameId: game._id, userId: user._id, cash: 100_000, active: true,
+            gameId: game._id, userId: user._id, cash: startingCash, active: true,
             holdings: game.prices.map((price) => ({ stockKey: price.stockKey, quantity: 0 })),
         });
 

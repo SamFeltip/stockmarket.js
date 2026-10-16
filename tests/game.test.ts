@@ -1,32 +1,6 @@
-import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import schema from "../convex/schema";
+import { setup } from "./game-setup";
 import { api, internal } from "../convex/_generated/api";
-
-const modules = import.meta.glob("../convex/**/*.ts");
-
-async function setup(periodCount = 0)
-{
-    const t = convexTest(schema, modules);
-    const [samId, bobId, outsiderId] = await t.run(async (context) =>
-    {
-        const ids = [];
-        for (const name of ["sam", "bob", "outsider"])
-        {
-            ids.push(await context.db.insert("users", { name, email: name, profileRoot: "/static/imgs/1profile.png" }));
-        }
-
-        return ids;
-    });
-    const sam = t.withIdentity({ subject: `${samId}|session` });
-    const bob = t.withIdentity({ subject: `${bobId}|session` });
-    const outsider = t.withIdentity({ subject: `${outsiderId}|session` });
-
-    await sam.mutation(api.games.create, { code: "TEST", periodCount });
-    await bob.mutation(api.games.join, { code: "test" });
-
-    return { t, sam, bob, outsider };
-}
 
 describe("Stockmarket transactions", () =>
 {
@@ -59,7 +33,7 @@ describe("Stockmarket transactions", () =>
         await sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, stockKey: 8, quantity: 1000 });
         let board = await sam.query(api.board.get, { code: "test" });
 
-        expect(board.player.cash).toBe(97_500);
+        expect(board.player.cash).toBe(57_500);
         expect(board.player.holdings.find((holding) => holding.stockKey === 8)?.quantity).toBe(1000);
         expect(board.game.turn).toBe(1);
         expect(board.feed[0].message).toBe("bought 1000 shares in UB");
@@ -68,7 +42,7 @@ describe("Stockmarket transactions", () =>
         await sam.mutation(api.trading.play, { code: "test", expectedTurn: 2, stockKey: 8, quantity: -1000 });
         board = await sam.query(api.board.get, { code: "test" });
         expect(board.feed[0]).toMatchObject({ stockKey: 8, quantity: -1000 });
-        expect(board.player.cash).toBe(100_000);
+        expect(board.player.cash).toBe(60_000);
         expect(board.player.holdings.find((holding) => holding.stockKey === 8)?.quantity).toBe(0);
     });
     it("closes after three actions each, settles all insights exactly once, then redeals or finishes", async () =>
@@ -167,6 +141,6 @@ describe("Stockmarket transactions", () =>
         const finished = await sam.query(api.board.get, { code: "test" });
 
         expect(finished.game.prices.find((price) => price.stockKey === 8)?.value).toBe(2.5);
-        expect(finished.player.cash).toBe(110_000);
+        expect(finished.player.cash).toBe(66_000);
     });
 });

@@ -1,3 +1,4 @@
+import { sharesPerCompany } from "../shared/rules";
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { fail, feedItem, member, members } from "./library";
@@ -38,7 +39,7 @@ export const play = mutation({
                 fail("Trade a positive number of shares in lots of 1000");
             }
 
-            const available = 100_000 - players.reduce((sum, item) => sum
+            const available = sharesPerCompany - players.reduce((sum, item) => sum
               + (item.holdings.find((share) => share.stockKey === stockKey)?.quantity ?? 0), 0);
             const cost = quantity * price;
             if (quantity > available)
