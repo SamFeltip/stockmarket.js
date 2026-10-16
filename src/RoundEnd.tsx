@@ -1,0 +1,219 @@
+import { useEffect, useState } from "react";
+import { useMutation } from "convex/react";
+import { Link } from "react-router-dom";
+import { api } from "../convex/_generated/api";
+import { Alert, Change, money, useAction } from "./shared";
+import type { Board, Insight } from "./types";
+
+function HoldStock({ board, insight }: { board: Board; insight: Insight })
+{
+    const hold = useMutation(api.rounds.hold);
+    const [stockKey, setStockKey] = useState<number | undefined>();
+    const { run, busy, error } = useAction();
+    const player = board.players.find((seat) => seat._id === insight.playerId);
+    const own = insight.playerId === board.player._id;
+
+    return (
+        <div className="bg-white text-black rounded p-4">
+            <h2 className="text-black">{own ? "Would you like to suspend a share?" : `Waiting for ${player?.name} to suspend a share`}</h2>
+            <Alert message={error} />
+            <div className="d-grid gap-2" style={{ gridTemplateColumns: "1fr 1fr 1fr" }}>
+                {board.stocks.filter((stock) => stock.display).map((stock) => (
+                    <label className="btn btn-outline-secondary" key={stock.key}>
+                        <input
+                            type="radio"
+                            name={`hold-${insight._id}`}
+                            disabled={!own || busy}
+                            checked={stockKey === stock.key}
+                            onChange={() =>
+                            {
+                                setStockKey(stock.key);
+                            }}
+                        />
+                        <img height={64} src={stock.imagePath} alt={stock.name} />
+                        <p>
+                            £
+                            {board.game.prices.find((price) => price.stockKey === stock.key)?.value.toFixed(2)}
+                        </p>
+                    </label>
+                ))}
+            </div>
+            {own && (
+                <div className="d-flex gap-2 mt-3">
+                    <button
+                        className="btn btn-secondary flex-fill"
+                        disabled={busy}
+                        onClick={() =>
+                        {
+                            void run(() => hold({ code: board.game.code, insightId: insight._id }));
+                        }}
+                    >
+                        Skip
+                    </button>
+                    <button
+                        className="btn btn-success flex-fill"
+                        disabled={busy || stockKey === undefined}
+                        onClick={() =>
+                        {
+                            void run(() => hold({ code: board.game.code, insightId: insight._id, stockKey }));
+                        }}
+                    >
+                        Confirm
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+}
+
+export function RoundEnd({ board }: { board: Board })
+{
+    const { game, stocks, insights, players } = board;
+    const show = useMutation(api.rounds.showSpecial);
+    const next = useMutation(api.rounds.next);
+    const { run, busy, error } = useAction();
+    const [index, setIndex] = useState(0);
+    const special = game.status === "special_insights";
+    const visible = insights.filter((insight) =>
+    {
+        const stock = stocks.find((item) => item.key === insight.stockKey);
+
+        return special ? !stock?.display : stock?.display;
+    });
+    const unresolved = visible.find((insight) => !insight.resolved
+      && stocks.find((stock) => stock.key === insight.stockKey)?.name === "Hold Stock Price");
+
+    useEffect(() =>
+    {
+        if (unresolved || index >= visible.length - 1)
+        {
+            return;
+        }
+
+        const timer = setTimeout(() =>
+        {
+            setIndex((current) => current + 1);
+        }, 2500);
+
+        return () =>
+        {
+            clearTimeout(timer);
+        };
+    }, [index, visible.length, unresolved]);
+    const active = visible[Math.min(index, visible.length - 1)];
+    const activeStock = stocks.find((stock) => stock.key === active?.stockKey);
+    if (game.status === "finished")
+    {
+        return (
+            <div className="container card card-green p-4 text-center">
+                <h1>Game finished</h1>
+                <h2>
+                    {[...players].toSorted((a, b) => b.netWorth - a.netWorth)[0]?.name}
+                    {" "}
+                    wins!
+                </h2>
+                {players.map((player) => (
+                    <div className="d-flex justify-content-between p-3" key={player._id}>
+                        <span>
+                            {player.ranking}
+                            .
+                            {" "}
+                            {player.name}
+                        </span>
+                        <span>
+                            £
+                            {money(player.netWorth)}
+                        </span>
+                    </div>
+                ))}
+                <Link className="btn btn-primary" to="/">Go Back</Link>
+            </div>
+        );
+    }
+
+    return (
+        <>
+            <div className="gap-3 p-4 d-grid" style={{ height: "100vh", maxHeight: "-webkit-fill-available", gridTemplateRows: "auto 1fr auto auto" }}>
+                <div className="d-flex flex-column align-items-center justify-content-center">
+                    <h1>End of round</h1>
+                    {special && <h2>Additional insights</h2>}
+                </div>
+                <div id="insight-view" className="card card-green p-4 rounded border border-5 border-white">
+                    {unresolved ? <HoldStock board={board} insight={unresolved} /> : (active && activeStock
+                        ? (
+                            <div className="game-insight round-insight gap-3 h-100 d-grid" style={{ gridTemplateColumns: "2fr 1fr" }} key={active._id}>
+                                <div className="p-4 gap-2 rounded d-flex flex-column flex-sm-row justify-content-around align-items-center" style={{ backgroundColor: "#3C5F2F" }}>
+                                    <div className="game-stock-view d-flex flex-column align-items-center">
+                                        <img className="w-100 p-3" style={{ maxHeight: 180, objectFit: "contain" }} src={activeStock.imagePath} alt={activeStock.name} />
+                                        <h2>{activeStock.name}</h2>
+                                    </div>
+                                    <div className="d-flex flex-column text-center">
+                                        <p>{special ? "Change" : "Sum"}</p>
+                                        <h1 className="fw-bolder">
+                                            {special ? `${visible.slice(0, index + 1).filter((insight) => insight.stockKey === activeStock.key).reduce((sum, insight) => sum + insight.value, 0) * 100}%`
+                                                : `£${visible.slice(0, index + 1).filter((insight) => insight.stockKey === activeStock.key).reduce((sum, insight) => sum + insight.value, 0).toFixed(2)}`}
+                                        </h1>
+                                    </div>
+                                </div>
+                                <div className="game-insight-card p-4 gap-2 rounded bg-white text-black d-flex flex-column align-items-center justify-content-center">
+                                    <img height={120} src={activeStock.imagePath} alt={activeStock.name} />
+                                    {special ? (
+                                        <h2 className="text-black">
+                                            {active.value * 100}
+                                            %
+                                        </h2>
+                                    ) : <Change value={active.value} />}
+                                    <p>{active.description}</p>
+                                </div>
+                            </div>
+                        ) : <div className="d-flex align-items-center justify-content-center h-100"><p>No additional insights this round</p></div>)}
+                </div>
+                <div id="stock-view" className="card card-green px-5 py-4 rounded border-5 border-white flex-sm-row align-items-center">
+                    <h2>Stock Values:</h2>
+                    <div className="gap-3 flex-fill d-flex flex-nowrap flex-column flex-sm-row justify-content-between align-items-center">
+                        {stocks.filter((stock) => stock.display).map((stock) => (
+                            <div className="game-stock d-flex flex-column align-items-center" key={stock.key}>
+                                <img className="w-100 p-3 object-fit-contain" style={{ maxHeight: 100 }} src={stock.secondaryImagePath} alt={stock.name} />
+                                <div>
+                                    £
+                                    {(game.prices.find((price) => price.stockKey === stock.key)?.value ?? 0).toFixed(2)}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div id="player-view" className="card card-green p-4 rounded d-flex flex-sm-row flex-column justify-content-between align-items-center">
+                    <h2>Net Worth:</h2>
+                    <div className="d-flex w-100 gap-5 flex-sm-row flex-column justify-content-center">
+                        {players.map((player) => (
+                            <div className="d-flex flex-column align-items-center" key={player._id}>
+                                <img height={80} width={80} className="rounded" src={player.profileRoot} alt={player.name} />
+                                <span>
+                                    £
+                                    {money(player.netWorth)}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            <div id="next-step-wrapper" className="position-absolute bottom-0 end-0 p-3">
+                <Alert message={error} />
+                <button
+                    className="btn btn-primary d-flex flex-row gap-2 align-items-center"
+                    disabled={busy || Boolean(unresolved)}
+                    onClick={() =>
+                    {
+                        void run(() => special
+                            ? next({ code: game.code, expectedPeriod: game.currentPeriod })
+                            : show({ code: game.code }));
+                    }}
+                >
+                    {special ? (game.currentPeriod >= game.periodCount ? "Finish Game" : "Next Period") : "Show Special Insights"}
+                    {" "}
+                    →
+                </button>
+            </div>
+        </>
+    );
+}

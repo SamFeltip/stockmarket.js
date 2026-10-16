@@ -1,0 +1,45 @@
+{
+    "name": "stockmarket-convex",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite --host 127.0.0.1",
+        "backend": "convex dev",
+        "build": "tsc --noEmit && vite build",
+        "preview": "vite preview --host 127.0.0.1",
+        "test": "vitest run",
+        "deploy:backend": "convex deploy",
+        "assets:check": "node scripts/check-assets.mjs",
+        "lint": "eslint . --max-warnings 0",
+        "lint:fix": "eslint . --fix",
+        "check": "npm run lint && npm test && npm run build && npm run assets:check"
+    },
+    "dependencies": {
+        "@auth/core": "^0.41.3",
+        "@convex-dev/auth": "latest",
+        "convex": "latest",
+        "react": "latest",
+        "react-dom": "latest",
+        "react-router-dom": "latest"
+    },
+    "devDependencies": {
+        "@eslint/css": "^2.0.1",
+        "@eslint/js": "^9.39.5",
+        "@stylistic/eslint-plugin": "^5.10.0",
+        "@types/node": "latest",
+        "@types/react": "latest",
+        "@types/react-dom": "latest",
+        "@vitejs/plugin-react": "latest",
+        "convex-test": "latest",
+        "eslint": "^9.39.5",
+        "eslint-plugin-jsx-a11y": "^6.10.2",
+        "eslint-plugin-react-hooks": "^7.1.1",
+        "eslint-plugin-unicorn": "^62.0.0",
+        "globals": "^17.13.0",
+        "typescript": "latest",
+        "typescript-eslint": "^8.71.2",
+        "vite": "latest",
+        "vitest": "latest"
+    }
+}

@@ -1,0 +1,5 @@
+# Full backup contains account data and password hashes.
+stockmarket-full-*.sql
+*.dump
+*.tar
+*.gz

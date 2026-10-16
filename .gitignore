@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env*
+!.env.example
+.convex/
+*.png
+reference/stockmarket-schema-2026-10-16.sql
+public/static/fonts/BigCaslon.ttf
+package-lock.json
