@@ -62,6 +62,9 @@ For future Git-connected Cloudflare Pages builds, set the root to this directory
 - Private insights, stock/player tabs, special insight display, activity feed, mobile offcanvas/menu and trade notifications.
 - Animated round-end insight reveals, aggregate price changes floored at zero, special currency and hold-stock handling, next rounds and final rankings.
 - Insight-description editor; editing now requires sign-in. User lists expose display names only.
+- Responsive stock details with investor photos, share counts and a Recharts price-history line chart; recorded starting and settled prices, accessible chart data, and layouts that adapt to panel width and viewport height.
+
+New games record their complete price history. Existing games begin history at their current known prices when their next round settles; earlier prices are not fabricated.
 
 Convex mutations validate identity, membership, ownership, turn, quantities, cash and supply on the server. Trades and settlements are atomic. Stale turn/period guards reject duplicate clicks. The legacy implementation stored game length but never finished a game; this implementation settles the final selected period and shows final rankings. Existing active games keep their stored length and balances; existing lobbies with a shorter length must choose 6–10 periods before launch. Leaving a lobby removes the seat and transfers hosting if necessary. Leaving during play retains the seat for reconnection, as the old disconnect path did not remove players.
 

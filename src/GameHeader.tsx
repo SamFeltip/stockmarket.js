@@ -17,14 +17,14 @@ export function GameHeader({ board }: { board: Board })
                         Stockmarket!
                     </h1>
                 </button>
-                <div className="d-flex flex-sm-row flex-column justify-content-between">
-                    <div>
+                <div className="game-progress d-flex flex-sm-row flex-column justify-content-between">
+                    <div className="text-nowrap">
                         Turn
                         {game.turn + 1}
                         /
                         {players.length * 3}
                     </div>
-                    <div>
+                    <div className="text-nowrap">
                         Period
                         {game.currentPeriod + 1}
                         /

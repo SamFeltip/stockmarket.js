@@ -13,7 +13,7 @@ export function StockPreview({ board, stock, large = false, active = false }: {
         .reduce((sum, insight) => sum + insight.value, 0);
 
     return (
-        <div className={`d-flex flex-fill justify-content-between align-items-center ${large ? "flex-row" : "flex-column flex-lg-row"}`}>
+        <div className={`d-flex flex-fill justify-content-between align-items-center ${large ? "flex-row" : "stock-tab-preview"}`}>
             <div className="d-flex flex-row align-items-center gap-2">
                 <div>
                     <img
@@ -25,7 +25,7 @@ export function StockPreview({ board, stock, large = false, active = false }: {
                 </div>
                 <p className={large ? "d-block" : "d-none"}>{stock.name}</p>
             </div>
-            <div className={`text-end ${large ? "" : "d-lg-block d-none"}`}>
+            <div className={`text-end ${large ? "" : "stock-tab-price"}`}>
                 <p>
                     £
                     {price.toFixed(2)}

@@ -59,10 +59,13 @@ The application replaces physical bookkeeping with accounts, lobby codes, server
 
 The [edition listing](https://boardgamegeek.com/boardgameversion/28804/english-edition) and [game listing](https://boardgamegeek.com/boardgame/2963/stockmarket/ratings?rated=1) identify a 2–6-player game. **Aligned:** the application caps lobbies at six and now requires at least two players before launch. The lobby explains this requirement and disables launch until another player joins; the server enforces it too.
 
+Stock details now show investor faces with share counts and missing-photo fallbacks, plus a responsive Recharts line chart of each company’s recorded prices. New games retain a starting snapshot and one snapshot per settled round, including the final round. Older games start recording from their current known price; unavailable historical prices are not reconstructed. The chart exposes only settled prices. On narrow screens the sections stack and tabs scroll horizontally; short screens scroll the stock panel vertically.
+
 ## Limits of this comparison
 
 - The shipped companies are Trusthouse Forte, UB, Legal & General, Thames, Saatchi & Saatchi and Natwest, with starting prices £2, £2.50, £4, £5.50, £7.50 and £9 respectively. The available rules text does not establish the retail edition's full company list, starting-price chart or exact share-card frequencies. **Their historical accuracy remains unverified.** See [catalog.ts](convex/catalog.ts).
 - Full-deck reshuffling between application periods is explicit in `deal`. The source does not sufficiently specify retail discard/reshuffle procedure to call that a confirmed difference.
 - All six easy items are now aligned: starting cash, share supply, game length, minimum players, period turn rotation and trade-size restrictions. Special-card mechanics and catalog records have not been changed.
-- Validation: `npm run check` passes: lint, all 24 tests, TypeScript, production build and 27 asset references.
+- Validation: `npm run check` passes: lint, all 27 tests, TypeScript, production build and 27 asset references.
+- Browser layout checks: sample game data at desktop, phone and short landscape dimensions, including 320 × 568; investor photos load, selected-stock history changes correctly, and the page has no horizontal overflow.
 - Evidence: `tests/board-rules.test.ts` covers starting funds, shared supply, player minimum, length validation, permitted purchases/sales, rejected transactions and full six/ten-period games with rotating seats. `tests/errors.test.ts` checks cash entry and quantity-button boundaries.
