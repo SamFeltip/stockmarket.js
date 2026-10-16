@@ -33,7 +33,7 @@ Open http://127.0.0.1:5173. On a brand-new Convex project, configure password si
 npm run check
 ```
 
-This runs ESLint, five Convex integration tests, strict TypeScript checking, a production build and asset validation. ESLint is adapted from the supplied config: recommended and type-aware TypeScript rules, Unicorn, Allman braces, four-space indentation, double quotes, semicolons, statement spacing, one statement per line, 120-character lines and 250-line files. Astro-only rules were replaced with React hooks and accessibility checks. JSX property indentation is explicitly four spaces to agree with the existing indent rule. ESLint also checks authored CSS with `@eslint/css`.
+This runs ESLint, gameplay integration and lobby-error tests, strict TypeScript checking, a production build and asset validation. ESLint is adapted from the supplied config: recommended and type-aware TypeScript rules, Unicorn, Allman braces, four-space indentation, double quotes, semicolons, statement spacing, one statement per line, 120-character lines and 250-line files. Astro-only rules were replaced with React hooks and accessibility checks. JSX property indentation is explicitly four spaces to agree with the existing indent rule. ESLint also checks authored CSS with `@eslint/css`.
 
 Vendored Bootstrap and the original CSS are immutable copies, excluded from lint formatting; generated Convex bindings and the generated SQL catalog are excluded too. Application code and scripts are linted. `npm run lint:fix` applies supported automatic fixes without disabling checks.
 

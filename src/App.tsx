@@ -5,7 +5,8 @@ import { useConvexAuth, useQuery } from "convex/react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { api } from "../convex/_generated/api";
 import { AuthPage } from "./AuthPage";
-import { Home, CreateGame, GameList, Users, CatalogEditor } from "./Pages";
+import { Home, GameList, Users, CatalogEditor } from "./Pages";
+import { CreateGame } from "./CreateGame";
 import { GamePage } from "./GamePage";
 import { Loading } from "./shared";
 
@@ -81,7 +82,7 @@ export function App()
     }
 
     return (
-        <Boundary key={location.pathname}>
+        <Boundary key={location.key}>
             {isAuthenticated ? <ProtectedRoutes /> : (
                 <Routes>
                     <Route path="/signup" element={<AuthPage signup />} />

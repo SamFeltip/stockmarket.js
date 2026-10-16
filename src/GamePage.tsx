@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../convex/_generated/api";
 import { Alert, Loading, useAction } from "./shared";
+import { JoinError } from "./JoinError";
 import { Playing } from "./Playing";
 import { RoundEnd } from "./RoundEnd";
 import type { Board } from "./types";
@@ -131,7 +132,7 @@ export function GamePage()
     const { code = "" } = useParams();
     const join = useMutation(api.games.join);
     const [joined, setJoined] = useState("");
-    const [error, setError] = useState("");
+    const [error, setError] = useState<unknown>(null);
 
     useEffect(() =>
     {
@@ -148,7 +149,7 @@ export function GamePage()
             {
                 if (!cancelled)
                 {
-                    setError(error_ instanceof Error ? error_.message : "Unable to join game");
+                    setError(error_);
                 }
             });
 
@@ -160,12 +161,7 @@ export function GamePage()
 
     if (error)
     {
-        return (
-            <main className="d-flex align-items-center justify-content-center gap-3">
-                <Alert message={error} />
-                <Link to="/" className="btn btn-primary">Go Back</Link>
-            </main>
-        );
+        return <JoinError error={error} code={code} />;
     }
 
     return joined === code ? <ConnectedGame code={code} /> : <Loading />;

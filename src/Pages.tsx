@@ -39,6 +39,8 @@ export function Home({ user }: { user: Board["user"] })
                             name="game"
                             placeholder="Lobby number"
                             aria-label="Lobby number"
+                            maxLength={32}
+                            pattern="[a-zA-Z0-9_-]+"
                             required
                         />
                         <input type="submit" value="Join" className="btn btn-primary px-5" />
@@ -49,41 +51,6 @@ export function Home({ user }: { user: Board["user"] })
                     </Link>
                 </div>
             </div>
-        </main>
-    );
-}
-
-export function CreateGame()
-{
-    const create = useMutation(api.games.create);
-    const navigate = useNavigate();
-    const { run, busy, error } = useAction();
-
-    return (
-        <main className="d-flex flex-column justify-content-center p-2">
-            <Alert message={error} />
-            <h1>Create a game</h1>
-            <form onSubmit={(event) =>
-            {
-                event.preventDefault();
-                const form = new FormData(event.currentTarget);
-
-                void run(async () =>
-                {
-                    const code = await create({ code: formText(form, "code"), periodCount: Number(form.get("difficulty")) });
-
-                    await navigate(`/games/show/${code}`);
-                });
-            }}
-            >
-                <select name="difficulty" aria-label="Game length">
-                    <option value="0">Easy</option>
-                    <option value="1">Medium</option>
-                    <option value="2">Hard</option>
-                </select>
-                <input type="text" name="code" placeholder="code" aria-label="Lobby code" required maxLength={32} />
-                <input type="submit" value="Create" disabled={busy} />
-            </form>
         </main>
     );
 }

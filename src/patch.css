@@ -7,6 +7,14 @@
     font-display: swap;
 }
 #home-screen { grid-template-columns: 1fr; }
+.lobby-page { min-height: 100vh; }
+.lobby-card { max-width: 40rem; }
+.lobby-lengths { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.lobby-lengths .btn { padding-inline: 0.25rem; white-space: nowrap; }
+.lobby-actions { grid-template-columns: 1fr 1fr; }
+@media (max-width: 575px) { .lobby-actions .btn { font-size: 1.1rem; padding-inline: 0.5rem; } }
+.lobby-hint { color: #c6d7c3; font-size: 1rem; line-height: 1.5; }
+.lobby-length-detail { font-size: 0.9rem; margin-top: 0.25rem; }
 h2.primary { overflow-wrap: anywhere; }
 @media (min-width: 768px) { #home-screen { grid-template-columns: 1fr 1fr; } }
 .img-label { border: #204712 2px solid; }
@@ -20,3 +28,25 @@ button.nav-link { cursor: pointer; }
 @keyframes reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
  
+
+.lobby-page:has(.create-game-form) { height: 100dvh; min-height: 0; }
+.create-game-form { padding: 1.5rem; gap: 1.25rem; }
+.create-game-form p { margin-bottom: 0; }
+.create-game-form .alert { margin: 0; padding: 0.6rem; font-size: 0.95rem; }
+@media (max-height: 760px), (max-width: 375px) {
+    .lobby-page:has(.create-game-form) .card-header { padding-top: 0.5rem !important; }
+    .lobby-page:has(.create-game-form) .card-body { padding: 0.75rem !important; }
+    .lobby-page:has(.create-game-form) h1 { font-size: 2rem; margin-bottom: 0; }
+    .lobby-page:has(.create-game-form) h2 { font-size: 1.25rem; margin-bottom: 0; }
+    .create-game-form { padding: 0.75rem; gap: 0.65rem; }
+    .create-game-form .lobby-hint { font-size: 0.8rem; line-height: 1.2; }
+    .create-game-form .form-label { font-size: 1rem !important; margin-bottom: 0.25rem; }
+    .create-game-form .btn { padding-block: 0.5rem !important; }
+    .create-game-form .lobby-lengths span { font-size: 1rem; }
+    .create-game-form .lobby-length-detail { font-size: 0.8rem !important; }
+}
+@media (max-height: 450px) and (min-width: 576px) {
+    .create-game-form { grid-template-columns: 1fr 1fr; align-items: start; }
+    .create-game-form .lobby-player-hint { display: none; }
+    .create-game-form .alert, .create-game-form .lobby-actions { grid-column: 1 / -1; }
+}
