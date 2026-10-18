@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
-import { Link } from "react-router-dom";
 import { api } from "../convex/_generated/api";
 import { Alert, money, useAction } from "./shared";
 import { revealStocks } from "./reveals";
+import { GameResults } from "./GameResults";
 import { RoundOverview } from "./RoundOverview";
 import { previewRound } from "./round-preview";
 import { RoundReveal } from "./RoundReveal";
@@ -12,7 +12,7 @@ import type { Board } from "./types";
 
 export function RoundEnd({ board }: { board: Board })
 {
-    const { game, stocks, insights, players } = board;
+    const { game, stocks, insights } = board;
     const next = useMutation(api.rounds.next);
     const { run, busy, error } = useAction();
     const [step, setStep] = useState(0);
@@ -53,31 +53,7 @@ export function RoundEnd({ board }: { board: Board })
 
     if (game.status === "finished")
     {
-        return (
-            <div className="container card card-green p-4 text-center">
-                <h1>Game finished</h1>
-                <h2>
-                    {[...players].toSorted((a, b) => b.netWorth - a.netWorth)[0]?.name}
-                    {" "}
-                    wins!
-                </h2>
-                {players.map((player) => (
-                    <div className="d-flex justify-content-between p-3" key={player._id}>
-                        <span>
-                            {player.ranking}
-                            .
-                            {" "}
-                            {player.name}
-                        </span>
-                        <span>
-                            £
-                            {money(player.netWorth)}
-                        </span>
-                    </div>
-                ))}
-                <Link className="btn btn-primary" to="/">Go Back</Link>
-            </div>
-        );
+        return <GameResults board={board} />;
     }
 
     return (
