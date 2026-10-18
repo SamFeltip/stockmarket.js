@@ -67,9 +67,7 @@ export function Playing({ board }: { board: Board })
                     )
                         : (
                             <h3>
-                                It's
-                                {players.find((player) => player.userId === game.currentUserId)?.name}
-                                's turn!
+                                {`It's ${players.find((player) => player.userId === game.currentUserId)?.name ?? "someone"}'s turn!`}
                             </h3>
                         )}
                     {special.length > 0 && (
