@@ -143,7 +143,7 @@ export function RoundEnd({ board }: { board: Board })
                     </div>
                 </div>
             </div>
-            <div id="next-step-wrapper" className="position-absolute bottom-0 end-0 p-3">
+            <div id="next-step-wrapper" className="position-absolute bottom-0 end-0 p-3" style={{ animationDelay: visible.length === 0 ? "0s" : undefined }}>
                 <Alert message={error} />
                 {reviewed ? (host ? (
                     <>
