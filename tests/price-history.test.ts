@@ -1,9 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../convex/_generated/api";
+import { priceSeries } from "../src/price-history";
 import { setup } from "./game-setup";
 
 describe("Stock history and investors", () =>
 {
+    it("shows the complete round axis while leaving unrevealed prices empty", () =>
+    {
+        const prices = [{ stockKey: 8, value: 2.5 }];
+        const game = { periodCount: 5, currentPeriod: 0, prices,
+            priceHistory: [{ period: 0, prices }] };
+        const initial = priceSeries(game, 8);
+
+        expect(initial.map((point) => point.round)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+        expect(initial.map((point) => point.value)).toEqual([2.5, null, null, null, null, null, null]);
+        game.priceHistory.push({ period: 1, prices: [{ stockKey: 8, value: 3 }] });
+        expect(priceSeries(game, 8).map((point) => point.value)).toEqual([2.5, 3, null, null, null, null, null]);
+    });
     it("records starting and settled prices once, without exposing next-round prices during trading", async () =>
     {
         const { sam, bob } = await setup();
