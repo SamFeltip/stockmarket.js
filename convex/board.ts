@@ -1,3 +1,4 @@
+import { stockCatalog } from "./catalog";
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { member, members, netWorth, roundInsights } from "./library";
@@ -8,7 +9,10 @@ export const get = query({
     {
         const { game, player, user } = await member(context, code);
         const seats = await members(context, game._id);
-        const stocks = (await context.db.query("stocks").collect()).toSorted((a, b) => a.variation - b.variation);
+        const stocks = (await context.db.query("stocks").collect())
+            .map((stock) => ({ ...stock,
+                variation: stockCatalog.find((item) => item.key === stock.key)?.variation ?? stock.variation }))
+            .toSorted((a, b) => a.variation - b.variation);
         const allInsights = await roundInsights(context, game);
         const reveal = game.status === "closed" || game.status === "special_insights" || game.status === "finished";
         const players = await Promise.all(seats.map(async (seat) =>

@@ -1,4 +1,4 @@
-// Exact catalog from the original database/setup.sql.
+// Original catalog, with corrected volatility ranks for the six tradable stocks.
 export const stockCatalog = [
   {
     "key": 8,
@@ -6,7 +6,7 @@ export const stockCatalog = [
     "startingValue": 2.5,
     "imagePath": "/static/imgs/stocks/ub.png",
     "secondaryImagePath": "/static/imgs/stocks/ub.png",
-    "variation": 1.0,
+    "variation": 2.0,
     "display": true
   },
   {
@@ -15,7 +15,7 @@ export const stockCatalog = [
     "startingValue": 5.5,
     "imagePath": "/static/imgs/stocks/thames.png",
     "secondaryImagePath": "/static/imgs/stocks/thames.png",
-    "variation": 2.0,
+    "variation": 4.0,
     "display": true
   },
   {
@@ -33,7 +33,7 @@ export const stockCatalog = [
     "startingValue": 2.0,
     "imagePath": "/static/imgs/stocks/thf.png",
     "secondaryImagePath": "/static/imgs/stocks/thf.png",
-    "variation": 4.0,
+    "variation": 1.0,
     "display": true
   },
   {
