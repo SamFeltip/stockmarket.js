@@ -34,6 +34,9 @@ it("shows ranked players and the winner’s selected portfolio with share prices
     expect(html).toContain("history-viewport");
     expect(html).not.toContain("carousel-item");
     expect(html).toContain("Starting value");
+    expect(html).toContain("accordion-collapse collapse show");
+    expect(html).toContain("accordion-button");
+    expect(html).toContain("tab-pane fade");
 });
 
 it("plots final price history and derives starting, maximum and minimum prices from settled rounds", async () =>

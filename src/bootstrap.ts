@@ -10,3 +10,23 @@ export function modalInstance(element: HTMLElement)
 
     return bootstrap?.Modal.getInstance(element);
 }
+
+export interface CollapseInstance {
+    show: () => void;
+    hide: () => void;
+    toggle: () => void;
+    dispose: () => void;
+}
+
+export function portfolioCollapse(element: HTMLElement)
+{
+    const bootstrap = (globalThis as typeof globalThis & {
+        bootstrap?: { Collapse: {
+            getOrCreateInstance: (node: HTMLElement, options: Record<string, unknown>) => CollapseInstance;
+        } };
+    }).bootstrap;
+
+    return bootstrap?.Collapse.getOrCreateInstance(element, {
+        toggle: false, parent: element.closest(".results-leaderboard"),
+    });
+}

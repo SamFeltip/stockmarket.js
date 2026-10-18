@@ -239,16 +239,17 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 .results-heading > p { font-size: 0.9rem; }
 .results-main { grid-area: main; min-width: 0; min-height: auto; }
 .results-leaderboard { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; align-content: start; align-self: start; }
-.results-leaderboard li { min-height: 0; border-radius: 0.5rem; overflow: hidden; }
-.result-player-button { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: clamp(0.5rem, 1vw, 1rem); width: 100%; align-items: center; padding: 0.75rem; border: 2px solid transparent; border-radius: 0.5rem; background: #e7ece7; color: #111; text-align: left; }
-.is-selected > .result-player-button { border-color: white; background: white; }
+.results-leaderboard li { border: 0; background: transparent; min-height: 0; border-radius: 0.5rem; overflow: hidden; }
+.results-leaderboard .result-player-button { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; box-shadow: none; gap: clamp(0.5rem, 1vw, 1rem); width: 100%; align-items: center; padding: 0.75rem; border: 2px solid transparent; border-radius: 0.5rem; background: #e7ece7; color: #111; text-align: left; }
+.is-selected .result-player-button { border-color: white; background: white; }
 .result-player-button > img { width: clamp(2.5rem, 5dvh, 4rem); aspect-ratio: 1; object-fit: cover; }
 .result-player-button strong { display: block; overflow-wrap: anywhere; font-size: clamp(1rem, 1.5vw, 1.5rem); }
 .result-player-button > span:last-child > span { display: block; font-size: clamp(0.85rem, 1.2vw, 1.1rem); }
 .result-rank { font-weight: 700; }
-.desktop-player-portfolio { display: none; }
-.mobile-player-portfolio { padding: 0.75rem; text-align: left; }
-.mobile-player-portfolio > p { font-size: 1rem; }
+.desktop-player-portfolio, .portfolio-panes { display: none; }
+.mobile-player-portfolio { padding: 0; text-align: left; }
+.mobile-player-portfolio .accordion-body { padding: 0.75rem; }
+.mobile-player-portfolio .accordion-body > p { font-size: 1rem; }
 .final-holdings { display: grid; gap: clamp(0.5rem, 1.5dvh, 1rem); min-height: 0; }
 .final-holding { min-width: 0; min-height: 0; padding: clamp(0.5rem, 1.5dvh, 1rem); }
 .final-holding img { width: 100%; height: clamp(2rem, 6dvh, 4rem); object-fit: contain; }
@@ -278,9 +279,12 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
     .game-results { grid-template-areas: "heading" "main" "histories" "footer"; }
     .results-main { display: grid; min-height: 0; grid-template-columns: minmax(0, 1fr) minmax(0, 1.65fr); gap: 0.75rem; }
     .results-leaderboard .result-player-button { height: auto; background: #0F2C12; color: white; }
-    .results-leaderboard .is-selected > .result-player-button { background: white; color: #111; }
+    .results-leaderboard .is-selected .result-player-button { background: white; color: #111; }
     .results-leaderboard { grid-auto-rows: max-content; }
-    .desktop-player-portfolio { display: grid; grid-template-rows: auto auto minmax(0, 1fr); padding: 0.75rem; }
+    .results-leaderboard .accordion-button::after { display: none; }
+    .portfolio-panes { display: grid; min-width: 0; min-height: 0; }
+    .portfolio-panes > .desktop-player-portfolio { display: grid; grid-area: 1 / 1; pointer-events: none; transition: opacity 0.2s ease; grid-template-rows: auto auto minmax(0, 1fr); padding: 0.75rem; }
+    .portfolio-panes > .desktop-player-portfolio.active { pointer-events: auto; z-index: 1; }
     .desktop-player-portfolio > h2 { font-size: clamp(1.25rem, 2.5dvh, 2rem); }
     .desktop-player-portfolio > p { font-size: 0.95rem; margin-bottom: 0.75rem; }
     .desktop-player-portfolio .final-holdings { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); }
