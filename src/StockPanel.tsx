@@ -1,6 +1,7 @@
 import { sharesPerCompany } from "../shared/rules";
 import { lazy, Suspense } from "react";
 import { Change, Insights, money } from "./shared";
+import { StockPreview } from "./StockPreview";
 import { Investors } from "./Investors";
 import { TradeModal } from "./TradeModal";
 import type { Board, Stock } from "./types";
@@ -22,11 +23,14 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
         <>
             <div id="game-stock-info" className={`flex-fill bg-white text-black rounded-bottom ${myTurn ? "" : "watching"}`}>
                 <section id="stocks" className="stock-holding" aria-label={`Your ${stock.name} shares`}>
-                    <h4>
-                        {money(held)}
-                        {" Shares held"}
-                    </h4>
-                    <p>{`Worth £${money(held * price)}`}</p>
+                    <div className="stock-mobile-price"><StockPreview board={board} stock={stock} large /></div>
+                    <div className="stock-holding-summary">
+                        <h4>
+                            {money(held)}
+                            {" Shares held"}
+                        </h4>
+                        <p>{`Worth £${money(held * price)}`}</p>
+                    </div>
                 </section>
                 <Investors players={players} stockKey={stock.key} />
                 <section id="price-chart" aria-labelledby="price-chart-title">

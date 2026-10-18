@@ -76,7 +76,7 @@ button.nav-link { cursor: pointer; }
 #game-stock-info > * { min-width: 0; min-height: 0; }
 #game-stock-info h4 { font-size: clamp(1rem, 2vh, 1.25rem); color: #111; margin-bottom: 0.5rem; }
 #game-stock-info p { margin-bottom: 0; }
-#game-stock-info > #stocks { padding: 1rem; border-radius: 0.4rem; background: #efefef; text-align: center; align-self: start; }
+#game-stock-info > #stocks { padding: 0; text-align: center; align-self: start; }
 #game-stock-info > #stocks p { font-size: 0.8rem; }
 #game-stock-info > #price-chart { grid-area: price-chart; }
 #game-stock-info > #insights { align-content: start; }
@@ -189,4 +189,12 @@ button.nav-link { cursor: pointer; }
     #game-stock-info #price-chart .recharts-responsive-container { position: absolute; inset: 0; }
     #game-stock-info #insights { grid-template-rows: auto minmax(0, 1fr); }
     #game-stock-info #insights > .overflow-auto { overflow: auto !important; min-height: 0; }
+}
+
+.stock-holding-summary { padding: 1rem; border-radius: 0.4rem; background: #efefef; }
+.stock-mobile-price { display: none; }
+@media (max-width: 767px) {
+    #tabs .stock-tab-price { display: none; }
+    .stock-mobile-price { display: flex; padding-bottom: 0.75rem; }
+    #game-stock-info .stock-mobile-price p { font-size: 1rem; }
 }
