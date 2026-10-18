@@ -31,8 +31,8 @@ it("shows ranked players and the winner’s selected portfolio with share prices
     expect(html).toContain("sam");
     expect(html).toContain("bob&#x27;s portfolio");
     expect(html).not.toContain("Pause charts");
-    expect(html).toContain("carousel-inner");
-    expect(html).toContain("Next stocks");
+    expect(html).toContain("history-viewport");
+    expect(html).not.toContain("carousel-item");
     expect(html).toContain("Starting value");
 });
 
