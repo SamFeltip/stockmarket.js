@@ -7,3 +7,4 @@ dist/
 reference/stockmarket-schema-2026-10-16.sql
 public/static/fonts/BigCaslon.ttf
 package-lock.json
+BOARD_GAME_DIFFERENCES.md

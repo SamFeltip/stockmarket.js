@@ -16,14 +16,10 @@ Requires Node.js 22.18+.
 
 ```sh
 npm ci
-npx convex dev
-```
-
-The project is already linked through ignored `.env.local`. On a fresh checkout, select the `stockmarket-convex` project when Convex asks. Keep that command running, and in another terminal:
-
-```sh
 npm run dev
 ```
+
+This starts the Convex backend watcher and Vite frontend together in one terminal. Press Ctrl+C to stop both. The project is already linked through ignored `.env.local`. On a fresh checkout, select the `stockmarket-convex` project when Convex asks. To run either service separately, use `npm run backend` or `npm run dev:frontend`.
 
 Open http://127.0.0.1:5173. On a brand-new Convex project, configure password signing keys once with `node scripts/init-auth.mjs`. Do not run this against an already-configured project unless you intend to rotate its signing keys. Secrets are piped directly into Convex and never written to files or printed.
 
@@ -39,14 +35,15 @@ Vendored Bootstrap and the original CSS are immutable copies, excluded from lint
 
 ## Deploy updates
 
-After running `npm run check`, deploy the backend and build against its production URL:
+Run the complete deployment from this directory:
 
 ```sh
-npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name VITE_CONVEX_URL
-npx wrangler pages deploy dist --project-name stockmarket-convex --branch main
+npm run deploy
 ```
 
-Use this command sequence: a plain `npm run build` uses the development URL in `.env.local` and must not be uploaded to production. The production signing keys have already been configured. For a new production deployment only, use `node scripts/init-auth.mjs --prod` once.
+This runs all quality checks, deploys Convex and rebuilds the frontend against its production URL, then uploads `dist` to Cloudflare Pages. Each step must succeed before the next runs. Convex and Cloudflare authentication must be configured; their CLIs may prompt you to sign in or confirm deployment.
+
+The individual steps are available as `npm run deploy:backend` (including the production frontend build) and `npm run deploy:frontend` (upload only). Always run the backend step before the frontend step: a plain `npm run build` uses the development URL in `.env.local` and must not be uploaded to production. The production signing keys have already been configured. For a new production deployment only, use `node scripts/init-auth.mjs --prod` once.
 
 Cloudflare's newer `cf` CLI does not currently offer Pages direct upload; Wrangler is used specifically for that operation. No Worker, nginx, Docker, PostgreSQL instance or custom WebSocket service is needed.
 
