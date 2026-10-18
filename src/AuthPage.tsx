@@ -1,6 +1,7 @@
 import { ConvexError } from "convex/values";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Link, useNavigate } from "react-router-dom";
+import { validUsername } from "../shared/names";
 import { usernameHelp } from "./errors";
 import { Alert, useAction, formText } from "./shared";
 
@@ -31,7 +32,7 @@ export function AuthPage({ signup = false }: { signup?: boolean })
                             form.set("flow", signup ? "signUp" : "signIn");
                             void run(async () =>
                             {
-                                if (!/^[a-z0-9_-]{1,32}$/.test(formText(form, "email")))
+                                if (!validUsername(formText(form, "name")))
                                 {
                                     throw new ConvexError(usernameHelp);
                                 }

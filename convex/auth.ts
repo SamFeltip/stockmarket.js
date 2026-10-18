@@ -1,3 +1,4 @@
+import { validUsername } from "../shared/names";
 import { ConvexError } from "convex/values";
 import { Password } from "@convex-dev/auth/providers/Password";
 import { convexAuth } from "@convex-dev/auth/server";
@@ -7,10 +8,10 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
     providers: [Password<DataModel>({
         profile(parameters)
         {
-            const name = (typeof parameters.email === "string" ? parameters.email : "").trim().toLowerCase();
-            if (!/^[a-z0-9_-]{1,32}$/.test(name))
+            const name = (typeof parameters.name === "string" ? parameters.name : String(parameters.email ?? "")).trim();
+            if (!validUsername(name))
             {
-                throw new ConvexError("Username must contain 1–32 letters, numbers, hyphens or underscores");
+                throw new ConvexError("Username must contain 1–32 characters; spaces and special characters are allowed");
             }
 
             const profile = Number(parameters.profile ?? 1);
@@ -19,7 +20,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
                 throw new ConvexError("Choose a profile image");
             }
 
-            return { name, email: name, profileRoot: `/static/imgs/${profile}profile.png` };
+            return { name, email: name.toLowerCase(), profileRoot: `/static/imgs/${profile}profile.png` };
         },
     })],
 });

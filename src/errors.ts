@@ -1,6 +1,6 @@
 import { ConvexError } from "convex/values";
 
-export const usernameHelp = "Choose a username with 1–32 letters, numbers, hyphens or underscores.";
+export const usernameHelp = "Choose a username with 1–32 characters. Spaces and special characters are allowed.";
 
 const messages: Record<string, string> = {
     "At least two players are required": "Invite another player before launching the game.",
