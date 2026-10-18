@@ -8,7 +8,8 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
     providers: [Password<DataModel>({
         profile(parameters)
         {
-            const name = (typeof parameters.name === "string" ? parameters.name : String(parameters.email ?? "")).trim();
+            const rawName = typeof parameters.name === "string" ? parameters.name : parameters.email;
+            const name = typeof rawName === "string" ? rawName.trim() : "";
             if (!validUsername(name))
             {
                 throw new ConvexError("Username must contain 1–32 characters; spaces and special characters are allowed");
