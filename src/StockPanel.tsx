@@ -22,41 +22,43 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
     return (
         <>
             <div id="game-stock-info" className={`flex-fill bg-white text-black rounded-bottom ${myTurn ? "" : "watching"}`}>
-                <section id="stocks" className="stock-holding" aria-label={`Your ${stock.name} shares`}>
-                    <div className="stock-mobile-price"><StockPreview board={board} stock={stock} large /></div>
-                    <div className="stock-holding-summary">
-                        <h4>
-                            {money(held)}
-                            {" Shares held"}
-                        </h4>
-                        <p>{`Worth £${money(held * price)}`}</p>
+                <div className="stock-panel-sections">
+                    <section id="stocks" className="stock-holding" aria-label={`Your ${stock.name} shares`}>
+                        <div className="stock-mobile-price"><StockPreview board={board} stock={stock} large /></div>
+                        <div className="stock-holding-summary">
+                            <h4>
+                                {money(held)}
+                                {" Shares held"}
+                            </h4>
+                            <p>{`Worth £${money(held * price)}`}</p>
+                        </div>
+                    </section>
+                    <Investors players={players} stockKey={stock.key} />
+                    <section id="price-chart" aria-labelledby="price-chart-title">
+                        <h4 id="price-chart-title">Price Chart</h4>
+                        <Suspense fallback={<div className="stock-price-chart" role="status">Loading price chart…</div>}>
+                            <StockPriceChart game={game} stock={stock} />
+                        </Suspense>
+                    </section>
+                    <div id="insights" className="d-grid gap-2">
+                        <div className="d-flex justify-content-between">
+                            <h4 className="text-black">Your Insights</h4>
+                            <Change value={value} button />
+                        </div>
+                        <Insights insights={ownInsights} stocks={stocks} />
                     </div>
-                </section>
-                <Investors players={players} stockKey={stock.key} />
-                <section id="price-chart" aria-labelledby="price-chart-title">
-                    <h4 id="price-chart-title">Price Chart</h4>
-                    <Suspense fallback={<div className="stock-price-chart" role="status">Loading price chart…</div>}>
-                        <StockPriceChart game={game} stock={stock} />
-                    </Suspense>
-                </section>
-                <div id="insights" className="d-grid gap-2">
-                    <div className="d-flex justify-content-between">
-                        <h4 className="text-black">Your Insights</h4>
-                        <Change value={value} button />
-                    </div>
-                    <Insights insights={ownInsights} stocks={stocks} />
-                </div>
-                <div id="stock-info" className="d-flex flex-column gap-2">
-                    <h4 className="text-black">Info</h4>
-                    <div className="stock-info-cards">
-                        {[[`${stock.variation}/6`, "Volatility"], ["N/A", "Director"], [money(available), "Shares available"]].map(([number, title]) => (
-                            <div className="card flex-fill" key={title}>
-                                <div className="card-body text-center">
-                                    <p>{number}</p>
-                                    <p className="text-secondary">{title}</p>
+                    <div id="stock-info" className="d-flex flex-column gap-2">
+                        <h4 className="text-black">Info</h4>
+                        <div className="stock-info-cards">
+                            {[[`${stock.variation}/6`, "Volatility"], ["N/A", "Director"], [money(available), "Shares available"]].map(([number, title]) => (
+                                <div className="card flex-fill" key={title}>
+                                    <div className="card-body text-center">
+                                        <p>{number}</p>
+                                        <p className="text-secondary">{title}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
                 {myTurn && (

@@ -26,7 +26,8 @@ export function GameResults({ board }: { board: Board })
                                 className="result-player-button"
                                 aria-expanded={selectedId === player._id}
                                 aria-controls={`desktop-portfolio portfolio-${player._id}`}
-                                onClick={() => setSelectedId((current) => current === player._id ? null : player._id)}
+                                onClick={() => setSelectedId((current) => current === player._id
+                                  && !globalThis.matchMedia("(min-width: 992px)").matches ? null : player._id)}
                             >
                                 <span className="result-rank">{player.ranking}</span>
                                 <img className="rounded" src={player.profileRoot} alt="" />

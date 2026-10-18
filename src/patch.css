@@ -76,10 +76,10 @@ button.nav-link { cursor: pointer; }
 #game-stock-info > * { min-width: 0; min-height: 0; }
 #game-stock-info h4 { font-size: clamp(1rem, 2vh, 1.25rem); color: #111; margin-bottom: 0.5rem; }
 #game-stock-info p { margin-bottom: 0; }
-#game-stock-info > #stocks { padding: 0; text-align: center; align-self: start; }
-#game-stock-info > #stocks p { font-size: 0.8rem; }
-#game-stock-info > #price-chart { grid-area: price-chart; }
-#game-stock-info > #insights { align-content: start; }
+#game-stock-info #stocks { padding: 0; text-align: center; align-self: start; }
+#game-stock-info #stocks p { font-size: 0.8rem; }
+#game-stock-info #price-chart { grid-area: price-chart; }
+#game-stock-info #insights { align-content: start; }
 #game-stock-info #insights > .overflow-auto { max-height: none !important; overflow: visible !important; }
 #game-stock-info #insight-list { gap: 0.4rem !important; }
 #game-stock-info #insight-list .card-body { padding: 0.5rem; }
@@ -138,7 +138,7 @@ button.nav-link { cursor: pointer; }
     #game-grid { gap: 0.5rem; padding: 0.5rem !important; }
     #game-stock-info, #game-stock-info.watching { gap: 0.65rem; padding: 0.75rem; }
     .stock-price-chart { height: clamp(7rem, 26dvh, 10rem); }
-    #game-stock-info > #stocks { padding: 0.6rem; }
+    #game-stock-info #stocks { padding: 0.6rem; }
 }
 @media (max-height: 450px) and (min-width: 480px) {
     .lobby-page:has(.create-game-form) .card-header { display: flex; justify-content: center; align-items: center; gap: 1rem; }
@@ -179,7 +179,7 @@ button.nav-link { cursor: pointer; }
 #game-stock-info > #buy-button, #game-stock-info > #sell-button { position: sticky; bottom: 0; z-index: 1; }
 @container (min-width: 500px) {
     #game-stock-info { min-height: 0; }
-    #game-stock-info > #price-chart { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
+    #game-stock-info #price-chart { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
     #game-stock-info #price-chart .stock-price-chart { height: 100%; min-height: 0; position: relative; }
     #game-stock-info #price-chart .recharts-responsive-container { position: absolute; inset: 0; }
     #game-stock-info #insights { grid-template-rows: auto minmax(0, 1fr); }
@@ -232,11 +232,12 @@ button.nav-link { cursor: pointer; }
     .round-overview > h2 { margin: 0; font-size: clamp(1rem, 2.5dvh, 1.5rem); }
 }
 
-.game-results { width: 100%; min-height: 100dvh; display: grid; grid-template-areas: "heading" "histories" "main" "footer"; gap: clamp(0.75rem, 2dvh, 1.5rem); padding: clamp(0.75rem, 2vw, 2rem); }
+main:has(> .game-results) { justify-content: flex-start !important; overflow: visible !important; }
+.game-results { flex-shrink: 0; width: 100%; min-height: 100dvh; display: grid; grid-template-areas: "heading" "histories" "main" "footer"; gap: clamp(0.75rem, 2dvh, 1.5rem); padding: clamp(0.75rem, 2vw, 2rem); }
 .results-heading { grid-area: heading; }
 .results-heading h1 { font-size: clamp(1.75rem, 4dvh, 3rem); margin: 0; }
 .results-heading > p { font-size: 0.9rem; }
-.results-main { grid-area: main; min-width: 0; min-height: 0; }
+.results-main { grid-area: main; min-width: 0; min-height: auto; }
 .results-leaderboard { list-style: none; padding: 0; margin: 0; display: grid; gap: clamp(0.5rem, 1.5dvh, 1rem); }
 .results-leaderboard li { min-height: 0; border-radius: 0.5rem; overflow: hidden; }
 .result-player-button { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: clamp(0.5rem, 1vw, 1rem); width: 100%; align-items: center; padding: clamp(0.5rem, 1.5dvh, 1rem); border: 2px solid transparent; border-radius: 0.5rem; background: #e7ece7; color: #111; text-align: left; }
@@ -277,7 +278,7 @@ button.nav-link { cursor: pointer; }
 @keyframes history-scroll { to { transform: translateX(-50%); } }
 @media (min-width: 992px) {
     .game-results { grid-template-areas: "heading" "main" "histories" "footer"; }
-    .results-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.65fr); gap: clamp(1rem, 2vw, 2rem); }
+    .results-main { display: grid; min-height: 0; grid-template-columns: minmax(0, 1fr) minmax(0, 1.65fr); gap: clamp(1rem, 2vw, 2rem); }
     .results-leaderboard .result-player-button { height: 100%; }
     .results-leaderboard { grid-auto-rows: minmax(0, 1fr); }
     .desktop-player-portfolio { display: grid; grid-template-rows: auto auto minmax(0, 1fr); padding: clamp(0.75rem, 2dvh, 1.5rem); }
@@ -294,4 +295,22 @@ button.nav-link { cursor: pointer; }
     .history-track { animation: none !important; }
     .history-viewport { overflow-x: auto; }
     .history-group[aria-hidden="true"] { display: none; }
+}
+
+.round-end:not(:has(.round-overview)) { padding-bottom: 5rem !important; }
+.round-end:not(:has(.round-overview)) .round-navigation { position: fixed; bottom: 0; right: 0; padding: 1rem !important; z-index: 10; }
+
+/* On narrow panels, details scroll independently of the anchored trade actions. */
+.stock-panel-sections { grid-area: body; display: grid; min-width: 0; min-height: 0; overflow: auto; align-content: start; gap: clamp(0.75rem, 2vh, 1.5rem); grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(5, max-content); grid-template-areas: "stocks" "investors" "price-chart" "insights" "stock-info"; }
+.stock-panel-sections > * { min-width: 0; min-height: 0; }
+#game-stock-info, #game-stock-info.watching { min-height: 0; grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: "body body" "buy-button sell-button"; }
+#game-stock-info.watching { grid-template-rows: minmax(0, 1fr); grid-template-areas: "body body"; }
+#game-stock-info #stocks { grid-area: stocks; }
+#game-stock-info #investors { grid-area: investors; }
+#game-stock-info #insights { grid-area: insights; }
+#game-stock-info #stock-info { grid-area: stock-info; }
+@container (min-width: 500px) {
+    .stock-panel-sections { display: contents; }
+    #game-stock-info { grid-template-rows: auto minmax(0, 1fr) auto auto; grid-template-areas: "stocks investors" "insights price-chart" "insights stock-info" "buy-button sell-button"; }
+    #game-stock-info.watching { grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "stocks investors" "insights price-chart" "insights stock-info"; }
 }
