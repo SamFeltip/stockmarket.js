@@ -3,9 +3,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import { GameResults } from "../src/GameResults";
 import { api } from "../convex/_generated/api";
+import { stockHistory } from "../src/stock-history";
 import { setup } from "./game-setup";
 
-it("shows every final portfolio in net-worth order with share prices, values and cash", async () =>
+it("shows ranked players and the winner’s selected portfolio with share prices, values and cash", async () =>
 {
     const { t, sam } = await setup();
 
@@ -27,6 +28,24 @@ it("shows every final portfolio in net-worth order with share prices, values and
     expect(html).toContain("2,000 shares");
     expect(html).toContain("£2.50 per share");
     expect(html).toContain("Worth £5,000");
-    expect(html).toContain("2. sam");
-    expect(html.indexOf("1. bob")).toBeLessThan(html.indexOf("2. sam"));
+    expect(html).toContain("sam");
+    expect(html).toContain("bob&#x27;s portfolio");
+    expect(html).toContain("Pause charts");
+    expect(html).toContain("Starting value");
+});
+
+it("plots final price history and derives starting, maximum and minimum prices from settled rounds", async () =>
+{
+    const { sam } = await setup();
+    const { game } = await sam.query(api.board.get, { code: "test" });
+
+    game.priceHistory = [
+        { period: 0, prices: [{ stockKey: 8, value: 2.5 }] },
+        { period: 1, prices: [{ stockKey: 8, value: 1 }] },
+        { period: 2, prices: [{ stockKey: 8, value: 8 }] },
+    ];
+    expect(stockHistory(game, 8)).toMatchObject({ start: 2.5, min: 1, max: 8 });
+    expect(stockHistory(game, 8).points).not.toMatch(/NaN|Infinity/);
+    game.priceHistory = [{ period: 0, prices: [{ stockKey: 8, value: 2.5 }] }];
+    expect(stockHistory(game, 8).points).toBe("4,30");
 });

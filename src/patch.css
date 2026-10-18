@@ -172,11 +172,6 @@ button.nav-link { cursor: pointer; }
 .wealth-loss { color: #ffb4b4; }
 #player-view > div { flex-wrap: wrap; }
 
-.game-results { margin-block: 1rem; }
-.game-results h3 { overflow-wrap: anywhere; }
-.final-holdings { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: 0.75rem; margin-top: 1rem; }
-.final-holdings h5 { font-size: 1rem; }
-.final-holdings p { font-size: 0.9rem; margin-bottom: 0.25rem; }
 
 #game-grid > aside { grid-template-rows: minmax(0, 1fr) auto; width: 100%; }
 #offcanvasResponsive > div { width: 100%; align-self: stretch; }
@@ -235,4 +230,68 @@ button.nav-link { cursor: pointer; }
     .round-end:has(.round-overview) { height: 100dvh; min-height: 0; grid-template-rows: auto minmax(0, 1fr) auto; padding: clamp(0.75rem, 2dvh, 1.5rem) !important; }
     .round-overview { grid-template-rows: auto minmax(0, 1fr) auto; }
     .round-overview > h2 { margin: 0; font-size: clamp(1rem, 2.5dvh, 1.5rem); }
+}
+
+.game-results { width: 100%; min-height: 100dvh; display: grid; grid-template-areas: "heading" "histories" "main" "footer"; gap: clamp(0.75rem, 2dvh, 1.5rem); padding: clamp(0.75rem, 2vw, 2rem); }
+.results-heading { grid-area: heading; }
+.results-heading h1 { font-size: clamp(1.75rem, 4dvh, 3rem); margin: 0; }
+.results-heading > p { font-size: 0.9rem; }
+.results-main { grid-area: main; min-width: 0; min-height: 0; }
+.results-leaderboard { list-style: none; padding: 0; margin: 0; display: grid; gap: clamp(0.5rem, 1.5dvh, 1rem); }
+.results-leaderboard li { min-height: 0; border-radius: 0.5rem; overflow: hidden; }
+.result-player-button { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: clamp(0.5rem, 1vw, 1rem); width: 100%; align-items: center; padding: clamp(0.5rem, 1.5dvh, 1rem); border: 2px solid transparent; border-radius: 0.5rem; background: #e7ece7; color: #111; text-align: left; }
+.is-selected > .result-player-button { border-color: #ffe873; background: white; }
+.result-player-button > img { width: clamp(2.5rem, 5dvh, 4rem); aspect-ratio: 1; object-fit: cover; }
+.result-player-button strong { display: block; overflow-wrap: anywhere; font-size: clamp(1rem, 1.5vw, 1.5rem); }
+.result-player-button > span:last-child > span { display: block; font-size: clamp(0.85rem, 1.2vw, 1.1rem); }
+.result-rank { font-weight: 700; }
+.desktop-player-portfolio { display: none; }
+.mobile-player-portfolio { padding: 0.75rem; text-align: left; }
+.mobile-player-portfolio > p { font-size: 1rem; }
+.final-holdings { display: grid; gap: clamp(0.5rem, 1.5dvh, 1rem); min-height: 0; }
+.final-holding { min-width: 0; min-height: 0; padding: clamp(0.5rem, 1.5dvh, 1rem); }
+.final-holding img { width: 100%; height: clamp(2rem, 6dvh, 4rem); object-fit: contain; }
+.final-holding h3 { font-size: clamp(0.85rem, 1.5vw, 1.25rem); margin-block: 0.25rem; }
+.final-holding p { font-size: clamp(0.85rem, 1.2vw, 1.1rem); }
+.mobile-player-portfolio .final-holding { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; text-align: right; }
+.mobile-player-portfolio .final-holding > div:first-child { flex: 0 1 40%; text-align: center; }
+.mobile-player-portfolio .unowned, .mobile-player-portfolio .final-share-price { display: none; }
+.mobile-empty-portfolio { font-size: 0.9rem; }
+.results-footer { grid-area: footer; }
+.stock-history-strip { grid-area: histories; min-width: 0; min-height: 0; }
+.history-strip-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.history-strip-controls h2 { font-size: 1rem; margin: 0; }
+.history-strip-controls .btn { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
+.history-viewport { overflow: hidden; width: 100%; }
+.history-track { display: flex; width: max-content; animation: history-scroll 45s linear infinite; }
+.history-group { display: flex; gap: 1rem; padding-right: 1rem; }
+.history-card { width: clamp(16rem, 25vw, 22rem); padding: clamp(0.5rem, 1dvh, 0.75rem); }
+.history-chart { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 0.5rem; align-items: center; }
+.history-chart img { width: 100%; height: clamp(2rem, 4dvh, 3rem); object-fit: contain; }
+.history-chart h3 { color: #111; font-size: 0.75rem; margin: 0; }
+.history-chart svg { width: 100%; height: clamp(3rem, 6dvh, 4.5rem); }
+.history-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0.5rem 0 0; }
+.history-stats dd { margin: 0; font-size: 0.9rem; }
+.history-stats dt { font-size: 0.65rem; font-weight: 400; }
+.history-track.is-paused, .history-viewport:hover .history-track, .history-viewport:focus-within .history-track { animation-play-state: paused; }
+@keyframes history-scroll { to { transform: translateX(-50%); } }
+@media (min-width: 992px) {
+    .game-results { grid-template-areas: "heading" "main" "histories" "footer"; }
+    .results-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.65fr); gap: clamp(1rem, 2vw, 2rem); }
+    .results-leaderboard .result-player-button { height: 100%; }
+    .results-leaderboard { grid-auto-rows: minmax(0, 1fr); }
+    .desktop-player-portfolio { display: grid; grid-template-rows: auto auto minmax(0, 1fr); padding: clamp(0.75rem, 2dvh, 1.5rem); }
+    .desktop-player-portfolio > h2 { font-size: clamp(1.25rem, 2.5dvh, 2rem); }
+    .desktop-player-portfolio > p { font-size: 0.95rem; margin-bottom: 0.75rem; }
+    .desktop-player-portfolio .final-holdings { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); }
+    .desktop-player-portfolio .final-holding { display: flex; flex-direction: column; justify-content: center; }
+    .desktop-player-portfolio .mobile-empty-portfolio, .mobile-player-portfolio { display: none; }
+}
+@media (min-width: 992px) and (min-height: 650px) {
+    .game-results { height: 100dvh; min-height: 0; grid-template-rows: auto minmax(0, 1fr) auto auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .history-track { animation: none !important; }
+    .history-viewport { overflow-x: auto; }
+    .history-group[aria-hidden="true"] { display: none; }
 }
