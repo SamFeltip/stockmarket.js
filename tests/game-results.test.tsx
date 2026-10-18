@@ -30,7 +30,9 @@ it("shows ranked players and the winner’s selected portfolio with share prices
     expect(html).toContain("Worth £5,000");
     expect(html).toContain("sam");
     expect(html).toContain("bob&#x27;s portfolio");
-    expect(html).toContain("Pause charts");
+    expect(html).not.toContain("Pause charts");
+    expect(html).toContain("carousel-inner");
+    expect(html).toContain("Next stocks");
     expect(html).toContain("Starting value");
 });
 
