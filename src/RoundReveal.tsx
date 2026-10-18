@@ -1,6 +1,8 @@
-import StockPriceChart from "./StockPriceChart";
+import { lazy, Suspense } from "react";
 import { Change } from "./shared";
 import type { Board, Insight, Stock } from "./types";
+
+const StockPriceChart = lazy(async () => import("./StockPriceChart"));
 
 export function StockResult({ before, after }: { before: number; after: number })
 {
@@ -56,7 +58,9 @@ export function RoundReveal({ board, preview, stock, insights, index }: {
             )}
             {!special && (
                 <div className="round-reveal-chart bg-white text-black rounded p-3">
-                    <StockPriceChart game={preview.game} stock={stock} />
+                    <Suspense fallback={<p>Loading price chart…</p>}>
+                        <StockPriceChart game={preview.game} stock={stock} />
+                    </Suspense>
                 </div>
             )}
         </div>
