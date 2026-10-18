@@ -93,46 +93,46 @@ export function RoundEnd({ board }: { board: Board })
                         <RoundWealth players={wealth.players} />
                     </>
                 )}
-            </div>
-            <div id="next-step-wrapper" className="round-navigation p-3" style={{ animation: "none" }}>
-                <Alert message={error} />
-                {reviewed ? (host ? (
-                    <>
-                        {pendingHolds && <p>Waiting for players to resolve their hold-stock insights.</p>}
+                <div id="next-step-wrapper" className="round-navigation p-3" style={{ animation: "none" }}>
+                    <Alert message={error} />
+                    {reviewed ? (host ? (
+                        <>
+                            {pendingHolds && <p>Waiting for players to resolve their hold-stock insights.</p>}
+                            <button
+                                className="btn btn-primary"
+                                disabled={busy || pendingHolds}
+                                onClick={() =>
+                                {
+                                    void run(() => next({ code: game.code, expectedPeriod: game.currentPeriod }));
+                                }}
+                            >
+                                {game.currentPeriod >= game.periodCount ? "Finish Game" : "Next Period"}
+                                {" →"}
+                            </button>
+                        </>
+                    ) : <p>Waiting for the game creator to continue.</p>) : (
                         <button
-                            className="btn btn-primary"
-                            disabled={busy || pendingHolds}
+                            className="btn btn-primary d-flex flex-row gap-2 align-items-center"
+                            disabled={Boolean(unresolved)}
                             onClick={() =>
                             {
-                                void run(() => next({ code: game.code, expectedPeriod: game.currentPeriod }));
+                                if (index < visible.length)
+                                {
+                                    setIndex(visible.length);
+                                }
+                                else
+                                {
+                                    setStep((current) => current + 1);
+                                    setIndex(0);
+                                }
                             }}
                         >
-                            {game.currentPeriod >= game.periodCount ? "Finish Game" : "Next Period"}
+                            {index < visible.length ? "Skip to stock summary"
+                                : (step < groups.length - 1 ? `Next: ${groups[step + 1].name}` : "View round summary")}
                             {" →"}
                         </button>
-                    </>
-                ) : <p>Waiting for the game creator to continue.</p>) : (
-                    <button
-                        className="btn btn-primary d-flex flex-row gap-2 align-items-center"
-                        disabled={Boolean(unresolved)}
-                        onClick={() =>
-                        {
-                            if (index < visible.length)
-                            {
-                                setIndex(visible.length);
-                            }
-                            else
-                            {
-                                setStep((current) => current + 1);
-                                setIndex(0);
-                            }
-                        }}
-                    >
-                        {index < visible.length ? "Skip to stock summary"
-                            : (step < groups.length - 1 ? `Next: ${groups[step + 1].name}` : "View round summary")}
-                        {" →"}
-                    </button>
-                )}
+                    )}
+                </div>
             </div>
         </>
     );
