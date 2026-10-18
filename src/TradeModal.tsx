@@ -4,19 +4,19 @@ import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Alert, Modal, money, useAction } from "./shared";
 import { StockPreview } from "./StockPreview";
-import { sharesForCash, stepShares } from "./trades";
+import { resolveTradeDraft, sharesForCash, stepShares } from "./trades";
+import type { TradeDraft } from "./trades";
 import type { Board, Stock } from "./types";
 
 export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock; mode: "buy" | "sell" })
 {
     const play = useMutation(api.trading.play);
     const { run, busy, error } = useAction();
-    const [draft, setDraft] = useState({ shares: "0", cash: "0" });
-    const quantity = Number(draft.shares);
+    const [draft, setDraft] = useState<TradeDraft>({ field: "shares", value: "0" });
 
     function setQuantity(value: number)
     {
-        setDraft({ shares: String(value), cash: String(Number((value * price).toFixed(2))) });
+        setDraft({ field: "shares", value: String(value) });
     }
 
     const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
@@ -25,6 +25,8 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
       + (player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0), 0);
     const limit = floorTradeQuantity(mode === "buy"
         ? Math.min(available, sharesForCash(board.player.cash, price)) : held);
+    const { quantity, shares, cash } = resolveTradeDraft(draft, price, limit);
+    const previewQuantity = Number.isFinite(quantity) ? quantity : 0;
     const valid = validTradeQuantity(quantity)
       && quantity > 0 && quantity <= limit && price > 0;
     const label = mode === "buy" ? "Buy" : "Sell";
@@ -78,12 +80,10 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                                 max={limit}
                                 disabled={busy}
                                 className="form-control input-stock"
-                                value={draft.shares}
+                                value={shares}
                                 onChange={(event) =>
                                 {
-                                    const shares = event.target.value;
-
-                                    setDraft({ shares, cash: String(Number((Number(shares) * price).toFixed(2))) });
+                                    setDraft({ field: "shares", value: event.target.value });
                                 }}
                             />
                         </div>
@@ -96,18 +96,16 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                                 min={0}
                                 step="0.01"
                                 disabled={busy}
-                                value={draft.cash}
+                                value={cash}
                                 aria-label="Value"
                                 onChange={(event) =>
                                 {
-                                    const cash = event.target.value;
-                                    const shares = sharesForCash(Number(cash), price);
-
-                                    setDraft({ cash, shares: String(shares) });
+                                    setDraft({ field: "cash", value: event.target.value });
                                 }}
                                 onBlur={() =>
                                 {
-                                    setQuantity(quantity);
+                                    setDraft((current) => ({ field: "shares",
+                                        value: String(resolveTradeDraft(current, price, limit).quantity) }));
                                 }}
                             />
                         </div>
@@ -166,12 +164,12 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                         <div className="transaction-body">
                             <p>
                                 Cash £
-                                {money(board.player.cash + (mode === "buy" ? -1 : 1) * quantity * price)}
+                                {money(board.player.cash + (mode === "buy" ? -1 : 1) * previewQuantity * price)}
                             </p>
                             <p>
                                 Shares held
                                 {" "}
-                                {held + (mode === "buy" ? quantity : -quantity)}
+                                {held + (mode === "buy" ? previewQuantity : -previewQuantity)}
                             </p>
                         </div>
                     </div>

@@ -23,3 +23,19 @@ export function stepShares(quantity: number, direction: 1 | -1)
     return current <= 5000 ? Math.max(0, (Math.ceil(current / 1000) - 1) * 1000)
         : Math.max(5000, (Math.ceil(current / 10_000) - 1) * 10_000);
 }
+
+export interface TradeDraft { field: "shares" | "cash"; value: string }
+
+export function resolveTradeDraft(draft: TradeDraft, price: number, limit: number)
+{
+    const entered = Number(draft.value);
+    const quantity = draft.field === "cash"
+        ? Math.min(limit, sharesForCash(entered, price)) : entered;
+    const cost = Number.isFinite(quantity * price) ? Number((quantity * price).toFixed(2)) : 0;
+
+    return {
+        quantity,
+        shares: draft.field === "shares" ? draft.value : String(quantity),
+        cash: draft.field === "cash" ? draft.value : String(cost),
+    };
+}

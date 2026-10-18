@@ -29,7 +29,7 @@ export const play = mutation({
             const stock = await context.db.query("stocks").withIndex("by_key", (q) => q.eq("key", stockKey)).unique();
             const price = game.prices.find((item) => item.stockKey === stockKey)?.value;
             const holding = player.holdings.find((item) => item.stockKey === stockKey);
-            if (!stock?.display || price === undefined || !holding || price <= 0)
+            if (!stock?.display || price === undefined || !holding || !Number.isFinite(price) || price <= 0)
             {
                 fail("This stock cannot be traded");
             }
@@ -41,7 +41,12 @@ export const play = mutation({
 
             const available = sharesPerCompany - players.reduce((sum, item) => sum
               + (item.holdings.find((share) => share.stockKey === stockKey)?.quantity ?? 0), 0);
-            const cost = quantity * price;
+            const cost = Math.round(quantity * price * 100) / 100;
+            if (!Number.isFinite(cost))
+            {
+                fail("This stock cannot be traded");
+            }
+
             if (quantity > available)
             {
                 fail("Not enough shares available");
@@ -58,7 +63,7 @@ export const play = mutation({
             }
 
             await context.db.patch(player._id, {
-                cash: player.cash - cost,
+                cash: Math.round((player.cash - cost) * 100) / 100,
                 holdings: player.holdings.map((item) => item.stockKey === stockKey
                     ? { ...item, quantity: item.quantity + quantity } : item),
             });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ConvexError } from "convex/values";
 import { friendlyError, usernameHelp } from "../src/errors";
-import { sharesForCash, stepShares } from "../src/trades";
+import { resolveTradeDraft, sharesForCash, stepShares } from "../src/trades";
 
 describe("Friendly errors", () =>
 {
@@ -31,6 +31,16 @@ describe("Friendly errors", () =>
 
 describe("Cash entry", () =>
 {
+    it("updates shares from the first cash edit and stays linked when price or limits change", () =>
+    {
+        const draft = { field: "cash", value: "7500" } as const;
+
+        expect(resolveTradeDraft(draft, 2.5, 20_000).shares).toBe("3000");
+        expect(resolveTradeDraft(draft, 1.5, 20_000).shares).toBe("5000");
+        expect(resolveTradeDraft(draft, 2.5, 1000).shares).toBe("1000");
+        expect(resolveTradeDraft({ field: "shares", value: "3000" }, 2.5, 20_000).cash).toBe("7500");
+        expect(resolveTradeDraft({ field: "cash", value: "" }, 2.5, 20_000).quantity).toBe(0);
+    });
     it("buys whole lots and handles decimal stock prices without rounding down exact lots", () =>
     {
         expect(sharesForCash(2500, 2.5)).toBe(1000);
