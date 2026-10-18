@@ -172,7 +172,7 @@ export function Playing({ board }: { board: Board })
                         <img className="rounded bg-secondary" src={notification.imageRoot} height={300} width={300} alt="profile" />
                         <div className="text-center">
                             <h1>{notification.title}</h1>
-                            <FeedMessage item={notification} stocks={board.stocks} />
+                            <FeedMessage item={notification} stocks={board.stocks} detailed />
                         </div>
                     </div>
                 </div>

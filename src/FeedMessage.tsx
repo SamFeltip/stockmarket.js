@@ -1,7 +1,9 @@
 import type { Board } from "./types";
 import { money } from "./shared";
 
-export function FeedMessage({ item, stocks }: { item: Board["feed"][number]; stocks: Board["stocks"] })
+export function FeedMessage({ item, stocks, detailed = false }: {
+    item: Board["feed"][number]; stocks: Board["stocks"]; detailed?: boolean;
+})
 {
     // Older games have text-only events; keep their history readable after upgrading.
     const legacy = /^(bought|sold) (\d+) shares in (.+)$/.exec(item.message);
@@ -14,12 +16,15 @@ export function FeedMessage({ item, stocks }: { item: Board["feed"][number]; sto
     }
 
     return (
-        <p
-            className={`trade-message text-${quantity > 0 ? "success" : "danger"}`}
-            aria-label={`${quantity > 0 ? "Bought" : "Sold"} ${money(Math.abs(quantity))} ${stock.name} shares`}
-        >
-            <img src={stock.imagePath} alt="" />
-            {money(quantity)}
-        </p>
+        <div>
+            <p
+                className={`trade-message text-${quantity > 0 ? "success" : "danger"}`}
+                aria-label={`${quantity > 0 ? "Bought" : "Sold"} ${money(Math.abs(quantity))} ${stock.name} shares`}
+            >
+                <img src={stock.imagePath} alt="" />
+                {money(quantity)}
+            </p>
+            {detailed && <p className="trade-description">{`${quantity > 0 ? "Purchased" : "Sold"} ${money(Math.abs(quantity))} ${stock.name} stocks`}</p>}
+        </div>
     );
 }
