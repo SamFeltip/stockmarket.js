@@ -13,7 +13,11 @@ export function FinalHoldings({ board, player }: { board: Board; player: Player 
                 const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
 
                 return (
-                    <article className={`final-holding border rounded ${quantity === 0 ? "unowned" : ""}`} key={stock.key}>
+                    <article
+                        className={`final-holding border rounded ${quantity === 0 ? "unowned" : ""}`}
+                        key={stock.key}
+                        aria-label={stock.name}
+                    >
                         <div>
                             <img src={stock.imagePath} alt="" />
                             <h3 className="text-black">{stock.name}</h3>

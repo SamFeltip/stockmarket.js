@@ -198,7 +198,6 @@ export function StockHistoryStrip({ board }: { board: Board })
                         <button
                             key={group[0].key}
                             type="button"
-                           
                             data-bs-slide-to={index}
                             className={index === 0 ? "active" : ""}
                             aria-current={index === 0 ? "true" : undefined}
