@@ -198,3 +198,14 @@ button.nav-link { cursor: pointer; }
     .stock-mobile-price { display: flex; padding-bottom: 0.75rem; }
     #game-stock-info .stock-mobile-price p { font-size: 1rem; }
 }
+
+.round-wealth-players { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 6rem), 1fr)); gap: 1rem; }
+.round-wealth-players img { width: clamp(2rem, 5dvh, 4rem); aspect-ratio: 1; object-fit: cover; }
+.round-player-name { font-size: 0.85rem; overflow-wrap: anywhere; text-align: center; }
+.net-worth-number { position: relative; display: inline-block; white-space: nowrap; }
+.wealth-delta { position: absolute; inset: 0; font-weight: 700; pointer-events: none; animation: wealth-float 1.8s ease-out both; text-shadow: 0 1px 3px #102d12; }
+@keyframes wealth-float {
+    0% { opacity: 1; transform: translateY(0) scale(1.05); }
+    100% { opacity: 0; transform: translateY(-2.5rem) scale(1.05); }
+}
+@media (prefers-reduced-motion: reduce) { .wealth-delta { animation: wealth-float 0.01s forwards !important; } }

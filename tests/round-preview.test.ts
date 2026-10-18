@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { api } from "../convex/_generated/api";
-import { previewRound } from "../src/round-preview";
+import { previewRound, roundProgress } from "../src/round-preview";
 import { priceSeries } from "../src/price-history";
 import { setup } from "./game-setup";
 
@@ -48,4 +48,27 @@ it("updates revealed wealth and charts before advancing, matching settled stock 
     expect(complete.game.priceHistory).toEqual(settled.game.priceHistory);
     expect(complete.players.map((player) => [player.cash, player.netWorth, player.ranking]))
         .toEqual(settled.players.map((player) => [player.cash, player.netWorth, player.ranking]));
+});
+
+it("applies each stock's wealth change only on its summary, including skipped animations", async () =>
+{
+    const { sam } = await setup();
+
+    await sam.mutation(api.games.start, { code: "test" });
+    const board = await sam.query(api.board.get, { code: "test" });
+
+    board.insights = [
+        { ...board.insights[0], stockKey: 7, value: 1 },
+        { ...board.insights[1], stockKey: 8, value: -0.5 },
+    ];
+    board.players[0] = { ...board.players[0], cash: 1000, netWorth: 8000,
+        holdings: [{ stockKey: 7, quantity: 1000 }, { stockKey: 8, quantity: 2000 }] };
+
+    expect(roundProgress(board, 0, 0).wealth.players[0].netWorth).toBe(8000);
+    expect(roundProgress(board, 0, 0).preview.players[0].netWorth).toBe(9000);
+    expect(roundProgress(board, 0, 1).wealth.players[0].netWorth).toBe(9000);
+    expect(roundProgress(board, 1, 0).wealth.players[0].netWorth).toBe(9000);
+    expect(roundProgress(board, 1, 1).wealth.players[0].netWorth).toBe(8000);
+    expect(roundProgress(board, 6, 0).wealth.players[0].netWorth).toBe(8000);
+    expect(board.players[0].netWorth).toBe(8000);
 });

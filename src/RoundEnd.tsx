@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { Alert, money, useAction } from "./shared";
+import { Alert, useAction } from "./shared";
 import { revealStocks } from "./reveals";
 import { GameResults } from "./GameResults";
 import { RoundOverview } from "./RoundOverview";
-import { previewRound } from "./round-preview";
+import { RoundWealth } from "./RoundWealth";
+import { roundProgress } from "./round-preview";
 import { RoundReveal } from "./RoundReveal";
 import { HoldStock } from "./HoldStock";
 import type { Board } from "./types";
@@ -27,11 +28,7 @@ export function RoundEnd({ board }: { board: Board })
       && stocks.find((stock) => stock.key === insight.stockKey)?.name === "Hold Stock Price");
     const reviewed = step >= groups.length;
     const host = game.hostId === board.user._id;
-    const revealedKeys = groups.slice(0, step + 1).map((stock) => stock.key);
-    const completedKeys = new Set(groups.slice(0, step).map((stock) => stock.key));
-    const revealedInsights = insights.filter((insight) => completedKeys.has(insight.stockKey))
-        .concat(visible.slice(0, index + 1));
-    const preview = previewRound(board, reviewed ? insights : revealedInsights, revealedKeys);
+    const { preview, wealth } = roundProgress(board, step, index);
 
     useEffect(() =>
     {
@@ -93,20 +90,7 @@ export function RoundEnd({ board }: { board: Board })
                                 ))}
                             </div>
                         </div>
-                        <div id="player-view" className="card card-green p-4 rounded d-flex flex-sm-row flex-column justify-content-between align-items-center">
-                            <h2>Net Worth:</h2>
-                            <div className="d-flex w-100 gap-5 flex-sm-row flex-column justify-content-center">
-                                {preview.players.map((player) => (
-                                    <div className="d-flex flex-column align-items-center" key={player._id}>
-                                        <img height={80} width={80} className="rounded" src={player.profileRoot} alt={player.name} />
-                                        <span>
-                                            £
-                                            {money(player.netWorth)}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        <RoundWealth players={wealth.players} />
                     </>
                 )}
             </div>
@@ -130,14 +114,22 @@ export function RoundEnd({ board }: { board: Board })
                 ) : <p>Waiting for the game creator to continue.</p>) : (
                     <button
                         className="btn btn-primary d-flex flex-row gap-2 align-items-center"
-                        disabled={Boolean(unresolved) || index < visible.length}
+                        disabled={Boolean(unresolved)}
                         onClick={() =>
                         {
-                            setStep((current) => current + 1);
-                            setIndex(0);
+                            if (index < visible.length)
+                            {
+                                setIndex(visible.length);
+                            }
+                            else
+                            {
+                                setStep((current) => current + 1);
+                                setIndex(0);
+                            }
                         }}
                     >
-                        {step < groups.length - 1 ? `Next: ${groups[step + 1].name}` : "View round summary"}
+                        {index < visible.length ? "Skip to stock summary"
+                            : (step < groups.length - 1 ? `Next: ${groups[step + 1].name}` : "View round summary")}
                         {" →"}
                     </button>
                 )}
