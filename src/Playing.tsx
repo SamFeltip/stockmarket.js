@@ -104,7 +104,7 @@ export function Playing({ board }: { board: Board })
                 <GameHeader board={board} />
                 <div id="content" className="d-grid" style={{ gridTemplateRows: "auto 1fr" }}>
                     <div id="tabs" className="overflow-hidden" style={{ height: 65 }}>
-                        <div id="stock-tabs" className="h-100 w-100" hidden={view !== "stocks"}>
+                        <div id="stock-tabs" className={`h-100 w-100 tabs-display-${view === "stocks" ? "center" : "left"}`} inert={view !== "stocks"} aria-hidden={view !== "stocks"}>
                             <ol className="h-100 w-100 position-absolute nav nav-tabs d-flex flex-nowrap justify-content-between">
                                 {stocks.map((stock) => (
                                     <li className="nav-item d-flex flex-fill" key={stock.key}>
@@ -126,7 +126,7 @@ export function Playing({ board }: { board: Board })
                                 ))}
                             </ol>
                         </div>
-                        <div id="player-tabs" className="h-100 w-100" hidden={view !== "players"}>
+                        <div id="player-tabs" className={`h-100 w-100 tabs-display-${view === "players" ? "center" : "right"}`} inert={view !== "players"} aria-hidden={view !== "players"}>
                             <ol className="h-100 w-100 position-absolute nav nav-tabs d-flex flex-nowrap justify-content-between">
                                 {players.map((player) => (
                                     <li className="nav-item d-flex flex-fill" key={player._id}>

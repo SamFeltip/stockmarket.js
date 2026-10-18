@@ -100,9 +100,8 @@ button.nav-link { cursor: pointer; }
 .stock-tab-price p { font-size: 0.75rem; white-space: nowrap; }
 .stock-tab-price .total-insight { font-size: 0.65rem; white-space: nowrap; justify-content: flex-end; }
 .stock-tab-price .total-insight span { font-size: inherit; }
-#tabs { position: relative; }
+#tabs { position: relative; overflow: clip !important; contain: paint; }
 #stock-tabs, #player-tabs { position: absolute; inset: 0; min-width: 0; }
-#tabs [hidden] { display: none !important; }
 #tabs .nav { margin: 0; padding: 0; overflow: hidden; inset: 0; }
 #tabs .nav-item { flex: 1 1 0 !important; min-width: 0; height: 100%; }
 #tabs .nav-link { min-width: 0; width: 100%; height: 100%; margin-bottom: 0; padding: 0.3rem; }
