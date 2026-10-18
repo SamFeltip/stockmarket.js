@@ -149,3 +149,12 @@ button.nav-link { cursor: pointer; }
 #play-notif .trade-message { font-size: 1.75rem; margin-bottom: 0.5rem; }
 #play-notif .trade-message img { width: 2.25rem; height: 2.25rem; }
 #play-notif .trade-description { font-size: 1.15rem; }
+
+.round-reveal { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.stock-result h2 { font-size: clamp(2rem, 4vw, 3rem); }
+.stock-result p { margin-bottom: 0.4rem; }
+.stock-result-change { font-size: 1.75rem; margin-block: 1rem; }
+@media (max-width: 575px) {
+    .round-reveal { grid-template-columns: minmax(0, 1fr); }
+    .round-reveal .game-stock-view img { max-height: 90px !important; }
+}

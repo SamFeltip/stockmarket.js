@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { Link } from "react-router-dom";
 import { api } from "../convex/_generated/api";
-import { Alert, Change, money, useAction } from "./shared";
+import { Alert, money, useAction } from "./shared";
 import { revealStocks } from "./reveals";
+import { RoundReveal } from "./RoundReveal";
 import { HoldStock } from "./HoldStock";
 import type { Board } from "./types";
 
@@ -27,7 +28,7 @@ export function RoundEnd({ board }: { board: Board })
 
     useEffect(() =>
     {
-        if (unresolved || index >= visible.length - 1)
+        if (unresolved || index >= visible.length)
         {
             return;
         }
@@ -42,7 +43,7 @@ export function RoundEnd({ board }: { board: Board })
             clearTimeout(timer);
         };
     }, [index, visible.length, unresolved, step]);
-    const active = visible[Math.min(index, visible.length - 1)];
+
     if (game.status === "finished")
     {
         return (
@@ -80,39 +81,9 @@ export function RoundEnd({ board }: { board: Board })
                     {special && <h2>Additional insights</h2>}
                 </div>
                 <div id="insight-view" className="card card-green p-4 rounded border border-5 border-white">
-                    {unresolved ? <HoldStock board={board} insight={unresolved} /> : (active && activeStock
-                        ? (
-                            <div className="game-insight round-insight gap-3 h-100 d-grid" style={{ gridTemplateColumns: "2fr 1fr" }} key={active._id}>
-                                <div className="p-4 gap-2 rounded d-flex flex-column flex-sm-row justify-content-around align-items-center" style={{ backgroundColor: "#3C5F2F" }}>
-                                    <div className="game-stock-view d-flex flex-column align-items-center">
-                                        <img className="w-100 p-3" style={{ maxHeight: 180, objectFit: "contain" }} src={activeStock.imagePath} alt={activeStock.name} />
-                                        <h2>{activeStock.name}</h2>
-                                    </div>
-                                    <div className="d-flex flex-column text-center">
-                                        <p>{special ? "Change" : "Sum"}</p>
-                                        <h1 className="fw-bolder">
-                                            {special ? `${visible.slice(0, index + 1).filter((insight) => insight.stockKey === activeStock.key).reduce((sum, insight) => sum + insight.value, 0) * 100}%`
-                                                : `£${visible.slice(0, index + 1).filter((insight) => insight.stockKey === activeStock.key).reduce((sum, insight) => sum + insight.value, 0).toFixed(2)}`}
-                                        </h1>
-                                    </div>
-                                </div>
-                                <div className="game-insight-card p-4 gap-2 rounded bg-white text-black d-flex flex-column align-items-center justify-content-center">
-                                    <img height={120} src={activeStock.imagePath} alt={activeStock.name} />
-                                    {special ? (
-                                        <h2 className="text-black">
-                                            {active.value * 100}
-                                            %
-                                        </h2>
-                                    ) : <Change value={active.value} />}
-                                    <p>{active.description}</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="d-flex flex-column align-items-center justify-content-center h-100">
-                                {activeStock && <img height={80} src={activeStock.imagePath} alt={activeStock.name} />}
-                                <p>{reviewed ? "All insights revealed" : `No insights for ${activeStock?.name ?? "this stock"}`}</p>
-                            </div>
-                        ))}
+                    {unresolved ? <HoldStock board={board} insight={unresolved} /> : (activeStock
+                        ? <RoundReveal board={board} stock={activeStock} insights={visible} index={index} />
+                        : <p className="text-center">All insights revealed</p>)}
                 </div>
                 <div id="stock-view" className="card card-green px-5 py-4 rounded border-5 border-white flex-sm-row align-items-center">
                     <h2>Stock Values:</h2>
@@ -143,7 +114,7 @@ export function RoundEnd({ board }: { board: Board })
                     </div>
                 </div>
             </div>
-            <div id="next-step-wrapper" className="position-absolute bottom-0 end-0 p-3" style={{ animationDelay: visible.length === 0 ? "0s" : undefined }}>
+            <div id="next-step-wrapper" className="position-absolute bottom-0 end-0 p-3" style={{ animation: "none" }}>
                 <Alert message={error} />
                 {reviewed ? (host ? (
                     <>
@@ -163,7 +134,7 @@ export function RoundEnd({ board }: { board: Board })
                 ) : <p>Waiting for the game creator to continue.</p>) : (
                     <button
                         className="btn btn-primary d-flex flex-row gap-2 align-items-center"
-                        disabled={Boolean(unresolved && unresolved.playerId === board.player._id)}
+                        disabled={Boolean(unresolved) || index < visible.length}
                         onClick={() =>
                         {
                             setStep((current) => current + 1);
