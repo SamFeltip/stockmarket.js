@@ -3,6 +3,9 @@ import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { deal, fail, feedItem, member, members, roundInsights } from "./library";
 
+import { enqueueNextNpcIfNeeded } from "./npc/scheduling";
+import { publicSeats } from "./game/legalActions";
+
 export const showSpecial = mutation({
     args: { code: v.string() },
     handler: async (context, { code }) =>
@@ -85,6 +88,15 @@ export const next = mutation({
             await context.db.patch(seat._id, { cash: roundCash(seat, insights, stocks) });
         }
 
+        await context.db.insert("periodSummaries", { gameId: game._id, period: game.currentPeriod,
+            opening: game.prices, settled: prices });
+        const rankings = publicSeats(await members(context, game._id), prices);
+        for (const seat of players)
+        {
+            await context.db.patch(seat._id, { periodStartRanking: rankings.find((item) =>
+                item.id === seat._id)!.ranking });
+        }
+
         const finished = game.currentPeriod >= game.periodCount;
         const currentPeriod = finished ? game.currentPeriod : game.currentPeriod + 1;
         const priceHistory = [
@@ -93,13 +105,15 @@ export const next = mutation({
         ];
 
         await context.db.patch(game._id, { prices, priceHistory, status: finished ? "finished" : "playing", currentPeriod,
-            turn: 0, suspended: [], currentUserId: players[currentPeriod % players.length].userId });
+            turn: 0, suspended: [], currentUserId: players[currentPeriod % players.length].userId,
+            currentPlayerId: players[currentPeriod % players.length]._id });
 
         if (!finished)
         {
             await deal(context, { ...game, currentPeriod }, players);
             await feedItem(context, { ...game, currentPeriod }, `Period ${currentPeriod + 1}`,
                 "Players get another turn", "/static/imgs/icons/Stock.svg", "grey");
+            await enqueueNextNpcIfNeeded(context, game._id);
         }
     },
 });

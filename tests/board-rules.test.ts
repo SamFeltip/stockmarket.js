@@ -8,11 +8,14 @@ describe("Board-game rules", () =>
     {
         for (const quantity of [1000, 2000, 3000, 4000, 5000, 10_000, 20_000])
         {
-            const { sam, bob } = await setup();
+            const { sam, bob, pat, lee } = await setup();
 
             await sam.mutation(api.games.start, { code: "test" });
-            await sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, stockKey: 8, quantity });
-            await bob.mutation(api.trading.play, { code: "test", expectedTurn: 1 });
+            await sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, expectedPeriod: 0, stockKey: 8, quantity });
+            await bob.mutation(api.trading.play, { code: "test", expectedTurn: 1, expectedPeriod: 0 });
+
+            await pat.mutation(api.trading.play, { code: "test", expectedTurn: 2, expectedPeriod: 0 });
+            await lee.mutation(api.trading.play, { code: "test", expectedTurn: 3, expectedPeriod: 0 });
 
             if (quantity === 20_000)
             {
@@ -20,7 +23,7 @@ describe("Board-game rules", () =>
                 for (const invalid of [-6000, -15_000])
                 {
                     await expect(sam.mutation(api.trading.play, {
-                        code: "test", expectedTurn: 2, stockKey: 8, quantity: invalid,
+                        code: "test", expectedTurn: 4, expectedPeriod: 0, stockKey: 8, quantity: invalid,
                     })).rejects.toThrow("Trade 1000 to 5000");
                 }
 
@@ -31,24 +34,26 @@ describe("Board-game rules", () =>
                 expect(after.feed).toEqual(before.feed);
             }
 
-            await sam.mutation(api.trading.play, { code: "test", expectedTurn: 2, stockKey: 8, quantity: -quantity });
+            await sam.mutation(api.trading.play, { code: "test", expectedTurn: 4, expectedPeriod: 0, stockKey: 8, quantity: -quantity });
             const board = await sam.query(api.board.get, { code: "test" });
 
             expect(board.player.cash).toBe(60_000);
             expect(board.player.holdings.find((holding) => holding.stockKey === 8)?.quantity).toBe(0);
         }
     });
-    it("requires two players before dealing or starting", async () =>
+    it("requires four players before dealing or starting", async () =>
     {
-        const { sam, bob } = await setup();
+        const { sam, bob } = await setup(5, 2);
 
         await bob.mutation(api.games.leave, { code: "test" });
-        await expect(sam.mutation(api.games.start, { code: "test" })).rejects.toThrow("At least two players");
+        await expect(sam.mutation(api.games.start, { code: "test" })).rejects.toThrow("At least four players");
         const waiting = await sam.query(api.board.get, { code: "test" });
 
         expect(waiting.game.status).toBe("waiting");
         expect(waiting.insights).toHaveLength(0);
         await bob.mutation(api.games.join, { code: "test" });
+        await expect(sam.mutation(api.games.start, { code: "test" })).rejects.toThrow("At least four players");
+        await sam.mutation(api.npc.lobby.add, { code: "test", required: true });
         await sam.mutation(api.games.start, { code: "test" });
         expect((await sam.query(api.board.get, { code: "test" })).game.status).toBe("playing");
     });
@@ -78,10 +83,8 @@ describe("Board-game rules", () =>
     {
         it(`rotates first and last traders and finishes after index ${lastPeriod}`, async () =>
         {
-            const { sam, bob, outsider } = await setup(lastPeriod);
-            const clients = [sam, bob, outsider];
+            const { sam, clients } = await setup(lastPeriod);
 
-            await outsider.mutation(api.games.join, { code: "test" });
             await sam.mutation(api.games.start, { code: "test" });
             const seats = (await sam.query(api.board.get, { code: "test" })).players;
             for (let period = 0; period <= lastPeriod; period++)
@@ -90,17 +93,17 @@ describe("Board-game rules", () =>
 
                 expect(opened.game.currentPeriod).toBe(period);
                 expect(opened.game.priceHistory).toHaveLength(period + 1);
-                expect(opened.game.currentUserId).toBe(seats[period % 3].userId);
+                expect(opened.game.currentUserId).toBe(seats[period % 4].userId);
                 expect(opened.game.turn).toBe(0);
                 expect(opened.insights).toHaveLength(10);
 
-                for (let turn = 0; turn < 9; turn++)
+                for (let turn = 0; turn < 12; turn++)
                 {
-                    const client = clients[(turn + period) % 3];
+                    const client = clients[(turn + period) % 4];
                     const board = await client.query(api.board.get, { code: "test" });
 
                     expect(board.game.currentUserId).toBe(board.user._id);
-                    await client.mutation(api.trading.play, { code: "test", expectedTurn: turn });
+                    await client.mutation(api.trading.play, { code: "test", expectedTurn: turn, expectedPeriod: period });
                 }
 
                 expect((await sam.query(api.board.get, { code: "test" })).game.status).toBe("closed");
@@ -123,7 +126,7 @@ describe("Board-game rules", () =>
     });
     it("shares a 200,000-share supply across players and returns sold shares to it", async () =>
     {
-        const { t, sam, bob } = await setup();
+        const { t, sam, bob, pat, lee } = await setup();
 
         await t.run(async (context) =>
         {
@@ -133,13 +136,15 @@ describe("Board-game rules", () =>
             }
         });
         await sam.mutation(api.games.start, { code: "test" });
-        await sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, stockKey: 8, quantity: 110_000 });
-        await bob.mutation(api.trading.play, { code: "test", expectedTurn: 1, stockKey: 8, quantity: 90_000 });
+        await sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, expectedPeriod: 0, stockKey: 8, quantity: 110_000 });
+        await bob.mutation(api.trading.play, { code: "test", expectedTurn: 1, expectedPeriod: 0, stockKey: 8, quantity: 90_000 });
+        await pat.mutation(api.trading.play, { code: "test", expectedTurn: 2, expectedPeriod: 0 });
+        await lee.mutation(api.trading.play, { code: "test", expectedTurn: 3, expectedPeriod: 0 });
         await expect(sam.mutation(api.trading.play, {
-            code: "test", expectedTurn: 2, stockKey: 8, quantity: 1000,
+            code: "test", expectedTurn: 4, expectedPeriod: 0, stockKey: 8, quantity: 1000,
         })).rejects.toThrow("Not enough shares available");
-        await sam.mutation(api.trading.play, { code: "test", expectedTurn: 2, stockKey: 8, quantity: -10_000 });
-        await bob.mutation(api.trading.play, { code: "test", expectedTurn: 3, stockKey: 8, quantity: 10_000 });
+        await sam.mutation(api.trading.play, { code: "test", expectedTurn: 4, expectedPeriod: 0, stockKey: 8, quantity: -10_000 });
+        await bob.mutation(api.trading.play, { code: "test", expectedTurn: 5, expectedPeriod: 0, stockKey: 8, quantity: 10_000 });
         const board = await sam.query(api.board.get, { code: "test" });
         const total = board.players.reduce((sum, player) => sum
           + (player.holdings.find((holding) => holding.stockKey === 8)?.quantity ?? 0), 0);

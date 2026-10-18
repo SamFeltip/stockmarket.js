@@ -4,7 +4,7 @@ export const sharesPerCompany = 200_000;
 
 export const gameLengths = [6, 7, 8, 9, 10];
 
-export const minimumPlayers = 2;
+export const minimumPlayers = 4;
 
 export function validGameLength(lastPeriod: number)
 {
@@ -29,3 +29,5 @@ export function floorTradeQuantity(quantity: number)
     return quantity <= 5000 ? Math.floor(quantity / 1000) * 1000
         : Math.max(5000, Math.floor(quantity / 10_000) * 10_000);
 }
+
+export const maximumPlayers = 6;

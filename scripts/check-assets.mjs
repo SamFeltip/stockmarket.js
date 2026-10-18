@@ -32,4 +32,17 @@ if (missing.length > 0)
     throw new Error(`Missing assets: ${missing.join(", ")}`);
 }
 
+for (let avatar = 1; avatar <= 5; avatar++)
+{
+    const portrait = `dist/static/imgs/${avatar}profile.png`;
+    const source = readFileSync(`public/static/imgs/${avatar}profile.png`);
+    const header = source.subarray(0, 16).toString("hex");
+    const isImage = header.startsWith("89504e470d0a1a0a") || header.startsWith("ffd8ff")
+      || source.subarray(4, 12).toString() === "ftypavif";
+    if (!existsSync(portrait) || !isImage || !readFileSync(portrait).equals(source))
+    {
+        throw new Error(`Missing, altered or invalid deployed NPC portrait: ${portrait}`);
+    }
+}
+
 console.log(`Verified ${references.size} referenced assets, including the original avatars and company logos.`);

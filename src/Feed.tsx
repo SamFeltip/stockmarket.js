@@ -3,10 +3,13 @@ import type { Board } from "./types";
 export function Feed({ board, busy, onPass }: { board: Board; busy: boolean; onPass: () => void })
 {
     const { feed } = board;
-    const myTurn = board.game.currentUserId === board.user._id;
+    const myTurn = board.game.currentPlayerId === board.player._id;
 
     return (
         <aside id="offcanvasResponsive" className="rounded-start rounded-lg bg-white text-black p-3 d-lg-grid offcanvas-lg offcanvas-end" tabIndex={-1} aria-labelledby="offcanvasResponsiveLabel">
+            <p className="visually-hidden" aria-live="polite" aria-atomic="true">
+                {feed[0] ? `${feed[0].title} ${feed[0].message}` : ""}
+            </p>
             <div className="d-grid" style={{ gridTemplateRows: "auto minmax(0, 1fr)" }}>
                 <div className="d-flex flex-row justify-content-between">
                     <h2 className="text-black" id="offcanvasResponsiveLabel">Feed</h2>

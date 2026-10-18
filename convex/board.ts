@@ -3,6 +3,8 @@ import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { member, members, netWorth, roundInsights } from "./library";
 
+import { publicIdentity } from "./npc/identity";
+
 export const get = query({
     args: { code: v.string() },
     handler: async (context, { code }) =>
@@ -17,9 +19,12 @@ export const get = query({
         const reveal = game.status === "closed" || game.status === "special_insights" || game.status === "finished";
         const players = await Promise.all(seats.map(async (seat) =>
         {
-            const account = await context.db.get(seat.userId);
+            const display = await publicIdentity(context, seat);
 
-            return { ...seat, name: account?.name ?? "Unknown", profileRoot: account?.profileRoot ?? "",
+            return { _id: seat._id, _creationTime: seat._creationTime, gameId: seat.gameId,
+                userId: seat.userId, controller: seat.controller ?? { kind: "human" as const, userId: seat.userId! },
+                cash: seat.cash, holdings: seat.holdings, active: seat.active, ...display,
+                npcDifficulty: display.kind === "npc" ? seat.npcDifficulty ?? game.npcDifficulty ?? "medium" : undefined,
                 netWorth: netWorth(seat, game) };
         }));
         const ranking = [...players].toSorted((a, b) => b.netWorth - a.netWorth);
@@ -27,7 +32,12 @@ export const get = query({
             .order("desc").take(100);
 
         return {
-            game, player, user: { _id: user._id, name: user.name, profileRoot: user.profileRoot }, stocks, feed,
+            game: { _id: game._id, _creationTime: game._creationTime, code: game.code, hostId: game.hostId,
+                currentPlayerId: game.currentPlayerId ?? seats.find((seat) => seat.userId === game.currentUserId)?._id,
+                currentUserId: game.currentUserId, currentPeriod: game.currentPeriod, periodCount: game.periodCount,
+                prices: game.prices, priceHistory: game.priceHistory, status: game.status, turn: game.turn,
+                suspended: game.suspended, npcDifficulty: game.npcDifficulty ?? "medium" },
+            player, user: { _id: user._id, name: user.name, profileRoot: user.profileRoot }, stocks, feed,
             players: players.map((seat) => ({
                 ...seat, ranking: ranking.findIndex((item) => item._id === seat._id) + 1,
             })),

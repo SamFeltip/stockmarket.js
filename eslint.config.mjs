@@ -290,6 +290,20 @@ export default [
             "unicorn/filename-case": "off",
         },
     },
+    {
+        files: ["packages/npc-engine/**/*.ts", "packages/game-contracts/**/*.ts"],
+        rules: {
+            "no-restricted-imports": ["error", {
+                patterns: ["convex", "convex/**", "react", "react/**", "node:*", "**/convex/**", "**/src/*.tsx"],
+            }],
+        },
+    },
+    {
+        files: ["convex/game/**/*.ts", "shared/**/*.ts"],
+        rules: {
+            "no-restricted-imports": ["error", { patterns: ["**/npc/**", "**/npc-engine/**"] }],
+        },
+    },
     /*
     ---------------- Final overrides ----------------
     */

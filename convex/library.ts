@@ -37,7 +37,11 @@ export async function gameByCode(context: QueryContext, code: string)
 
 export async function members(context: QueryContext, gameId: Id<"games">)
 {
-    return await context.db.query("players").withIndex("by_game", (q) => q.eq("gameId", gameId)).collect();
+    const seats = await context.db.query("players").withIndex("by_game", (q) => q.eq("gameId", gameId)).collect();
+
+    const order = new Map(seats.map((seat, index) => [seat._id, seat.seatOrder ?? index]));
+
+    return seats.toSorted((a, b) => order.get(a._id)! - order.get(b._id)!);
 }
 
 export async function member(context: QueryContext, code: string)
@@ -80,7 +84,9 @@ export async function roundInsights(context: QueryContext, game: Document_<"game
 
 export async function deal(context: MutationContext, game: Document_<"games">, players: Document_<"players">[])
 {
-    const deck = await context.db.query("insights").collect();
+    const snapshot = await context.db.query("gameCatalogs").withIndex("by_game", (q) => q.eq("gameId", game._id)).unique();
+    const deck = snapshot ? [...snapshot.cards] : (await context.db.query("insights").collect())
+        .map((card) => ({ ...card, id: String(card._id) }));
     if (deck.length < players.length * 10)
     {
         fail("Not enough insights for all players");
@@ -101,6 +107,7 @@ export async function deal(context: MutationContext, game: Document_<"games">, p
             await context.db.insert("playerInsights", {
                 gameId: game._id, playerId: player._id, period: game.currentPeriod,
                 stockKey: insight.stockKey, description: insight.description, value: insight.value, resolved: false,
+                catalogCardId: insight.id,
             });
         }
     }

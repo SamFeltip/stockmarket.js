@@ -2,6 +2,11 @@ interface Price { stockKey: number; value: number }
 interface Insight { stockKey: number; playerId: string; value: number }
 interface Stock { key: number; display: boolean; name: string }
 
+export function settledPrice(opening: number, change: number): number
+{
+    return Math.max(0, Math.round((opening + change) * 100) / 100);
+}
+
 export function roundPrices(prices: Price[], insights: Insight[], stocks: Stock[], suspended: number[])
 {
     return prices.map((price) =>
@@ -11,7 +16,7 @@ export function roundPrices(prices: Price[], insights: Insight[], stocks: Stock[
             ? insights.filter((insight) => insight.stockKey === price.stockKey)
                 .reduce((sum, insight) => sum + insight.value, 0) : 0;
 
-        return { ...price, value: Math.max(0, Math.round((price.value + change) * 100) / 100) };
+        return { ...price, value: settledPrice(price.value, change) };
     });
 }
 

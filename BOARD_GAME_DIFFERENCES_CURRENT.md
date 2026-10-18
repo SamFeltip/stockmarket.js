@@ -2,7 +2,7 @@
 
 Researched and compared on 16 October 2026. Updated during implementation on the same date.
 
-This tracked copy records current behavior. `BOARD_GAME_DIFFERENCES.md` remains the original research snapshot. Rows marked **Aligned** are completed changes, rather than remaining differences.
+This tracked copy records current behavior. The local-only `local-notes/BOARD_GAME_DIFFERENCES.md` remains the original research snapshot. Rows marked **Aligned** are completed changes, rather than remaining differences.
 
 ## Scope and sources
 

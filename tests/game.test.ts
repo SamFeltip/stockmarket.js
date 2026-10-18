@@ -20,17 +20,17 @@ describe("Stockmarket transactions", () =>
     });
     it("buys and sells permitted quantities, rotates turns and rejects invalid trades without changing state", async () =>
     {
-        const { sam, bob } = await setup();
+        const { sam, bob, pat, lee } = await setup();
 
         await sam.mutation(api.games.start, { code: "test" });
-        await expect(bob.mutation(api.trading.play, { code: "test", expectedTurn: 0 })).rejects.toThrow("not your turn");
+        await expect(bob.mutation(api.trading.play, { code: "test", expectedTurn: 0, expectedPeriod: 0 })).rejects.toThrow("not your turn");
 
         for (const quantity of [1, 1.5, 6000, 15_000, -6000, -15_000, 1_000_000, -1000, 0])
         {
-            await expect(sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, stockKey: 8, quantity })).rejects.toThrow();
+            await expect(sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, expectedPeriod: 0, stockKey: 8, quantity })).rejects.toThrow();
         }
 
-        await sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, stockKey: 8, quantity: 1000 });
+        await sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, expectedPeriod: 0, stockKey: 8, quantity: 1000 });
         let board = await sam.query(api.board.get, { code: "test" });
 
         expect(board.player.cash).toBe(57_500);
@@ -38,8 +38,10 @@ describe("Stockmarket transactions", () =>
         expect(board.game.turn).toBe(1);
         expect(board.feed[0].message).toBe("bought 1000 shares in UB");
         expect(board.feed[0]).toMatchObject({ stockKey: 8, quantity: 1000 });
-        await bob.mutation(api.trading.play, { code: "test", expectedTurn: 1 });
-        await sam.mutation(api.trading.play, { code: "test", expectedTurn: 2, stockKey: 8, quantity: -1000 });
+        await bob.mutation(api.trading.play, { code: "test", expectedTurn: 1, expectedPeriod: 0 });
+        await pat.mutation(api.trading.play, { code: "test", expectedTurn: 2, expectedPeriod: 0 });
+        await lee.mutation(api.trading.play, { code: "test", expectedTurn: 3, expectedPeriod: 0 });
+        await sam.mutation(api.trading.play, { code: "test", expectedTurn: 4, expectedPeriod: 0, stockKey: 8, quantity: -1000 });
         board = await sam.query(api.board.get, { code: "test" });
         expect(board.feed[0]).toMatchObject({ stockKey: 8, quantity: -1000 });
         expect(board.player.cash).toBe(60_000);
@@ -47,19 +49,19 @@ describe("Stockmarket transactions", () =>
     });
     it("closes after three actions each, settles all insights exactly once, then redeals or finishes", async () =>
     {
-        const { sam, bob } = await setup(5);
+        const { sam, bob, clients } = await setup(5);
 
         await sam.mutation(api.games.start, { code: "test" });
 
-        for (let turn = 0; turn < 6; turn++)
+        for (let turn = 0; turn < 12; turn++)
         {
-            await (turn % 2 === 0 ? sam : bob).mutation(api.trading.play, { code: "test", expectedTurn: turn });
+            await clients[turn % 4].mutation(api.trading.play, { code: "test", expectedTurn: turn, expectedPeriod: 0 });
         }
 
         const closed = await sam.query(api.board.get, { code: "test" });
 
         expect(closed.game.status).toBe("closed");
-        expect(closed.insights).toHaveLength(20);
+        expect(closed.insights).toHaveLength(40);
         await sam.mutation(api.rounds.showSpecial, { code: "test" });
         expect((await bob.query(api.board.get, { code: "test" })).game.status).toBe("closed");
         await expect(bob.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 }))
@@ -84,11 +86,11 @@ describe("Stockmarket transactions", () =>
 
         for (let period = 1; period < 6; period++)
         {
-            for (let turn = 0; turn < 6; turn++)
+            for (let turn = 0; turn < 12; turn++)
             {
-                const client = (turn + period) % 2 === 0 ? sam : bob;
+                const client = clients[(turn + period) % 4];
 
-                await client.mutation(api.trading.play, { code: "test", expectedTurn: turn });
+                await client.mutation(api.trading.play, { code: "test", expectedTurn: turn, expectedPeriod: period });
             }
 
             await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: period });
@@ -99,7 +101,7 @@ describe("Stockmarket transactions", () =>
     it("rejects duplicate requests and overcapacity lobbies", async () =>
     {
         const { t, sam } = await setup();
-        for (let index = 0; index < 4; index++)
+        for (let index = 0; index < 2; index++)
         {
             const userId = await t.run(async (context) => await context.db.insert("users", {
                 name: `player${index}`, profileRoot: "/static/imgs/1profile.png",
@@ -112,8 +114,8 @@ describe("Stockmarket transactions", () =>
 
         await expect(t.withIdentity({ subject: `${extraId}|session` }).mutation(api.games.join, { code: "test" })).rejects.toThrow("full");
         await sam.mutation(api.games.start, { code: "test" });
-        await sam.mutation(api.trading.play, { code: "test", expectedTurn: 0 });
-        await expect(sam.mutation(api.trading.play, { code: "test", expectedTurn: 0 })).rejects.toThrow();
+        await sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, expectedPeriod: 0 });
+        await expect(sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, expectedPeriod: 0 })).rejects.toThrow();
     });
     it("supports imported currency and hold-stock insights and prevents other players using them", async () =>
     {

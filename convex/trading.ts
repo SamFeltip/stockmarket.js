@@ -1,86 +1,38 @@
-import { sharesPerCompany, validTradeQuantity } from "../shared/rules";
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { fail, feedItem, member, members } from "./library";
-
+import { fail, member } from "./library";
+import { applyTurn } from "./game/commands";
+import { enqueueNextNpcIfNeeded } from "./npc/scheduling";
+import type { Action } from "../packages/game-contracts/src";
 export const play = mutation({
-    args: {
-        code: v.string(), expectedTurn: v.number(),
-        stockKey: v.optional(v.number()), quantity: v.optional(v.number()),
-    },
-    handler: async (context, { code, expectedTurn, stockKey, quantity }) =>
+    args: { code: v.string(), expectedTurn: v.number(), expectedPeriod: v.optional(v.number()),
+        stockKey: v.optional(v.number()), quantity: v.optional(v.number()) },
+    handler: async (context, { code, expectedTurn, expectedPeriod, stockKey, quantity }) =>
     {
         const { game, user, player } = await member(context, code);
-        if (game.status !== "playing" || game.currentUserId !== user._id)
+        if (expectedPeriod === undefined && game.rulesVersion === 2)
         {
-            fail("It is not your turn");
+            fail("Include the expected period; refresh the board");
         }
 
-        // Reject duplicate clicks and requests made against an obsolete board, even in a solo game.
-        if (game.turn !== expectedTurn)
-        {
-            fail("The turn has changed; try again");
-        }
-
-        const players = await members(context, game._id);
-        let message = "passed their go";
+        let action: Action = { kind: "pass" };
         if (stockKey !== undefined)
         {
-            const stock = await context.db.query("stocks").withIndex("by_key", (q) => q.eq("key", stockKey)).unique();
-            const price = game.prices.find((item) => item.stockKey === stockKey)?.value;
-            const holding = player.holdings.find((item) => item.stockKey === stockKey);
-            if (!stock?.display || price === undefined || !holding || !Number.isFinite(price) || price <= 0)
-            {
-                fail("This stock cannot be traded");
-            }
-
-            if (quantity === undefined || !validTradeQuantity(quantity))
+            if (quantity === undefined || quantity === 0)
             {
                 fail("Trade 1000 to 5000 shares in steps of 1000, or multiples of 10000");
             }
 
-            const available = sharesPerCompany - players.reduce((sum, item) => sum
-              + (item.holdings.find((share) => share.stockKey === stockKey)?.quantity ?? 0), 0);
-            const cost = Math.round(quantity * price * 100) / 100;
-            if (!Number.isFinite(cost))
-            {
-                fail("This stock cannot be traded");
-            }
-
-            if (quantity > available)
-            {
-                fail("Not enough shares available");
-            }
-
-            if (holding.quantity + quantity < 0)
-            {
-                fail("Not enough shares to sell");
-            }
-
-            if (player.cash < cost)
-            {
-                fail("Not enough cash");
-            }
-
-            await context.db.patch(player._id, {
-                cash: Math.round((player.cash - cost) * 100) / 100,
-                holdings: player.holdings.map((item) => item.stockKey === stockKey
-                    ? { ...item, quantity: item.quantity + quantity } : item),
-            });
-            message = `${quantity > 0 ? "bought" : "sold"} ${Math.abs(quantity)} shares in ${stock.name}`;
+            action = { kind: quantity > 0 ? "buy" : "sell", stockKey, quantity: Math.abs(quantity) };
         }
         else if (quantity !== undefined)
         {
             fail("Choose a stock");
         }
 
-        await feedItem(context, game, user.name, message, user.profileRoot, "", stockKey === undefined ? {} : { stockKey, quantity });
-        const turn = game.turn + 1;
-        const index = players.findIndex((seat) => seat.userId === user._id);
-
-        await context.db.patch(game._id, {
-            turn, currentUserId: players[(index + 1) % players.length].userId,
-            status: turn >= players.length * 3 ? "closed" : "playing",
-        });
+        await applyTurn(context, { playerId: player._id,
+            expectedPeriod: expectedPeriod ?? game.currentPeriod, expectedTurn, action },
+        { name: user.name, profileRoot: user.profileRoot });
+        await enqueueNextNpcIfNeeded(context, game._id);
     },
 });

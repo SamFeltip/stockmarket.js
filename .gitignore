@@ -7,4 +7,10 @@ dist/
 reference/stockmarket-schema-2026-10-16.sql
 public/static/fonts/BigCaslon.ttf
 package-lock.json
-BOARD_GAME_DIFFERENCES.md
+
+# Local drafts and planning notes
+/local-notes/
+.DS_Store
+
+# NPC portrait identities must ship with every build.
+!public/static/imgs/[1-5]profile.png

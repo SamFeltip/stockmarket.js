@@ -17,7 +17,7 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
     const value = ownInsights.reduce((sum, insight) => sum + insight.value, 0);
     const available = sharesPerCompany - players.reduce((sum, seat) => sum
       + (seat.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0), 0);
-    const myTurn = game.currentUserId === board.user._id;
+    const myTurn = game.currentPlayerId === board.player._id;
 
     return (
         <>

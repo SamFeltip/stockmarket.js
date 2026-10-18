@@ -1,7 +1,6 @@
 import { GameHeader, Profile } from "./GameHeader";
-import { FeedMessage } from "./FeedMessage";
 import { Feed } from "./Feed";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "convex/react";
 import { Link } from "react-router-dom";
 import { api } from "../convex/_generated/api";
@@ -9,11 +8,12 @@ import { Alert, Insights, Modal, money, useAction } from "./shared";
 import { StockPanel } from "./StockPanel";
 import { StockPreview } from "./StockPreview";
 import { Portfolio } from "./Portfolio";
+import { NpcTurnStatus } from "./npc/NpcTurnStatus";
 import type { Board } from "./types";
 
 export function Playing({ board }: { board: Board })
 {
-    const { game, user, players, feed, insights } = board;
+    const { game, players, insights } = board;
     const stocks = board.stocks.filter((stock) => stock.display);
     const [stockKey, setStockKey] = useState(stocks[0]?.key);
     const [playerId, setPlayerId] = useState(board.player._id);
@@ -23,39 +23,12 @@ export function Playing({ board }: { board: Board })
     const own = players.find((player) => player._id === board.player._id);
     const selectedStock = stocks.find((stock) => stock.key === stockKey) ?? stocks[0];
     const selectedPlayer = players.find((player) => player._id === playerId) ?? own;
-    const myTurn = game.currentUserId === user._id;
+    const myTurn = game.currentPlayerId === board.player._id;
     const special = insights.filter((insight) => !stocks.some((stock) => stock.key === insight.stockKey));
-    const [notification, setNotification] = useState<Board["feed"][number] | null>(null);
-    const lastFeedId = useRef(feed[0]?._id);
-    const latest = feed[0];
-
-    useEffect(() =>
-    {
-        if (!latest || latest._id === lastFeedId.current)
-        {
-            return;
-        }
-
-        lastFeedId.current = latest._id;
-        const show = setTimeout(() =>
-        {
-            setNotification(latest);
-        }, 0);
-        const hide = setTimeout(() =>
-        {
-            setNotification(null);
-        }, 2500);
-
-        return () =>
-        {
-            clearTimeout(show);
-            clearTimeout(hide);
-        };
-    }, [latest]);
 
     return (
         <>
-            <div id="game-grid" className="p-3" style={{ opacity: notification ? 0.2 : 1 }}>
+            <div id="game-grid" className="p-3">
                 <Profile board={board} view={view} setView={setView} />
                 <Modal id="insightModal" title={`Special Insights - ${game.code}`}><div className="modal-body"><Insights insights={special} stocks={board.stocks} /></div></Modal>
                 <div id="now-playing" className="position-relative card card-green p-3 rounded d-flex flex-row align-items-center justify-content-center" style={{ backgroundColor: "var(--bs-card-bg)" }}>
@@ -66,9 +39,7 @@ export function Playing({ board }: { board: Board })
                         </div>
                     )
                         : (
-                            <h3>
-                                {`It's ${players.find((player) => player.userId === game.currentUserId)?.name ?? "someone"}'s turn!`}
-                            </h3>
+                            <NpcTurnStatus board={board} />
                         )}
                     {special.length > 0 && (
                         <button id="insightModalButton" className="btn btn-primary position-relative position-lg-absolute" data-bs-toggle="modal" data-bs-target="#insightModal" aria-label="Special insights">
@@ -132,6 +103,7 @@ export function Playing({ board }: { board: Board })
                                     <li className="nav-item d-flex flex-fill" key={player._id}>
                                         <button
                                             id={`player-tab-${player._id}`}
+                                            aria-current={player._id === game.currentPlayerId ? "true" : undefined}
                                             className={`player-tab player nav-link d-flex flex-column flex-sm-row flex-fill align-items-center justify-content-between gap-1 ${player._id === selectedPlayer?._id ? "active" : ""}`}
                                             onClick={() =>
                                             {
@@ -161,22 +133,12 @@ export function Playing({ board }: { board: Board })
                     busy={busy}
                     onPass={() =>
                     {
-                        void run(() => play({ code: game.code, expectedTurn: game.turn }));
+                        void run(() => play({ code: game.code, expectedTurn: game.turn,
+                            expectedPeriod: game.currentPeriod }));
                     }}
                 />
             </div>
             {error && <div className="game-error"><Alert message={error} /></div>}
-            {notification && (
-                <div id="play-notif" style={{ pointerEvents: "none" }}>
-                    <div className="p-3 d-flex justify-content-center flex-column align-items-center position-absolute top-0 bottom-0 start-0 end-0">
-                        <img className="rounded bg-secondary" src={notification.imageRoot} height={300} width={300} alt="profile" />
-                        <div className="text-center">
-                            <h1>{notification.title}</h1>
-                            <FeedMessage item={notification} stocks={board.stocks} detailed />
-                        </div>
-                    </div>
-                </div>
-            )}
         </>
     );
 }

@@ -19,17 +19,17 @@ describe("Stock history and investors", () =>
     });
     it("records starting and settled prices once, without exposing next-round prices during trading", async () =>
     {
-        const { sam, bob } = await setup();
+        const { sam, bob, clients } = await setup();
 
         await sam.mutation(api.games.start, { code: "test" });
         const initial = await sam.query(api.board.get, { code: "test" });
 
         expect(initial.game.priceHistory).toEqual([{ period: 0, prices: initial.game.prices }]);
-        await sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, stockKey: 8, quantity: 1000 });
+        await sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, expectedPeriod: 0, stockKey: 8, quantity: 1000 });
 
-        for (let turn = 1; turn < 6; turn++)
+        for (let turn = 1; turn < 12; turn++)
         {
-            await (turn % 2 === 0 ? sam : bob).mutation(api.trading.play, { code: "test", expectedTurn: turn });
+            await clients[turn % 4].mutation(api.trading.play, { code: "test", expectedTurn: turn, expectedPeriod: 0 });
         }
 
         const closed = await sam.query(api.board.get, { code: "test" });

@@ -27,7 +27,7 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
         ? Math.min(available, sharesForCash(board.player.cash, price)) : held);
     const { quantity, shares, cash } = resolveTradeDraft(draft, price, limit);
     const previewQuantity = Number.isFinite(quantity) ? quantity : 0;
-    const valid = validTradeQuantity(quantity)
+    const valid = board.game.currentPlayerId === board.player._id && validTradeQuantity(quantity)
       && quantity > 0 && quantity <= limit && price > 0;
     const label = mode === "buy" ? "Buy" : "Sell";
 
@@ -59,7 +59,8 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
 
                         void run(async () =>
                         {
-                            await play({ code: board.game.code, expectedTurn: board.game.turn, stockKey: stock.key,
+                            await play({ code: board.game.code, expectedTurn: board.game.turn,
+                                expectedPeriod: board.game.currentPeriod, stockKey: stock.key,
                                 quantity: mode === "buy" ? quantity : -quantity });
                             document.querySelector<HTMLButtonElement>(`#${mode}Modal .btn-close`)?.click();
                             setQuantity(0);

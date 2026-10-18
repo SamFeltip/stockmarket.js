@@ -1,15 +1,26 @@
 import { Change, Insights, money } from "./shared";
 import type { Board, Player } from "./types";
 
+import { NpcIdentity } from "./npc/NpcIdentity";
+
 export function Portfolio({ board, player }: { board: Board; player: Player })
 {
-    const own = player.userId === board.user._id;
+    const own = player._id === board.player._id;
     const stocks = board.stocks.filter((stock) => stock.display);
     const insights = own ? board.insights : [];
 
     return (
         <div id="player-portfolio" className={`flex-fill p-3 gap-3 ${own ? "is-current-player" : ""}`}>
             <div id="portfolio">
+                {player.kind === "npc" && (
+                    <div className="d-flex gap-3 align-items-center">
+                        <img className="rounded" width={60} height={60} src={player.profileRoot} alt={player.name} />
+                        <div>
+                            <h3 className="text-black">{player.name}</h3>
+                            <NpcIdentity player={player} showTagline />
+                        </div>
+                    </div>
+                )}
                 <h4 className="text-black">Portfolio</h4>
                 <div className="p-4 p-sm-0 d-flex flex-row justify-content-between flex-wrap">
                     {stocks.map((stock) => (

@@ -1,4 +1,4 @@
-import { gameLengths, minimumPlayers } from "../shared/rules";
+import { gameLengths, maximumPlayers, minimumPlayers } from "../shared/rules";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -9,7 +9,10 @@ import { Playing } from "./Playing";
 import { RoundEnd } from "./RoundEnd";
 import type { Board } from "./types";
 
-function Waiting({ board }: { board: Board })
+import { NpcLobbyControls } from "./npc/NpcLobbyControls";
+import { LaunchGameButton } from "./npc/LaunchGameButton";
+
+export function Waiting({ board }: { board: Board })
 {
     const setLength = useMutation(api.games.setLength);
     const start = useMutation(api.games.start);
@@ -20,8 +23,8 @@ function Waiting({ board }: { board: Board })
     const host = game.hostId === user._id;
 
     return (
-        <main className="position-relative overflow-x-hidden d-flex flex-column justify-content-center">
-            <div className="container-fluid rounded text-center d-flex flex-column justify-content-center" style={{ width: "95vw", height: "95vh" }}>
+        <main className="npc-waiting-room position-relative overflow-x-hidden d-flex flex-column justify-content-center">
+            <div className="container-fluid rounded text-center d-flex flex-column justify-content-center" style={{ width: "95vw", minHeight: "95vh" }}>
                 <Alert message={error} />
                 <p>Lobby code:</p>
                 <h2 className="primary">{game.code}</h2>
@@ -29,21 +32,9 @@ function Waiting({ board }: { board: Board })
                     Waiting for players to join (
                     {players.length}
                     {" "}
-                    / 6)
+                    {`/ ${maximumPlayers})`}
                 </p>
-                <div style={{ minHeight: "11em" }} id="player-list" className="d-flex flex-row justify-content-center gap-3 p-2">
-                    {players.map((player) => (
-                        <div className="card card-green" key={player._id}>
-                            <img
-                                className="rounded card-img-top"
-                                style={{ objectFit: "cover", maxWidth: "7.5em", maxHeight: "7.5em", height: "auto", width: "auto" }}
-                                src={player.profileRoot}
-                                alt={player.name}
-                            />
-                            <div className="card-body"><h3>{player.name}</h3></div>
-                        </div>
-                    ))}
-                </div>
+                <NpcLobbyControls board={board} />
                 <div className="py-3">
                     <p className="pb-2">Game length</p>
                     {host ? (
@@ -70,7 +61,6 @@ function Waiting({ board }: { board: Board })
                         : <div className="btn bg-dark" id="game-difficulty">{`${game.periodCount + 1} periods`}</div>}
                 </div>
                 <div className="py-3">
-                    <p className="pb-2">{players.length < minimumPlayers ? "At least two players are required" : "Launch game when all players have joined"}</p>
                     <div id="game-actions" className="d-flex flex-row w-100 justify-content-center gap-3">
                         <button
                             className="btn btn-secondary w-100"
@@ -88,17 +78,13 @@ function Waiting({ board }: { board: Board })
                             Back
                         </button>
                         {host && (
-                            <button
-                                className="btn btn-primary w-100"
-                                style={{ maxWidth: "14rem" }}
+                            <LaunchGameButton
                                 disabled={busy || players.length < minimumPlayers}
-                                onClick={() =>
+                                onLaunch={() =>
                                 {
                                     void run(() => start({ code: game.code }));
                                 }}
-                            >
-                                Launch Game
-                            </button>
+                            />
                         )}
                     </div>
                 </div>

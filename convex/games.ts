@@ -1,7 +1,9 @@
-import { minimumPlayers, startingCash, validGameLength } from "../shared/rules";
+import { minimumPlayers, maximumPlayers, startingCash, validGameLength } from "../shared/rules";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { currentUser, deal, fail, feedItem, gameByCode, member, members, normalizeCode, seedCatalog } from "./library";
+
+import { enqueueNextNpcIfNeeded } from "./npc/scheduling";
 
 export const create = mutation({
     args: { code: v.string(), periodCount: v.number() },
@@ -25,13 +27,16 @@ export const create = mutation({
         const gameId = await context.db.insert("games", {
             code, hostId: user._id, currentUserId: user._id, periodCount: arguments_.periodCount,
             currentPeriod: 0, turn: 0, status: "waiting", suspended: [],
+            rulesVersion: 2, npcDifficulty: "medium", rosterRevision: 0,
             prices, priceHistory: [{ period: 0, prices }],
         });
 
-        await context.db.insert("players", {
-            gameId, userId: user._id, active: true, cash: startingCash,
+        const playerId = await context.db.insert("players", {
+            gameId, userId: user._id, controller: { kind: "human", userId: user._id }, seatOrder: 0, active: true, cash: startingCash,
             holdings: stocks.map((stock) => ({ stockKey: stock.key, quantity: 0 })),
         });
+
+        await context.db.patch(gameId, { currentPlayerId: playerId });
 
         return code;
     },
@@ -57,13 +62,15 @@ export const join = mutation({
             fail("This game has already started");
         }
 
-        if (players.length >= 6)
+        if (players.length >= maximumPlayers)
         {
             fail("This lobby is full");
         }
 
         await context.db.insert("players", {
-            gameId: game._id, userId: user._id, cash: startingCash, active: true,
+            gameId: game._id, userId: user._id, controller: { kind: "human", userId: user._id },
+            seatOrder: Math.max(-1, ...players.map((seat, index) => seat.seatOrder ?? index)) + 1,
+            cash: startingCash, active: true,
             holdings: game.prices.map((price) => ({ stockKey: price.stockKey, quantity: 0 })),
         });
 
@@ -81,13 +88,28 @@ export const leave = mutation({
         {
             await context.db.delete(player._id);
             const remaining = await members(context, game._id);
-            if (remaining.length === 0)
+            const humans = remaining.filter((seat) => seat.controller?.kind !== "npc" && seat.userId);
+            if (humans.length === 0)
             {
+                for (const seat of remaining)
+                {
+                    await context.db.delete(seat._id);
+                }
+
+                for (const table of ["npcGameConfigs", "npcStates", "npcTurns", "gameCatalogs"] as const)
+                {
+                    for (const item of await context.db.query(table).withIndex("by_game", (q) => q.eq("gameId", game._id)).collect())
+                    {
+                        await context.db.delete(item._id);
+                    }
+                }
+
                 await context.db.delete(game._id);
             }
             else if (game.hostId === player.userId)
             {
-                await context.db.patch(game._id, { hostId: remaining[0].userId, currentUserId: remaining[0].userId });
+                await context.db.patch(game._id, { hostId: humans[0].userId!, currentUserId: humans[0].userId,
+                    currentPlayerId: humans[0]._id, rosterRevision: (game.rosterRevision ?? 0) + 1 });
             }
         }
     },
@@ -130,7 +152,7 @@ export const start = mutation({
         const players = await members(context, game._id);
         if (players.length < minimumPlayers)
         {
-            fail("At least two players are required");
+            fail("At least four players are required");
         }
 
         if (!validGameLength(game.periodCount))
@@ -138,9 +160,41 @@ export const start = mutation({
             fail("Invalid game length");
         }
 
+        if (players.length > maximumPlayers || !players.some((seat) => seat.userId))
+        {
+            fail("Invalid player roster");
+        }
+
+        const hasNpcs = players.some((seat) => seat.controller?.kind === "npc");
+        if (hasNpcs && process.env.NPC_DISABLE_NEW_GAMES === "true")
+        {
+            fail("New NPC games are temporarily unavailable");
+        }
+
+        const cards = await context.db.query("insights").collect();
+        const stocks = await context.db.query("stocks").collect();
+        if (hasNpcs && cards.some((card) => !stocks.some((stock) => stock.key === card.stockKey && stock.display)))
+        {
+            fail("NPC games require an ordinary-only insight catalog");
+        }
+
+        const catalogVersion = `catalog:${game._id}`;
+
+        await context.db.insert("gameCatalogs", { gameId: game._id, version: catalogVersion,
+            cards: cards.map((card) => ({ id: String(card._id), stockKey: card.stockKey, value: card.value,
+                description: card.description })) });
+
+        for (const [index, seat] of players.entries())
+        {
+            await context.db.patch(seat._id, { seatOrder: index, periodStartRanking: index + 1,
+                controller: seat.controller ?? { kind: "human", userId: seat.userId! } });
+        }
+
         await deal(context, game, players);
-        await context.db.patch(game._id, { status: "playing", currentUserId: players[0].userId });
+        await context.db.patch(game._id, { status: "playing", currentPlayerId: players[0]._id,
+            currentUserId: players[0].userId, rulesVersion: 2, catalogVersion });
         await feedItem(context, game, "game started", "game started", "/static/imgs/icons/Handshake.svg", "grey");
+        await enqueueNextNpcIfNeeded(context, game._id);
     },
 });
 
