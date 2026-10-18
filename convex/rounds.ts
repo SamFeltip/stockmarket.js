@@ -1,3 +1,4 @@
+import { roundCash, roundPrices } from "../shared/settlement";
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { deal, fail, feedItem, member, members, roundInsights } from "./library";
@@ -77,24 +78,11 @@ export const next = mutation({
             fail("Wait for players to resolve their hold-stock insights");
         }
 
-        const prices = game.prices.map((price) =>
-        {
-            const stock = stocks.find((item) => item.key === price.stockKey);
-            const change = stock?.display && !game.suspended.includes(price.stockKey)
-                ? insights.filter((insight) => insight.stockKey === price.stockKey)
-                    .reduce((sum, insight) => sum + insight.value, 0) : 0;
-
-            return { ...price, value: Math.max(0, price.value + change) };
-        });
-        const currencyKeys = new Set(stocks.filter((stock) => stock.name === "currency").map((stock) => stock.key));
+        const prices = roundPrices(game.prices, insights, stocks, game.suspended);
         const players = await members(context, game._id);
         for (const seat of players)
         {
-            const change = insights.filter((insight) =>
-                insight.playerId === seat._id && currencyKeys.has(insight.stockKey))
-                .reduce((sum, insight) => sum + insight.value, 0);
-
-            await context.db.patch(seat._id, { cash: Math.max(0, Math.trunc(seat.cash * (1 + change))) });
+            await context.db.patch(seat._id, { cash: roundCash(seat, insights, stocks) });
         }
 
         const finished = game.currentPeriod >= game.periodCount;

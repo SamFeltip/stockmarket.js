@@ -1,3 +1,4 @@
+import StockPriceChart from "./StockPriceChart";
 import { Change } from "./shared";
 import type { Board, Insight, Stock } from "./types";
 
@@ -18,15 +19,15 @@ export function StockResult({ before, after }: { before: number; after: number }
     );
 }
 
-export function RoundReveal({ board, stock, insights, index }: {
-    board: Board; stock: Stock; insights: Insight[]; index: number;
+export function RoundReveal({ board, preview, stock, insights, index }: {
+    board: Board; preview: Board; stock: Stock; insights: Insight[]; index: number;
 })
 {
     const special = !stock.display;
     const active = insights[index];
     const sum = insights.slice(0, index + 1).reduce((total, insight) => total + insight.value, 0);
     const before = board.game.prices.find((price) => price.stockKey === stock.key)?.value ?? 0;
-    const after = Math.max(0, before + (board.game.suspended.includes(stock.key) ? 0 : sum));
+    const after = preview.game.prices.find((price) => price.stockKey === stock.key)?.value ?? before;
 
     return (
         <div className="round-reveal gap-3 h-100 d-grid">
@@ -51,6 +52,11 @@ export function RoundReveal({ board, stock, insights, index }: {
                     {special ? <p className="text-center p-4">All additional insights revealed</p> : <StockResult before={before} after={after} />}
                     {insights.length === 0 && <p className="text-center">No insights for this stock</p>}
                     {board.game.suspended.includes(stock.key) && <p className="text-center">Stock price held</p>}
+                </div>
+            )}
+            {!special && (
+                <div className="round-reveal-chart bg-white text-black rounded p-3">
+                    <StockPriceChart game={preview.game} stock={stock} />
                 </div>
             )}
         </div>

@@ -1,3 +1,4 @@
+import { portfolioWorth } from "../shared/settlement";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError } from "convex/values";
 import type { MutationCtx as MutationContext, QueryCtx as QueryContext } from "./_generated/server";
@@ -113,6 +114,5 @@ export async function feedItem(context: MutationContext, game: Document_<"games"
 
 export function netWorth(player: Document_<"players">, game: Document_<"games">)
 {
-    return player.cash + player.holdings.reduce((total, holding) => total + holding.quantity
-      * (game.prices.find((price) => price.stockKey === holding.stockKey)?.value ?? 0), 0);
+    return portfolioWorth(player, game.prices);
 }
