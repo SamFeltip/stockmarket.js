@@ -30,7 +30,8 @@ export default defineSchema({
     stocks: defineTable(stockFields).index("by_key", ["key"]),
     insights: defineTable(insightFields).index("by_key", ["key"]),
     games: defineTable({
-        code: v.string(), hostId: v.id("users"), currentUserId: v.optional(v.id("users")),
+        tvTokenHash: v.optional(v.string()),
+        code: v.string(), hostId: v.optional(v.id("users")), currentUserId: v.optional(v.id("users")),
         currentPlayerId: v.optional(v.id("players")), npcDifficulty: v.optional(difficultyValidator),
         rulesVersion: v.optional(v.number()), rosterRevision: v.optional(v.number()),
         catalogVersion: v.optional(v.string()),

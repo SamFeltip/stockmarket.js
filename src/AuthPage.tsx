@@ -1,6 +1,7 @@
 import { ConvexError } from "convex/values";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { authDestination } from "../shared/auth-destination";
 import { validUsername } from "../shared/names";
 import { usernameHelp } from "./errors";
 import { Alert, useAction, formText } from "./shared";
@@ -10,6 +11,9 @@ export function AuthPage({ signup = false }: { signup?: boolean })
     const { signIn } = useAuthActions();
     const { run, busy, error } = useAction();
     const navigate = useNavigate();
+    const location = useLocation();
+    const destination = authDestination(location.pathname, location.search);
+    const authLink = `${signup ? "/login" : "/signup"}?next=${encodeURIComponent(destination)}`;
 
     return (
         <main className="d-flex flex-column justify-content-center p-2">
@@ -43,7 +47,7 @@ export function AuthPage({ signup = false }: { signup?: boolean })
                                 }
 
                                 await signIn("password", form);
-                                await navigate("/");
+                                await navigate(destination);
                             });
                         }}
                     >
@@ -82,7 +86,7 @@ export function AuthPage({ signup = false }: { signup?: boolean })
                         />
                         <p className="auth-switch text-center mb-3">
                             {signup ? "already have an account? " : "don’t have an account? "}
-                            <Link to={signup ? "/login" : "/signup"}>
+                            <Link to={authLink}>
                                 {signup ? "Click here to log in" : "Click here to create one"}
                             </Link>
                         </p>

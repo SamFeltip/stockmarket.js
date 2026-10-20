@@ -18,6 +18,7 @@ import type * as game_legalActions from "../game/legalActions.js";
 import type * as game_seats from "../game/seats.js";
 import type * as games from "../games.js";
 import type * as http from "../http.js";
+import type * as launch from "../launch.js";
 import type * as library from "../library.js";
 import type * as migrations from "../migrations.js";
 import type * as npc_identity from "../npc/identity.js";
@@ -29,6 +30,7 @@ import type * as npc_scheduling from "../npc/scheduling.js";
 import type * as npc_worker from "../npc/worker.js";
 import type * as rounds from "../rounds.js";
 import type * as trading from "../trading.js";
+import type * as tv from "../tv.js";
 import type * as users from "../users.js";
 
 import type {
@@ -48,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   "game/seats": typeof game_seats;
   games: typeof games;
   http: typeof http;
+  launch: typeof launch;
   library: typeof library;
   migrations: typeof migrations;
   "npc/identity": typeof npc_identity;
@@ -59,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   "npc/worker": typeof npc_worker;
   rounds: typeof rounds;
   trading: typeof trading;
+  tv: typeof tv;
   users: typeof users;
 }>;
 

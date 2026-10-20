@@ -1,9 +1,9 @@
-import { minimumPlayers, maximumPlayers, startingCash, validGameLength } from "../shared/rules";
+import { maximumPlayers, startingCash, validGameLength } from "../shared/rules";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { currentUser, deal, fail, feedItem, gameByCode, member, members, normalizeCode, seedCatalog } from "./library";
+import { currentUser, fail, gameByCode, member, members, normalizeCode, seedCatalog } from "./library";
 
-import { enqueueNextNpcIfNeeded } from "./npc/scheduling";
+import { launchGame } from "./launch";
 
 export const create = mutation({
     args: { code: v.string(), periodCount: v.number() },
@@ -67,12 +67,18 @@ export const join = mutation({
             fail("This lobby is full");
         }
 
-        await context.db.insert("players", {
+        const playerId = await context.db.insert("players", {
             gameId: game._id, userId: user._id, controller: { kind: "human", userId: user._id },
             seatOrder: Math.max(-1, ...players.map((seat, index) => seat.seatOrder ?? index)) + 1,
             cash: startingCash, active: true,
             holdings: game.prices.map((price) => ({ stockKey: price.stockKey, quantity: 0 })),
         });
+        // A TV owns no seat: the first human joining becomes the phone host.
+        if (players.length === 0 && game.tvTokenHash)
+        {
+            await context.db.patch(game._id, { hostId: user._id, currentUserId: user._id,
+                currentPlayerId: playerId });
+        }
 
         return game.code;
     },
@@ -144,57 +150,7 @@ export const start = mutation({
             fail("Only the lobby host can launch the game");
         }
 
-        if (game.status !== "waiting")
-        {
-            fail("The game has already started");
-        }
-
-        const players = await members(context, game._id);
-        if (players.length < minimumPlayers)
-        {
-            fail("At least four players are required");
-        }
-
-        if (!validGameLength(game.periodCount))
-        {
-            fail("Invalid game length");
-        }
-
-        if (players.length > maximumPlayers || !players.some((seat) => seat.userId))
-        {
-            fail("Invalid player roster");
-        }
-
-        const hasNpcs = players.some((seat) => seat.controller?.kind === "npc");
-        if (hasNpcs && process.env.NPC_DISABLE_NEW_GAMES === "true")
-        {
-            fail("New NPC games are temporarily unavailable");
-        }
-
-        const cards = await context.db.query("insights").collect();
-        const stocks = await context.db.query("stocks").collect();
-        if (hasNpcs && cards.some((card) => !stocks.some((stock) => stock.key === card.stockKey && stock.display)))
-        {
-            fail("NPC games require an ordinary-only insight catalog");
-        }
-
-        const catalogVersion = `catalog:${game._id}`;
-
-        await context.db.insert("gameCatalogs", { gameId: game._id, version: catalogVersion,
-            cards: cards.map((card) => ({ id: String(card._id), stockKey: card.stockKey, value: card.value,
-                description: card.description })) });
-
-        for (const [index, seat] of players.entries())
-        {
-            await context.db.patch(seat._id, { seatOrder: index, periodStartRanking: index + 1,
-                controller: seat.controller ?? { kind: "human", userId: seat.userId! } });
-        }
-
-        await deal(context, game, players);
-        await context.db.patch(game._id, { status: "playing", currentPlayerId: players[0]._id,
-            currentUserId: players[0].userId, rulesVersion: 2, catalogVersion });
-        await feedItem(context, game, "game started", "game started", "/static/imgs/icons/Handshake.svg", "grey");
-        await enqueueNextNpcIfNeeded(context, game._id);
+        await launchGame(context, game);
     },
 });
 
