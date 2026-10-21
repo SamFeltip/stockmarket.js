@@ -138,6 +138,44 @@ describe("TV spectator integration", () =>
         expect(JSON.stringify(next)).not.toMatch(/"description"|"insights"/);
     });
 
+    it("gives only the creating TV authority to advance periods and finish the game", async () =>
+    {
+        const { t, sam, clients } = await setup();
+        const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+        const encoded = [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+
+        await t.run(async (context) =>
+        {
+            const game = (await context.db.query("games").first())!;
+
+            await context.db.patch(game._id, { tvTokenHash: encoded });
+        });
+        await t.mutation(api.tv.start, { code: "test", token });
+
+        for (let period = 0; period < 6; period++)
+        {
+            for (let turn = 0; turn < 12; turn++)
+            {
+                await clients[(period + turn) % 4].mutation(api.trading.play, {
+                    code: "test", expectedPeriod: period, expectedTurn: turn,
+                });
+            }
+
+            expect((await sam.query(api.board.get, { code: "test" })).game.tvControlled).toBe(true);
+            await expect(sam.mutation(api.rounds.next, { code: "test", expectedPeriod: period }))
+                .rejects.toThrow("TV remote");
+            await expect(t.mutation(api.tv.next, { code: "test", token: "b".repeat(64), expectedPeriod: period }))
+                .rejects.toThrow("controlling TV");
+            await t.mutation(api.tv.next, { code: "test", token, expectedPeriod: period });
+            await expect(t.mutation(api.tv.next, { code: "test", token, expectedPeriod: period }))
+                .rejects.toThrow("already changed");
+            const updated = await t.query(api.tv.board, { code: "test" });
+
+            expect(updated?.game.status).toBe(period === 5 ? "finished" : "playing");
+            expect(updated?.reveal).toBeNull();
+        }
+    });
+
     it("rejects invalid creation and capability reuse by other devices", async () =>
     {
         const t = convexTest(schema, modules);

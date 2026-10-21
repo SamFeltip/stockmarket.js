@@ -3,6 +3,7 @@ import { mutation, query } from "./_generated/server";
 import { fail, gameByCode, members, netWorth, normalizeCode, roundInsights, seedCatalog } from "./library";
 import { publicIdentity } from "./npc/identity";
 import { launchGame } from "./launch";
+import { advancePeriod } from "./advancePeriod";
 import { validGameLength } from "../shared/rules";
 
 async function tokenHash(token: string)
@@ -68,6 +69,20 @@ export const start = mutation({
     },
 });
 
+export const next = mutation({
+    args: { code: v.string(), token: v.string(), expectedPeriod: v.number() },
+    handler: async (context, { code, token, expectedPeriod }) =>
+    {
+        const game = await gameByCode(context, code);
+        if (!game.tvTokenHash || await tokenHash(token) !== game.tvTokenHash)
+        {
+            fail("Only the controlling TV can advance the round");
+        }
+
+        await advancePeriod(context, game, expectedPeriod);
+    },
+});
+
 // Explicit allowlist: insight cards become public only after trading closes.
 // Never return a raw game, account, capability, or an open-period insight.
 export const board = query({
@@ -115,6 +130,7 @@ export const board = query({
             reveal,
             latestPurchase: purchase ? { title: purchase.title, message: purchase.message } : null,
             game: { code: game.code, status: game.status, currentPeriod: game.currentPeriod,
+                tvControlled: Boolean(game.tvTokenHash),
                 periodCount: game.periodCount, turn: game.turn,
                 currentPlayerId: game.currentPlayerId
                   ?? seats.find((seat) => seat.userId === game.currentUserId)?._id },

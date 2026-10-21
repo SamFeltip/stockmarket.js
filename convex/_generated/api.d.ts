@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as advancePeriod from "../advancePeriod.js";
 import type * as auth from "../auth.js";
 import type * as board from "../board.js";
 import type * as catalog from "../catalog.js";
@@ -40,6 +41,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  advancePeriod: typeof advancePeriod;
   auth: typeof auth;
   board: typeof board;
   catalog: typeof catalog;

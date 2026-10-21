@@ -3,6 +3,7 @@ import type { Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
 import { members } from "../library";
 import { isCurrent, isNpc } from "../game/seats";
+import { actionAnimationMs } from "../../shared/presentation";
 import { random } from "../../packages/npc-engine/src/random";
 export async function enqueueNextNpcIfNeeded(
     context: MutationContext,
@@ -40,7 +41,7 @@ export async function enqueueNextNpcIfNeeded(
     const generation = `${game.currentPeriod}:${game.turn}:${Math.random()}`;
     const seed = `decision:${Math.random()}`;
     const presentationRandom = random(`${generation}:presentation`);
-    const delay = Math.round(800 + presentationRandom() * 1000);
+    const delay = actionAnimationMs + Math.round(800 + presentationRandom() * 1000);
     const pendingId = await context.db.insert("npcTurns", {
         gameId,
         playerId: current._id,

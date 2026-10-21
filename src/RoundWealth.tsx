@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { money } from "./shared";
-import type { Player } from "./types";
+import type { Player, Stock } from "./types";
 
 export function NetWorthNumber({ value }: { value: number })
 {
@@ -26,7 +26,7 @@ export function NetWorthNumber({ value }: { value: number })
     );
 }
 
-export function RoundWealth({ players }: { players: Player[] })
+export function RoundWealth({ players, stock }: { players: Player[]; stock?: Stock })
 {
     return (
         <section id="player-view" className="card card-green p-3 rounded">
@@ -37,6 +37,12 @@ export function RoundWealth({ players }: { players: Player[] })
                         <img className="rounded" src={player.profileRoot} alt="" />
                         <span className="round-player-name">{player.name}</span>
                         <NetWorthNumber value={player.netWorth} />
+                        {stock?.display && (
+                            <span className="round-player-holdings">
+                                {`${money(player.holdings.find((holding) =>
+                                    holding.stockKey === stock.key)?.quantity ?? 0)} ${stock.name} shares`}
+                            </span>
+                        )}
                     </div>
                 ))}
             </div>

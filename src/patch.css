@@ -364,3 +364,7 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 .launch-game-tooltip > button:disabled { pointer-events: none; }
 
 .launch-game-help .tooltip-inner { color: white; max-width: 16rem; }
+
+.round-transition { min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; gap: 1rem; }
+.round-player-holdings { font-size: 0.7rem; text-align: center; }
+.play-notification { display: flex; position: fixed; inset: 0; z-index: 1090; background: rgb(15 44 18 / 96%); color: white; pointer-events: none; }

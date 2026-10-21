@@ -7,7 +7,7 @@ import { FinalHoldings } from "./FinalHoldings";
 import { StockHistoryStrip } from "./StockHistoryStrip";
 import type { Board } from "./types";
 
-export function GameResults({ board }: { board: Board })
+export function GameResults({ board, onBack }: { board: Board; onBack?: () => void })
 {
     const players = board.players.toSorted((a, b) => b.netWorth - a.netWorth);
     const [selectedId, setSelectedId] = useState<string | null>(players[0]?._id ?? null);
@@ -112,7 +112,7 @@ export function GameResults({ board }: { board: Board })
                 </div>
             </div>
             <StockHistoryStrip board={board} />
-            <footer className="results-footer"><Link className="btn btn-primary" to="/">Go Back</Link></footer>
+            <footer className="results-footer">{onBack ? <button className="btn btn-primary" onClick={onBack}>Go Back</button> : <Link className="btn btn-primary" to="/">Go Back</Link>}</footer>
         </div>
     );
 }

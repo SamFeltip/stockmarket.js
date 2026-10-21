@@ -35,6 +35,7 @@ export const get = query({
             game: { _id: game._id, _creationTime: game._creationTime, code: game.code, hostId: game.hostId,
                 currentPlayerId: game.currentPlayerId ?? seats.find((seat) => seat.userId === game.currentUserId)?._id,
                 currentUserId: game.currentUserId, currentPeriod: game.currentPeriod, periodCount: game.periodCount,
+                tvControlled: Boolean(game.tvTokenHash),
                 prices: game.prices, priceHistory: game.priceHistory, status: game.status, turn: game.turn,
                 suspended: game.suspended, npcDifficulty: game.npcDifficulty ?? "medium" },
             player, user: { _id: user._id, name: user.name, profileRoot: user.profileRoot }, stocks, feed,

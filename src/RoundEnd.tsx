@@ -8,6 +8,7 @@ import { RoundOverview } from "./RoundOverview";
 import { RoundWealth } from "./RoundWealth";
 import { roundProgress } from "./round-preview";
 import { RoundReveal } from "./RoundReveal";
+import { useRevealReady } from "./use-reveal-ready";
 import { HoldStock } from "./HoldStock";
 import type { Board } from "./types";
 
@@ -27,12 +28,15 @@ export function RoundEnd({ board }: { board: Board })
     const pendingHolds = insights.some((insight) => !insight.resolved
       && stocks.find((stock) => stock.key === insight.stockKey)?.name === "Hold Stock Price");
     const reviewed = step >= groups.length;
-    const host = game.hostId === board.user._id;
+    const host = game.hostId === board.user._id && !game.tvControlled;
+    const lastPlay = board.feed.find((item) => item.period === game.currentPeriod
+      && item.colour !== "grey" && (item.quantity || item.message === "passed their go"));
+    const ready = useRevealReady(lastPlay?._creationTime);
     const { preview, wealth } = roundProgress(board, step, index);
 
     useEffect(() =>
     {
-        if (unresolved || index >= visible.length)
+        if (!ready || unresolved || index >= visible.length)
         {
             return;
         }
@@ -46,11 +50,21 @@ export function RoundEnd({ board }: { board: Board })
         {
             clearTimeout(timer);
         };
-    }, [index, visible.length, unresolved, step]);
+    }, [index, visible.length, unresolved, step, ready]);
 
     if (game.status === "finished")
     {
         return <GameResults board={board} />;
+    }
+
+    if (!ready)
+    {
+        return (
+            <div className="round-transition text-center">
+                <h1>End of round</h1>
+                <p>Revealing insights shortly…</p>
+            </div>
+        );
     }
 
     return (
@@ -90,7 +104,7 @@ export function RoundEnd({ board }: { board: Board })
                                 ))}
                             </div>
                         </div>
-                        <RoundWealth players={wealth.players} />
+                        <RoundWealth players={wealth.players} stock={activeStock} />
                     </>
                 )}
                 <div id="next-step-wrapper" className="round-navigation p-3" style={{ animation: "none" }}>
@@ -110,7 +124,7 @@ export function RoundEnd({ board }: { board: Board })
                                 {" →"}
                             </button>
                         </>
-                    ) : <p>Waiting for the game creator to continue.</p>) : (
+                    ) : <p>{game.tvControlled ? "Use the TV remote to start the next period." : "Waiting for the game creator to continue."}</p>) : (
                         <button
                             className="btn btn-primary d-flex flex-row gap-2 align-items-center"
                             disabled={Boolean(unresolved)}

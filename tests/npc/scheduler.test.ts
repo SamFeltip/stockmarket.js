@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api, internal } from "../../convex/_generated/api";
 import { setup } from "../game-setup";
 import { buildNpcObservation } from "../../convex/npc/observation";
+import { actionAnimationMs } from "../../shared/presentation";
 import { decide, emptyMemory } from "../../packages/npc-engine/src";
 
 beforeEach(() =>
@@ -15,6 +16,22 @@ afterEach(() =>
 });
 describe("NPC scheduler and privacy", () =>
 {
+    it("does not start an NPC turn until the previous action animation has finished", async () =>
+    {
+        const { t, sam } = await setup(5, 1);
+
+        await sam.mutation(api.npc.lobby.add, { code: "test", required: true });
+        await sam.mutation(api.games.start, { code: "test" });
+        await sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, expectedPeriod: 0 });
+        const pending = (await t.run(async (context) => context.db.query("npcTurns").unique()))!;
+
+        expect(pending.due - pending.enqueuedAt).toBeGreaterThanOrEqual(actionAnimationMs + 800);
+        await vi.advanceTimersByTimeAsync(actionAnimationMs);
+        expect((await sam.query(api.board.get, { code: "test" })).game.turn).toBe(1);
+        await t.finishAllScheduledFunctions(vi.runAllTimers);
+        expect((await sam.query(api.board.get, { code: "test" })).game.turn).toBe(4);
+    });
+
     it("runs consecutive NPCs without a browser and stops at the human and reveal", async () =>
     {
         const { t, sam } = await setup(5, 1);

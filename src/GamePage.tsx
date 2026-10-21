@@ -6,6 +6,7 @@ import { api } from "../convex/_generated/api";
 import { Alert, Loading, useAction } from "./shared";
 import { JoinError } from "./JoinError";
 import { Playing } from "./Playing";
+import { PlayAnimation } from "./PlayAnimation";
 import { RoundEnd } from "./RoundEnd";
 import type { Board } from "./types";
 
@@ -108,8 +109,9 @@ function ConnectedGame({ code }: { code: string })
 
     return (
         <main className="position-relative overflow-x-hidden d-flex flex-column justify-content-center">
-            {board.game.status === "playing" ? <Playing board={board} />
+            {board.game.status === "playing" ? <Playing key={board.game.currentPeriod} board={board} />
                 : <RoundEnd key={`${board.game.currentPeriod}-${board.game.status}`} board={board} />}
+            <PlayAnimation key={`actions-${board.game.currentPeriod}`} board={board} />
         </main>
     );
 }
