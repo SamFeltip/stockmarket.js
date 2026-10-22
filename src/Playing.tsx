@@ -128,15 +128,33 @@ export function Playing({ board }: { board: Board })
                         {view === "stocks" && selectedStock ? <StockPanel board={board} stock={selectedStock} /> : (selectedPlayer ? <Portfolio board={board} player={selectedPlayer} /> : null)}
                     </div>
                 </div>
-                <Feed
-                    board={board}
-                    busy={busy}
-                    onPass={() =>
-                    {
-                        void run(() => play({ code: game.code, expectedTurn: game.turn,
-                            expectedPeriod: game.currentPeriod }));
-                    }}
-                />
+                <Feed board={board} />
+                <Modal id="passModal" title="Are you sure you want to pass?">
+                    <div className="modal-footer d-flex flex-row">
+                        <button type="button" className="btn btn-secondary flex-fill" data-bs-dismiss="modal" disabled={busy}>Cancel</button>
+                        <button
+                            type="button"
+                            className="btn btn-primary flex-fill"
+                            disabled={busy || !myTurn}
+                            onClick={() =>
+                            {
+                                if (busy || !myTurn)
+                                {
+                                    return;
+                                }
+
+                                void run(async () =>
+                                {
+                                    await play({ code: game.code, expectedTurn: game.turn,
+                                        expectedPeriod: game.currentPeriod });
+                                    document.querySelector<HTMLButtonElement>("#passModal .btn-close")?.click();
+                                });
+                            }}
+                        >
+                            Pass
+                        </button>
+                    </div>
+                </Modal>
             </div>
             {error && <div className="game-error"><Alert message={error} /></div>}
         </>

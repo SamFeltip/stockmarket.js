@@ -48,18 +48,18 @@ describe("Cash entry", () =>
         expect(sharesForCash(7501, 2.5)).toBe(3000);
         expect(sharesForCash(870, 0.29)).toBe(3000);
     });
-    it("selects permitted trade sizes within cash and steps across the 5,000-share boundary", () =>
+    it("selects permitted trade sizes within cash and steps by 1,000 at every trade size", () =>
     {
-        expect(sharesForCash(15_000, 2.5)).toBe(5000);
-        expect(sharesForCash(24_999.99, 2.5)).toBe(5000);
+        expect(sharesForCash(15_000, 2.5)).toBe(6000);
+        expect(sharesForCash(24_999.99, 2.5)).toBe(9000);
         expect(sharesForCash(25_000, 2.5)).toBe(10_000);
-        expect(sharesForCash(37_500, 2.5)).toBe(10_000);
+        expect(sharesForCash(37_500, 2.5)).toBe(15_000);
         expect(sharesForCash(50_000, 2.5)).toBe(20_000);
         expect(stepShares(4000, 1)).toBe(5000);
-        expect(stepShares(5000, 1)).toBe(10_000);
-        expect(stepShares(10_000, -1)).toBe(5000);
-        expect(stepShares(20_000, -1)).toBe(10_000);
-        expect(stepShares(6000, 1)).toBe(10_000);
+        expect(stepShares(5000, 1)).toBe(6000);
+        expect(stepShares(10_000, -1)).toBe(9000);
+        expect(stepShares(20_000, -1)).toBe(19_000);
+        expect(stepShares(6000, 1)).toBe(7000);
         expect(stepShares(6000, -1)).toBe(5000);
         expect(stepShares(0, -1)).toBe(0);
     });

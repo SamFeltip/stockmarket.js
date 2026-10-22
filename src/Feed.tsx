@@ -1,6 +1,6 @@
 import { FeedMessage } from "./FeedMessage";
 import type { Board } from "./types";
-export function Feed({ board, busy, onPass }: { board: Board; busy: boolean; onPass: () => void })
+export function Feed({ board }: { board: Board })
 {
     const { feed } = board;
     const myTurn = board.game.currentPlayerId === board.player._id;
@@ -29,15 +29,10 @@ export function Feed({ board, busy, onPass }: { board: Board; busy: boolean; onP
             </div>
             {myTurn && (
                 <button
-                    id="pass-button"
-                    className="btn btn-secondary w-100"
-                    disabled={busy}
-                    data-bs-dismiss="offcanvas"
-                    data-bs-target="#offcanvasResponsive"
-                    onClick={() =>
-                    {
-                        onPass();
-                    }}
+                    id="feed-pass-button"
+                    className="btn btn-secondary w-100 d-none d-lg-block"
+                    data-bs-toggle="modal"
+                    data-bs-target="#passModal"
                 >
                     PASS
                 </button>

@@ -62,10 +62,11 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
                     </div>
                 </div>
                 {myTurn && (
-                    <>
+                    <div className="trade-actions">
                         <button id="buy-button" className="btn btn-success" data-bs-toggle="modal" data-bs-target="#buyModal">Buy</button>
                         <button id="sell-button" className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#sellModal">Sell</button>
-                    </>
+                        <button id="pass-button" className="btn btn-secondary btn-sm d-lg-none" data-bs-toggle="modal" data-bs-target="#passModal">Pass</button>
+                    </div>
                 )}
             </div>
             <TradeModal key={`${stock.key}-buy`} board={board} stock={stock} mode="buy" />

@@ -71,7 +71,7 @@ button.nav-link { cursor: pointer; }
     gap: clamp(0.75rem, 2vh, 1.5rem); align-content: start;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-rows: auto auto auto auto auto auto;
-    grid-template-areas: "stocks stocks" "investors investors" "price-chart price-chart" "insights insights" "stock-info stock-info" "buy-button sell-button";
+    grid-template-areas: "stocks stocks" "investors investors" "price-chart price-chart" "insights insights" "stock-info stock-info" "actions actions";
 }
 #game-stock-info > * { min-width: 0; min-height: 0; }
 #game-stock-info h4 { font-size: clamp(1rem, 2vh, 1.25rem); color: #111; margin-bottom: 0.5rem; }
@@ -130,7 +130,7 @@ button.nav-link { cursor: pointer; }
 @container (min-width: 500px) {
     #game-stock-info, #game-stock-info.watching {
         grid-template-rows: auto minmax(0, 1fr) auto auto;
-        grid-template-areas: "stocks investors" "insights price-chart" "insights stock-info" "buy-button sell-button";
+        grid-template-areas: "stocks investors" "insights price-chart" "insights stock-info" "actions actions";
     }
     #game-stock-info.watching { grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "stocks investors" "insights price-chart" "insights stock-info"; }
 }
@@ -301,7 +301,7 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 /* On narrow panels, details scroll independently of the anchored trade actions. */
 .stock-panel-sections { grid-area: body; display: grid; min-width: 0; min-height: 0; overflow: auto; align-content: start; gap: clamp(0.75rem, 2vh, 1.5rem); grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(5, max-content); grid-template-areas: "stocks" "investors" "price-chart" "insights" "stock-info"; }
 .stock-panel-sections > * { min-width: 0; min-height: 0; }
-#game-stock-info, #game-stock-info.watching { min-height: 0; grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: "body body" "buy-button sell-button"; }
+#game-stock-info, #game-stock-info.watching { min-height: 0; grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: "body body" "actions actions"; }
 #game-stock-info.watching { grid-template-rows: minmax(0, 1fr); grid-template-areas: "body body"; }
 #game-stock-info #stocks { grid-area: stocks; }
 #game-stock-info #investors { grid-area: investors; }
@@ -309,7 +309,7 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 #game-stock-info #stock-info { grid-area: stock-info; }
 @container (min-width: 500px) {
     .stock-panel-sections { display: contents; }
-    #game-stock-info { grid-template-rows: auto minmax(0, 1fr) auto auto; grid-template-areas: "stocks investors" "insights price-chart" "insights stock-info" "buy-button sell-button"; }
+    #game-stock-info { grid-template-rows: auto minmax(0, 1fr) auto auto; grid-template-areas: "stocks investors" "insights price-chart" "insights stock-info" "actions actions"; }
     #game-stock-info.watching { grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "stocks investors" "insights price-chart" "insights stock-info"; }
 }
 
@@ -368,3 +368,12 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 .round-transition { min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; gap: 1rem; }
 .round-player-holdings { font-size: 0.7rem; text-align: center; }
 .play-notification { display: flex; position: fixed; inset: 0; z-index: 1090; background: rgb(15 44 18 / 96%); color: white; pointer-events: none; }
+
+/* Anchor both animated cards to the same centred stack. */
+.profile-toggle { position: relative; justify-self: center; margin: 5px 0 15px 10px; }
+.profile-toggle > button { position: absolute; inset: 0; width: 60px; height: 60px; }
+.profile-toggle img { top: 0; left: 0; }
+#game-stock-info > .trade-actions { grid-area: actions; display: flex; align-items: center; gap: 0.5rem; align-self: end; }
+.trade-actions > #buy-button, .trade-actions > #sell-button { flex: 1; min-height: 2.75rem; text-transform: uppercase; font-size: 0.9rem; }
+.trade-actions > #pass-button { flex: 0 0 auto; min-height: 2.75rem; font-size: 0.75rem; padding: 0.35rem 0.65rem; }
+#game-grid > #offcanvasResponsive { grid-template-rows: minmax(0, 1fr) auto; }

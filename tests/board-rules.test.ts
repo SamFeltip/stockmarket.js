@@ -4,9 +4,9 @@ import { setup } from "./game-setup";
 
 describe("Board-game rules", () =>
 {
-    it("accepts permitted purchases and sales and rejects larger nonstandard sales atomically", async () =>
+    it("accepts permitted purchases and sales and rejects fractional lots atomically", async () =>
     {
-        for (const quantity of [1000, 2000, 3000, 4000, 5000, 10_000, 20_000])
+        for (const quantity of [1000, 2000, 3000, 4000, 5000, 6000, 9000, 10_000, 15_000, 20_000])
         {
             const { sam, bob, pat, lee } = await setup();
 
@@ -20,11 +20,11 @@ describe("Board-game rules", () =>
             if (quantity === 20_000)
             {
                 const before = await sam.query(api.board.get, { code: "test" });
-                for (const invalid of [-6000, -15_000])
+                for (const invalid of [-6500, -15_001])
                 {
                     await expect(sam.mutation(api.trading.play, {
                         code: "test", expectedTurn: 4, expectedPeriod: 0, stockKey: 8, quantity: invalid,
-                    })).rejects.toThrow("Trade 1000 to 5000");
+                    })).rejects.toThrow("Trade shares in steps of 1000");
                 }
 
                 const after = await sam.query(api.board.get, { code: "test" });

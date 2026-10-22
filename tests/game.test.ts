@@ -25,7 +25,7 @@ describe("Stockmarket transactions", () =>
         await sam.mutation(api.games.start, { code: "test" });
         await expect(bob.mutation(api.trading.play, { code: "test", expectedTurn: 0, expectedPeriod: 0 })).rejects.toThrow("not your turn");
 
-        for (const quantity of [1, 1.5, 6000, 15_000, -6000, -15_000, 1_000_000, -1000, 0])
+        for (const quantity of [1, 1.5, 6500, 15_001, -6500, -15_001, 1_000_000, 25_000, -1000, 0])
         {
             await expect(sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, expectedPeriod: 0, stockKey: 8, quantity })).rejects.toThrow();
         }

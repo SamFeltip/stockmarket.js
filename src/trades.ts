@@ -16,12 +16,10 @@ export function stepShares(quantity: number, direction: 1 | -1)
     const current = Number.isFinite(quantity) ? Math.max(0, quantity) : 0;
     if (direction === 1)
     {
-        return current < 5000 ? (Math.floor(current / 1000) + 1) * 1000
-            : (Math.floor(current / 10_000) + 1) * 10_000;
+        return (Math.floor(current / 1000) + 1) * 1000;
     }
 
-    return current <= 5000 ? Math.max(0, (Math.ceil(current / 1000) - 1) * 1000)
-        : Math.max(5000, (Math.ceil(current / 10_000) - 1) * 10_000);
+    return Math.max(0, (Math.ceil(current / 1000) - 1) * 1000);
 }
 
 export interface TradeDraft { field: "shares" | "cash"; value: string }

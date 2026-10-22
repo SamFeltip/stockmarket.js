@@ -28,7 +28,7 @@ export function tradeError(market: Market, action: Action): string | undefined
 
     if (!validTradeQuantity(action.quantity) || action.quantity <= 0)
     {
-        return "Trade 1000 to 5000 shares in steps of 1000, or multiples of 10000";
+        return "Trade shares in steps of 1000";
     }
 
     const signed = action.kind === "buy" ? action.quantity : -action.quantity;
@@ -99,14 +99,7 @@ export function transition(market: Market, action: Action): Market
 export function legalActions(market: Market): Action[]
 {
     const actions: Action[] = [{ kind: "pass" }];
-    const sizes = [
-        1000,
-        2000,
-        3000,
-        4000,
-        5000,
-        ...Array.from({ length: sharesPerCompany / 10_000 }, (_, index) => (index + 1) * 10_000),
-    ];
+    const sizes = Array.from({ length: sharesPerCompany / 1000 }, (_, index) => (index + 1) * 1000);
     for (const price of market.prices)
     {
         for (const kind of ["buy", "sell"] as const)

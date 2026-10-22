@@ -47,7 +47,7 @@ export function Profile({ board, view, setView }: { board: Board; view: "stocks"
 
     return (
         <div id="profile" className="card card-green d-grid align-items-center py-2 px-4 gap-2" style={{ gridTemplateColumns: "60px auto", backgroundColor: "var(--bs-card-bg)" }}>
-            <div style={{ width: 60, height: 60 }}>
+            <div className="profile-toggle" style={{ width: 60, height: 60 }}>
                 <button
                     type="button"
                     className="p-0 border-0 bg-transparent"

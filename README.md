@@ -29,7 +29,7 @@ Open http://127.0.0.1:5173. On a brand-new Convex project, configure password si
 npm run check
 ```
 
-This runs ESLint, gameplay integration and lobby-error tests, strict TypeScript checking, a production build and asset validation. ESLint is adapted from the supplied config: recommended and type-aware TypeScript rules, Unicorn, Allman braces, four-space indentation, double quotes, semicolons, statement spacing, one statement per line, 120-character lines and 250-line files. Astro-only rules were replaced with React hooks and accessibility checks. JSX property indentation is explicitly four spaces to agree with the existing indent rule. ESLint also checks authored CSS with `@eslint/css`.
+This runs ESLint, gameplay integration and lobby-error tests, strict TypeScript checking, a production build and asset validation. Tests have a 15-second limit per case to accommodate complete-game simulations on this machine. ESLint is adapted from the supplied config: recommended and type-aware TypeScript rules, Unicorn, Allman braces, four-space indentation, double quotes, semicolons, statement spacing, one statement per line, 120-character lines and 250-line files. Astro-only rules were replaced with React hooks and accessibility checks. JSX property indentation is explicitly four spaces to agree with the existing indent rule. ESLint also checks authored CSS with `@eslint/css`.
 
 Vendored Bootstrap and the original CSS are immutable copies, excluded from lint formatting; generated Convex bindings and the generated SQL catalog are excluded too. Application code and scripts are linted. `npm run lint:fix` applies supported automatic fixes without disabling checks.
 
@@ -41,7 +41,7 @@ Run the complete deployment from this directory:
 npm run deploy
 ```
 
-This runs all quality checks, deploys Convex and rebuilds the frontend against its production URL, then uploads `dist` to Cloudflare Pages. Each step must succeed before the next runs. Convex and Cloudflare authentication must be configured; their CLIs may prompt you to sign in or confirm deployment.
+This runs all quality checks, deploys Convex and rebuilds the frontend against its production URL, then uploads `dist` to Cloudflare Pages. Each step must succeed before the next runs. The backend command explicitly confirms the production deployment so it also works from non-interactive terminals. Convex and Cloudflare authentication must already be configured; use `npx convex login` and `wrangler login` on a new machine. Run `wrangler whoami` to verify Cloudflare access. Deployments need network access and permission to write the CLIs' configuration and log directories.
 
 The individual steps are available as `npm run deploy:backend` (including the production frontend build) and `npm run deploy:frontend` (upload only). Always run the backend step before the frontend step: a plain `npm run build` uses the development URL in `.env.local` and must not be uploaded to production. The production signing keys have already been configured. For a new production deployment only, use `node scripts/init-auth.mjs --prod` once.
 
