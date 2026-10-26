@@ -38,7 +38,6 @@ export function Playing({ board }: { board: Board })
                             {myTurn ? (
                                 <div className="text-center">
                                     <h3 className="primary">It's your turn</h3>
-                                    <p className="d-none d-lg-block">Buy, sell, use or pass</p>
                                 </div>
                             )
                                 : (

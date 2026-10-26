@@ -4,6 +4,7 @@ import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Modal, money, useAction } from "./shared";
 import { StockPreview } from "./StockPreview";
+import { modalInstance } from "./bootstrap";
 import { resolveTradeDraft, sharesForCash, stepShares, tradeUnavailableReason } from "./trades";
 import type { TradeDraft } from "./trades";
 import type { Board, Stock } from "./types";
@@ -55,7 +56,12 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                             await play({ code: board.game.code, expectedTurn: board.game.turn,
                                 expectedPeriod: board.game.currentPeriod, stockKey: stock.key,
                                 quantity: mode === "buy" ? quantity : -quantity });
-                            document.querySelector<HTMLButtonElement>(`#${mode}Modal .btn-close`)?.click();
+                            const dialog = document.querySelector<HTMLElement>(`#${mode}Modal`);
+                            if (dialog)
+                            {
+                                modalInstance(dialog)?.hide();
+                            }
+
                             setQuantity(0);
                         });
                     }}

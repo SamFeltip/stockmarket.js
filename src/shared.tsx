@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { modalInstance } from "./bootstrap";
+import { TradeDrawerHandle } from "./TradeDrawerHandle";
 import { friendlyError } from "./errors";
 import type { Insight, Stock } from "./types";
 
@@ -59,7 +60,6 @@ export function Modal({ id, title, children, mobileDrawer = false }: {
 })
 {
     const reference = useRef<HTMLDivElement>(null);
-    const dragStart = useRef(0);
 
     useEffect(() =>
     {
@@ -75,35 +75,16 @@ export function Modal({ id, title, children, mobileDrawer = false }: {
     }, []);
 
     const dialog = (
-        <div ref={reference} className={`modal fade${mobileDrawer ? " trade-dialog" : ""}`} id={id} tabIndex={-1} aria-labelledby={`${id}Label`} aria-hidden="true">
+        <div ref={reference} className={`modal fade${mobileDrawer ? " trade-dialog" : ""}`} id={id} tabIndex={-1} aria-labelledby={mobileDrawer ? undefined : `${id}Label`} aria-label={mobileDrawer ? title : undefined} aria-hidden="true">
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content">
-                    {mobileDrawer && (
-                        <button
-                            type="button"
-                            className="trade-drawer-handle"
-                            aria-label="Close trade drawer"
-                            data-bs-dismiss="modal"
-                            onPointerDown={(event) =>
-                            {
-                                dragStart.current = event.clientY;
-                                event.currentTarget.setPointerCapture(event.pointerId);
-                            }}
-                            onPointerUp={(event) =>
-                            {
-                                if (event.clientY - dragStart.current > 40 && reference.current)
-                                {
-                                    modalInstance(reference.current)?.hide();
-                                }
-                            }}
-                        >
-                            <span />
-                        </button>
+                    {mobileDrawer && <TradeDrawerHandle />}
+                    {!mobileDrawer && (
+                        <div className="modal-header">
+                            <h1 className="modal-title fs-5" id={`${id}Label`}>{title}</h1>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                        </div>
                     )}
-                    <div className="modal-header">
-                        <h1 className="modal-title fs-5" id={`${id}Label`}>{title}</h1>
-                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
-                    </div>
                     {children}
                 </div>
             </div>

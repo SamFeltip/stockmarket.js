@@ -24,12 +24,13 @@ export function HeaderIcon({ menu = false }: { menu?: boolean })
 export function GameHeader()
 {
     return (
-        <header className="game-status-card d-none d-lg-flex flex-row align-items-center justify-content-between gap-2 card card-green rounded p-3" style={{ backgroundColor: "var(--bs-card-bg)" }}>
+        <header className="game-status-card d-none d-lg-flex flex-column align-items-center justify-content-center gap-2 card card-green rounded p-3" style={{ backgroundColor: "var(--bs-card-bg)" }}>
             <button type="button" className="game-title-button p-0 border-0 bg-transparent" data-bs-toggle="modal" data-bs-target="#gameModal">
                 <h1 id="stockmarket-header" className="sh-small mb-0">Stockmarket!</h1>
             </button>
             <button type="button" className="game-menu-button" data-bs-toggle="modal" data-bs-target="#gameModal" aria-label="Game menu" title="Game menu">
                 <HeaderIcon menu />
+                <span>Sign out</span>
             </button>
         </header>
     );

@@ -101,15 +101,15 @@ button.nav-link { cursor: pointer; }
 .trade-feedback { grid-column: 1 / -1; min-height: 2.5em; margin: 0; font-size: 0.875rem; line-height: 1.25; color: #842029; overflow-wrap: anywhere; }
 .trade-footer > button { min-height: 2.75rem; }
 @media (max-width: 991.98px) {
-    .modal.trade-dialog { overflow: clip; overscroll-behavior: none; }
+    .modal.trade-dialog { overflow: clip; overscroll-behavior: none; transition: opacity 0.3s ease; }
     .trade-dialog .modal-dialog { position: fixed; inset: auto 0 0; width: 100%; max-width: none; height: 80dvh; min-height: 0; margin: 0; }
     .modal.trade-dialog.fade .modal-dialog { transform: translateY(100%); transition: transform 0.3s ease; }
     .modal.trade-dialog.show .modal-dialog { transform: translateY(0); }
     .trade-dialog .modal-content { height: 100%; max-height: 100%; border: 0; border-radius: 1.25rem 1.25rem 0 0; overflow: clip; }
-    .trade-drawer-handle { display: grid; place-items: center; flex: 0 0 1.25rem; width: 100%; border: 0; padding: 0; background: transparent; touch-action: none; }
+    .trade-drawer-handle { display: grid; place-items: center; flex: 0 0 2.75rem; width: 100%; border: 0; padding: 0; background: transparent; touch-action: none; user-select: none; cursor: grab; }
+    .trade-drawer-handle:active { cursor: grabbing; }
     .trade-drawer-handle > span { width: 2.5rem; height: 4px; border-radius: 2px; background: #adb5aa; }
     .trade-drawer-handle:focus-visible { outline: 2px solid #3c5f2f; outline-offset: -3px; }
-    .trade-dialog .modal-header { flex-shrink: 0; padding-block: 0.5rem; }
     .trade-dialog .modal-body { min-height: 0; overflow: clip; overscroll-behavior: none; justify-content: center; padding-block: 0.75rem; }
     .trade-dialog .modal-body > p { margin: 0; }
     .trade-dialog .purchase-form { row-gap: 0.75rem; }
@@ -128,7 +128,7 @@ button.nav-link { cursor: pointer; }
     .trade-dialog .trade-feedback { font-size: 0.8rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .modal.trade-dialog.fade .modal-dialog { transition: none; }
+    .modal.trade-dialog, .modal.trade-dialog.fade .modal-dialog { transition: none; }
 }
 
 /* Stock details follow the available panel width, including beside the desktop feed. */
@@ -487,4 +487,14 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
     .mobile-game-actions { flex-direction: column; flex-shrink: 0; align-items: stretch; border-left: 1px solid #4b6b40; }
     .mobile-game-actions button { flex: 1; }
     .mobile-game-actions button + button { border-top: 1px solid #4b6b40; }
+}
+
+/* Desktop header and the stock/feed action footers share one spacing scale. */
+@media (min-width: 992px) {
+    #game-grid > #profile { column-gap: 1.25rem !important; padding-inline: 1rem !important; }
+    .game-metrics { column-gap: 2rem; }
+    .game-status-card .game-menu-button { display: flex; align-items: center; justify-content: center; gap: 0.3rem; width: auto; padding-inline: 0.5rem; font-size: 0.9rem; }
+    #game-stock-info { padding: 1rem; }
+    #game-grid > #offcanvasResponsive { padding: 1rem !important; }
+    #game-grid #buy-button, #game-grid #sell-button, #game-grid #feed-pass-button { min-height: 2.75rem; padding: 0.375rem 0.75rem; font-size: 1rem; line-height: 1.5; }
 }

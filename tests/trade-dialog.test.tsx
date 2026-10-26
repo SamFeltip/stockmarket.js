@@ -58,6 +58,8 @@ describe("trade availability feedback", () =>
             expect(footer.indexOf("trade-feedback")).toBeLessThan(footer.indexOf("Cancel"));
             expect(html.toLowerCase()).toContain("novalidate");
             expect(html).toContain("trade-dialog");
+            expect(html).not.toContain("modal-header");
+            expect(html).not.toContain("btn-close");
             expect(html).not.toContain("Trade shares in steps");
             expect(html).not.toContain("Entering cash selects");
         }
