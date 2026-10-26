@@ -65,7 +65,12 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
                     <div className="trade-actions">
                         <button id="buy-button" className="btn btn-success" data-bs-toggle="modal" data-bs-target="#buyModal">Buy</button>
                         <button id="sell-button" className="btn btn-danger" data-bs-toggle="modal" data-bs-target="#sellModal">Sell</button>
-                        <button id="pass-button" className="btn btn-secondary btn-sm d-lg-none" data-bs-toggle="modal" data-bs-target="#passModal">Pass</button>
+                        <button id="pass-button" className="btn btn-secondary btn-sm d-lg-none" data-bs-toggle="modal" data-bs-target="#passModal" aria-label="Pass turn" title="Pass turn">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                                <path d="m5 5 9 7-9 7V5Z" />
+                                <path d="M19 5v14" />
+                            </svg>
+                        </button>
                     </div>
                 )}
             </div>
