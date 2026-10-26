@@ -441,6 +441,7 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
     .mobile-game-actions { flex-direction: column; flex-shrink: 0; align-items: stretch; border-left: 1px solid #4b6b40; }
     .mobile-game-actions button { display: grid; place-items: center; width: 2.75rem; min-height: 2.75rem; flex: 1; padding: 0; border: 0; background: transparent; color: #fff284; }
     .mobile-game-actions button + button { border-top: 1px solid #4b6b40; }
+    .mobile-game-actions button[data-bs-target="#gameModal"] svg { transform: scale(0.55); }
     .mobile-game-actions button:hover, .mobile-game-actions button:active { background: #3c5f2f; }
     .mobile-game-actions button:focus-visible { outline: 2px solid #fff284; outline-offset: -4px; }
 }

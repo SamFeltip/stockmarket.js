@@ -12,14 +12,6 @@ export function MobileGameMetrics({ board }: { board: Board })
     return (
         <div className="mobile-game-metrics d-sm-none">
             <div className="mobile-game-metric">
-                <span className="mobile-game-metric-label">Period</span>
-                <div className="mobile-game-metric-value">
-                    <strong>{game.currentPeriod + 1}</strong>
-                    <span>{`of ${game.periodCount + 1}`}</span>
-                </div>
-                <progress aria-label="Period progress" value={game.currentPeriod + 1} max={game.periodCount + 1} />
-            </div>
-            <div className="mobile-game-metric">
                 <span className="mobile-game-metric-label">Turn</span>
                 <div className="mobile-game-metric-value">
                     <strong>{game.turn + 1}</strong>
@@ -36,6 +28,14 @@ export function MobileGameMetrics({ board }: { board: Board })
                     ))}
                 </div>
             </div>
+            <div className="mobile-game-metric">
+                <span className="mobile-game-metric-label">Period</span>
+                <div className="mobile-game-metric-value">
+                    <strong>{game.currentPeriod + 1}</strong>
+                    <span>{`of ${game.periodCount + 1}`}</span>
+                </div>
+                <progress aria-label="Period progress" value={game.currentPeriod + 1} max={game.periodCount + 1} />
+            </div>
         </div>
     );
 }
@@ -46,21 +46,21 @@ export function MobileGameActions()
         <div className="mobile-game-actions d-flex d-sm-none">
             <button
                 type="button"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#offcanvasResponsive"
-                aria-label="Feed"
-                title="Activity feed"
-            >
-                <HeaderIcon />
-            </button>
-            <button
-                type="button"
                 data-bs-toggle="modal"
                 data-bs-target="#gameModal"
                 aria-label="Game menu"
                 title="Game menu"
             >
                 <HeaderIcon menu />
+            </button>
+            <button
+                type="button"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvasResponsive"
+                aria-label="Feed"
+                title="Activity feed"
+            >
+                <HeaderIcon />
             </button>
         </div>
     );
