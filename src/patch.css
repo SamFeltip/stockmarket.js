@@ -435,11 +435,9 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
     .mobile-game-metric progress::-webkit-progress-bar { background: #4b6b40; }
     .mobile-game-metric progress::-webkit-progress-value { background: #fff284; border-radius: 2px; }
     .mobile-game-metric progress::-moz-progress-bar { background: #fff284; border-radius: 2px; }
-    .mobile-game-bar-label { color: #c6d7c3; font-size: 0.6rem; line-height: 1; }
     .mobile-turn-goes { display: flex; gap: 3px; height: 5px; margin-top: 0.15rem; }
-    .mobile-turn-goes > span { flex: 1; background: #fff284; border-radius: 2px; }
-    .mobile-turn-goes > .is-used { background: #4b6b40; }
-    .mobile-turn-goes > .is-current { outline: 1px solid #fff; outline-offset: 1px; }
+    .mobile-turn-goes > span { flex: 1; background: #4b6b40; border-radius: 2px; }
+    .mobile-turn-goes > .is-used, .mobile-turn-goes > .is-current { background: #fff284; }
     .mobile-game-actions { flex-direction: column; flex-shrink: 0; align-items: stretch; border-left: 1px solid #4b6b40; }
     .mobile-game-actions button { display: grid; place-items: center; width: 2.75rem; min-height: 2.75rem; flex: 1; padding: 0; border: 0; background: transparent; color: #fff284; }
     .mobile-game-actions button + button { border-top: 1px solid #4b6b40; }

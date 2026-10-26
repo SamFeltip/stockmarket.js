@@ -17,7 +17,6 @@ export function MobileGameMetrics({ board }: { board: Board })
                     <strong>{game.currentPeriod + 1}</strong>
                     <span>{`of ${game.periodCount + 1}`}</span>
                 </div>
-                <span className="mobile-game-bar-label">Progress</span>
                 <progress aria-label="Period progress" value={game.currentPeriod + 1} max={game.periodCount + 1} />
             </div>
             <div className="mobile-game-metric">
@@ -26,7 +25,6 @@ export function MobileGameMetrics({ board }: { board: Board })
                     <strong>{game.turn + 1}</strong>
                     <span>{`of ${players.length * 3}`}</span>
                 </div>
-                <span className="mobile-game-bar-label">Goes left</span>
                 <div
                     className="mobile-turn-goes"
                     role="img"
