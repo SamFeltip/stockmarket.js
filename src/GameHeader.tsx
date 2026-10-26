@@ -34,12 +34,16 @@ export function GameHeader({ board }: { board: Board })
                 <div className="p-0 p-sm-2 position-static position-sm-absolute end-0 top-0 gap-1 d-flex flex-row justify-content-between">
                     <button className="btn btn-primary d-block d-lg-none flex-fill" data-bs-toggle="offcanvas" data-bs-target="#offcanvasResponsive" aria-label="Feed" title="Activity feed">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-                            <rect x="3" y="3" width="18" height="18" rx="3" />
                             <path d="M11 8h6M11 12h6M11 16h4" />
                             <path d="M7 8h.01M7 12h.01M7 16h.01" />
                         </svg>
                     </button>
-                    <button className="btn btn-primary d-block d-sm-none flex-fill" data-bs-toggle="modal" data-bs-target="#gameModal" aria-label="Game menu">☰</button>
+                    <button className="btn btn-primary d-block d-sm-none flex-fill" data-bs-toggle="modal" data-bs-target="#gameModal" aria-label="Game menu">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <path d="m16 17 5-5-5-5M21 12H9" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </header>
