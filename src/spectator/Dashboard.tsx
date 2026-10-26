@@ -92,6 +92,9 @@ export function Feed({ board }: { board: Board })
 
 export function Dashboard({ board, phoneUrl }: { board: Board; phoneUrl: string })
 {
+    const volatilityOrder = [7, 8, 9, 10, 11, 12];
+    const stocks = board.stocks.toSorted((a, b) =>
+        (volatilityOrder.indexOf(a.key) + 1 || Infinity) - (volatilityOrder.indexOf(b.key) + 1 || Infinity));
     const ranked = board.players.toSorted((a, b) => b.netWorth - a.netWorth);
     const latest = board.latestPurchase;
     const total = board.players.reduce((sum, player) => sum + player.netWorth, 0);
@@ -106,7 +109,7 @@ export function Dashboard({ board, phoneUrl }: { board: Board; phoneUrl: string 
                     <span>Price per share · GBP</span>
                 </div>
                 <div className="stocks">
-                    {board.stocks.map((stock) =>
+                    {stocks.map((stock) =>
                     {
                         const change = stock.value - stock.startingValue;
 
@@ -148,7 +151,7 @@ export function Dashboard({ board, phoneUrl }: { board: Board; phoneUrl: string 
                         <tr>
                             <th>Player</th>
                             <th>Cash</th>
-                            {board.stocks.map((s) => <th key={s.key}><img className="table-logo" src={stockLogo(s.key, s.imagePath)} alt={s.name} /></th>)}
+                            {stocks.map((s) => <th key={s.key}><img className="table-logo" src={stockLogo(s.key, s.imagePath)} alt={s.name} /></th>)}
                             <th>Net worth</th>
                         </tr>
                     </thead>
@@ -164,7 +167,7 @@ export function Dashboard({ board, phoneUrl }: { board: Board; phoneUrl: string 
                                     </div>
                                 </th>
                                 <td>{money(player.cash)}</td>
-                                {board.stocks.map((stock) => (
+                                {stocks.map((stock) => (
                                     <td key={stock.key}>
                                         {count(player.holdings.find((h) => h.stockKey === stock.key)?.quantity ?? 0)}
                                     </td>

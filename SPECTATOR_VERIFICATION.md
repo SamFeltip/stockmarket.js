@@ -19,3 +19,9 @@ The desktop CSS is generated from the TV stylesheet with `node scripts/sync-spec
 Intentional platform differences: browser keyboard/mouse/touch controls replace remote instructions; the web creator's signed-in account controls their game instead of a TV device capability. Web lobby copy describes that creator rather than claiming the first phone player becomes host. QR codes use the active web origin so phones join the same deployment. TV home/recent-game navigation remains specific to the TV app.
 
 Validation: all 129 tests, lint, TypeScript, production build and asset checks pass. Added `tests/spectator-display.test.tsx` for display coverage. Browser comparisons used identical offline data and did not create or modify production games. Physical-TV rendering was not re-tested in this audit.
+
+## Main merge verification — 26 October 2026
+
+Merged `origin/main` (`ea69bb9`) with the complete web spectator implementation (`072cd6b`) using a merge commit, retaining both histories. Incoming mobile trading actions, pass confirmation, profile-toggle alignment, trade quantity rules and public stock-order corrections remain in place. The themed spectator creation switch and spectator host controls remain in place.
+
+Updated the sibling TV checkout to `e54a019` and refreshed desktop web spectator styles, including TV 1.3.1 summary spacing, focus indicators, scrollable rankings and wealth-change placement. The stylesheet sync now includes rules after the demo-only button, and extracts animation keyframes outside the scoped rules. Web cards and portfolio columns retain the TV client's defensive volatility ordering; a shuffled-input regression confirms holdings remain aligned without mutating the source data.

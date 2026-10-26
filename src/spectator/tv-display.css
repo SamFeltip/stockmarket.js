@@ -100,6 +100,35 @@ button,input{font:inherit}button{cursor:pointer;border:1px solid transparent;bor
 .tv-results footer{justify-content:center}
 
 
+
+/* TV typography scales in rem with the viewport, including portraits and cards. */
+.website-presentation .round-overview { grid-template-rows: auto minmax(0, 1fr) auto; gap: .6rem!important; }
+.website-presentation .round-overview-stocks { min-height: 0; gap: .6rem; }
+.website-presentation .round-overview-stocks article { min-height: 0; }
+.website-presentation .round-overview-stocks article > img { height: 2rem; max-width: 100%; }
+.website-presentation .round-overview-stocks h3 { font-size: 1rem; margin: .2rem 0; }
+.website-presentation .round-overview .stock-result h2 { font-size: 1.35rem; }
+.website-presentation .round-overview .stock-result-change { font-size: 1rem; }
+.website-presentation .round-overview-players { gap: .6rem; }
+.website-presentation .round-overview-players article { min-width: 0; padding: .5rem!important; }
+.website-presentation .round-overview-players img { height: 2.5rem; aspect-ratio: 1; object-fit: cover; }
+.website-presentation .round-overview-players h3, .website-presentation .round-overview-players h4 { margin: .2rem 0; overflow-wrap: anywhere; }
+.website-presentation .round-navigation { flex-wrap: wrap; max-width: 100%; }
+/* Bootstrap's selected and accordion styles must not conceal remote focus. */
+:is(button, input, [tabindex="0"]):focus { outline: .18rem solid #fff284!important; outline-offset: .12rem; box-shadow: 0 0 0 .3rem #0f2c12!important; }
+:is(button.btn-primary, button.primary, .lengths button[aria-pressed="true"]):focus { outline-color: white!important; }
+.tv-results .results-leaderboard { padding: .35rem; overflow-y: auto; }
+.tv-results .result-player-button:focus { border-color: #fff284!important; }
+.portfolios { overflow: auto; }
+/* Give animated portfolio changes their own line above the current value. */
+.website-presentation .net-worth-number { padding-top: 1.4em; }
+.website-presentation .wealth-delta { inset: 0 0 auto; animation: tv-wealth-change 1.8s ease-out both; }
+.website-presentation .round-wealth-players > div { min-width: 0; }
+.website-presentation .round-player-holdings { overflow-wrap: anywhere; }
+
+
         h1#stockmarket-header { font-family: "Big Caslon", serif; }
     }
 }
+@keyframes fadeout{from{opacity:1}to{opacity:0}}
+@keyframes tv-wealth-change { 0% { opacity: 0; } 20%, 65% { opacity: 1; } 100% { opacity: 0; } }

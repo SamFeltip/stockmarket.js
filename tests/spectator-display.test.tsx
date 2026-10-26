@@ -7,6 +7,7 @@ import { setup } from "./game-setup";
 import { SpectatorScreen } from "../src/spectator/SpectatorPage";
 import { RoundPresentation } from "../src/spectator/RoundPresentation";
 import { websiteBoard } from "../src/spectator/presentation";
+import { Dashboard } from "../src/spectator/Dashboard";
 import { stockLogo } from "../src/spectator/assets";
 import type { Board } from "../src/spectator/types";
 
@@ -78,6 +79,26 @@ describe("TV spectator display parity", () =>
         expect(html).not.toContain("End of round");
         expect(websiteBoard(playing).insights).toEqual([]);
         expect(websiteBoard(playing).players).toHaveLength(board.players.length);
+    });
+
+    it("preserves main's volatility ordering in cards, portfolio columns and matching holdings", async () =>
+    {
+        const { board } = await fixture();
+        const stocks = [10, 12, 8, 11, 7, 9].map((key) => board.stocks.find((stock) => stock.key === key)!);
+        const shuffled = { ...board, stocks, players: [{ ...board.players[0],
+            holdings: stocks.map((stock) => ({ stockKey: stock.key, quantity: stock.key })),
+        }] };
+        const html = renderToStaticMarkup(<Dashboard board={shuffled} phoneUrl="https://stockmarket.samfelton.com" />);
+        const names = ["Trusthouse Forte", "UB", "Legal &amp; General", "Thames", "Saatchi &amp; Saatchi", "Natwest"];
+
+        expect([...html.matchAll(/<h3>(.*?)<\/h3>/g)].slice(0, 6).map((match) => match[1])).toEqual(names);
+        const header = html.match(/<thead>(.*?)<\/thead>/)![1];
+        const body = html.match(/<tbody>(.*?)<\/tbody>/)![1];
+
+        expect([...header.matchAll(/alt="(.*?)"/g)].map((match) => match[1])).toEqual(names);
+        expect([...body.matchAll(/<td>(\d+)<\/td>/g)].map((match) => Number(match[1])))
+            .toEqual([7, 8, 9, 10, 11, 12]);
+        expect(shuffled.stocks.map((stock) => stock.key)).toEqual([10, 12, 8, 11, 7, 9]);
     });
 
     it("shows public reveals, cash and share results, and gates the next-period and finish controls", async () =>
