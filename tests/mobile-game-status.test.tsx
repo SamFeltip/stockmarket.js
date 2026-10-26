@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { MobileGameMetrics } from "../src/MobileGameStatus";
+import { GameMetrics } from "../src/GameStatus";
 import { setup } from "./game-setup";
 import { api } from "../convex/_generated/api";
 
@@ -17,7 +17,7 @@ describe("mobile remaining goes", () =>
                 const current = board.players[(period + turn) % board.players.length];
                 const used = Math.floor(turn / board.players.length);
                 const html = renderToStaticMarkup(
-                    <MobileGameMetrics board={{ ...board,
+                    <GameMetrics board={{ ...board,
                         game: { ...board.game, currentPeriod: period, turn, currentPlayerId: current._id } }}
                     />,
                 );

@@ -1,7 +1,7 @@
 import { HeaderIcon } from "./GameHeader";
 import type { Board } from "./types";
 
-export function MobileGameMetrics({ board }: { board: Board })
+export function GameMetrics({ board }: { board: Board })
 {
     const { game, players } = board;
     const current = players.find((player) => player._id === game.currentPlayerId);
@@ -10,15 +10,15 @@ export function MobileGameMetrics({ board }: { board: Board })
     const owner = current?._id === board.player._id ? "Your" : `${current?.name ?? "Current player"}'s`;
 
     return (
-        <div className="mobile-game-metrics d-sm-none">
-            <div className="mobile-game-metric">
-                <span className="mobile-game-metric-label">Turn</span>
-                <div className="mobile-game-metric-value">
+        <div className="game-metrics">
+            <div className="game-metric">
+                <span className="game-metric-label">Turn</span>
+                <div className="game-metric-value">
                     <strong>{game.turn + 1}</strong>
                     <span>{`of ${players.length * 3}`}</span>
                 </div>
                 <div
-                    className="mobile-turn-goes"
+                    className="turn-goes"
                     role="img"
                     aria-label={`${owner} goes left this period: ${remaining} of 3, including this turn`}
                     title={`${owner} goes left this period: ${remaining} of 3, including this turn`}
@@ -28,9 +28,9 @@ export function MobileGameMetrics({ board }: { board: Board })
                     ))}
                 </div>
             </div>
-            <div className="mobile-game-metric">
-                <span className="mobile-game-metric-label">Period</span>
-                <div className="mobile-game-metric-value">
+            <div className="game-metric">
+                <span className="game-metric-label">Period</span>
+                <div className="game-metric-value">
                     <strong>{game.currentPeriod + 1}</strong>
                     <span>{`of ${game.periodCount + 1}`}</span>
                 </div>
@@ -43,7 +43,7 @@ export function MobileGameMetrics({ board }: { board: Board })
 export function MobileGameActions()
 {
     return (
-        <div className="mobile-game-actions d-flex d-sm-none">
+        <div className="mobile-game-actions d-flex d-lg-none">
             <button
                 type="button"
                 data-bs-toggle="modal"

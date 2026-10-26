@@ -21,46 +21,16 @@ export function HeaderIcon({ menu = false }: { menu?: boolean })
     );
 }
 
-export function GameHeader({ board }: { board: Board })
+export function GameHeader()
 {
-    const { game, players } = board;
-
     return (
-        <header className="game-status-card d-none d-sm-flex flex-column justify-content-center card card-green rounded p-3" style={{ backgroundColor: "var(--bs-card-bg)" }}>
-            <div className="d-none d-sm-flex flex-column">
-                <button type="button" className="p-0 border-0 bg-transparent" data-bs-toggle="modal" data-bs-target="#gameModal">
-                    <h1
-                        id="stockmarket-header"
-                        className="sh-small d-none d-sm-block"
-                        data-bs-toggle="modal"
-                        data-bs-target="#gameModal"
-                    >
-                        Stockmarket!
-                    </h1>
-                </button>
-                <div className="game-progress d-flex flex-sm-row flex-column justify-content-between">
-                    <div className="text-nowrap">
-                        Turn
-                        {game.turn + 1}
-                        /
-                        {players.length * 3}
-                    </div>
-                    <div className="text-nowrap">
-                        Period
-                        {game.currentPeriod + 1}
-                        /
-                        {game.periodCount + 1}
-                    </div>
-                </div>
-                <div className="p-0 p-sm-2 position-static position-sm-absolute end-0 top-0 gap-1 d-flex flex-row justify-content-between">
-                    <button className="btn btn-primary d-block d-lg-none flex-fill" data-bs-toggle="offcanvas" data-bs-target="#offcanvasResponsive" aria-label="Feed" title="Activity feed">
-                        <HeaderIcon />
-                    </button>
-                    <button className="btn btn-primary d-block d-sm-none flex-fill" data-bs-toggle="modal" data-bs-target="#gameModal" aria-label="Game menu">
-                        <HeaderIcon menu />
-                    </button>
-                </div>
-            </div>
+        <header className="game-status-card d-none d-lg-flex flex-row align-items-center justify-content-between gap-2 card card-green rounded p-3" style={{ backgroundColor: "var(--bs-card-bg)" }}>
+            <button type="button" className="game-title-button p-0 border-0 bg-transparent" data-bs-toggle="modal" data-bs-target="#gameModal">
+                <h1 id="stockmarket-header" className="sh-small mb-0">Stockmarket!</h1>
+            </button>
+            <button type="button" className="game-menu-button" data-bs-toggle="modal" data-bs-target="#gameModal" aria-label="Game menu" title="Game menu">
+                <HeaderIcon menu />
+            </button>
         </header>
     );
 }
@@ -109,7 +79,7 @@ export function Profile({ board, view, setView }: { board: Board; view: "stocks"
                     />
                 </button>
             </div>
-            <div className="d-none d-sm-block">
+            <div className="d-none d-lg-block">
                 <h2 className="text-capitalize mb-0" style={{ fontSize: "1.5rem" }}>{user.name}</h2>
                 <p>
                     Cash £

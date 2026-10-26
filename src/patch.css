@@ -149,13 +149,13 @@ button.nav-link { cursor: pointer; }
 #feed-body > div > img { flex-shrink: 0; }
 #feed-body h3, #feed-body p { overflow-wrap: anywhere; }
 #feed-body .trade-message { flex-wrap: wrap; justify-content: flex-start; }
-@media (max-width: 767px) {
+@media (max-width: 991.98px) {
     #tabs .stock-tab-preview { flex-direction: column; justify-content: center !important; gap: 0.1rem; }
     #tabs .stock-tab-price p, #tabs .stock-tab-price .total-insight { font-size: 0.6rem; line-height: 1.1; }
     #tabs .stock-tab-price .total-insight { justify-content: center; }
 }
 .game-progress { gap: 0.2rem; font-size: clamp(0.7rem, 1.5vw, 1rem); }
-@media (max-width: 575px) {
+@media (max-width: 991.98px) {
     #game-grid > #profile { padding: 0.5rem !important; grid-template-columns: minmax(0, 1fr) !important; }
     #game-grid > #now-playing, #game-grid > header { padding: 0.5rem !important; }
     #game-grid > #now-playing h3 { font-size: clamp(1rem, 4vw, 1.25rem); margin-bottom: 0; }
@@ -223,7 +223,7 @@ button.nav-link { cursor: pointer; }
 
 .stock-holding-summary { padding: 1rem; border-radius: 0.4rem; background: #efefef; }
 .stock-mobile-price { display: none; }
-@media (max-width: 767px) {
+@media (max-width: 991.98px) {
     #tabs .stock-tab-price { display: none; }
     .stock-mobile-price { display: flex; padding-bottom: 0.75rem; }
     #game-stock-info .stock-mobile-price p { font-size: 1rem; }
@@ -413,35 +413,43 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 .trade-actions > #pass-button { flex: 0 0 auto; min-height: 2.75rem; font-size: 0.75rem; padding: 0.35rem 0.65rem; }
 #game-grid > #offcanvasResponsive { grid-template-rows: minmax(0, 1fr) auto; }
 
-/* Keep desktop turn-card contents in their original flex layout. */
-.now-playing-content, .now-playing-heading { display: contents; }
+/* Both game layouts share the same turn status and progress bars. */
+.now-playing-content { display: flex; flex: 1; flex-direction: column; justify-content: center; align-items: center; gap: 0.6rem; min-width: 0; }
+.now-playing-heading { display: flex; align-items: center; justify-content: center; gap: 0.75rem; min-width: 0; }
+#now-playing .now-playing-heading h3 { margin-bottom: 0; overflow-wrap: anywhere; text-align: center; }
+#now-playing .now-playing-heading p { margin-bottom: 0; }
+#now-playing #insightModalButton { position: relative !important; right: auto; flex-shrink: 0; }
+.game-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; min-width: 0; width: 100%; max-width: 24rem; }
+.game-metric { display: grid; gap: 0.2rem; min-width: 0; }
+.game-metric-label { color: #c6d7c3; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1; }
+.game-metric-value { display: flex; align-items: baseline; gap: 0.35rem; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.game-metric-value strong { font-size: 1.1rem; font-weight: 600; color: #fff284; }
+.game-metric-value > span { color: #c6d7c3; font-size: 0.7rem; white-space: nowrap; }
+.game-metric progress { appearance: none; width: 100%; height: 5px; margin-top: 0.15rem; border: 0; border-radius: 2px; overflow: hidden; background: #4b6b40; color: #fff284; }
+.game-metric progress::-webkit-progress-bar { background: #4b6b40; }
+.game-metric progress::-webkit-progress-value { background: #fff284; border-radius: 2px; }
+.game-metric progress::-moz-progress-bar { background: #fff284; border-radius: 2px; }
+.turn-goes { display: flex; gap: 3px; height: 5px; margin-top: 0.15rem; }
+.turn-goes > span { flex: 1; background: #4b6b40; border-radius: 2px; }
+.turn-goes > .is-used, .turn-goes > .is-current { background: #fff284; }
+.game-title-button { min-width: 0; }
+.game-title-button #stockmarket-header.sh-small { font-size: clamp(1rem, 1.5vw, 1.5rem); white-space: nowrap; }
+.game-menu-button, .mobile-game-actions button { display: grid; place-items: center; width: 2.75rem; min-height: 2.75rem; flex-shrink: 0; padding: 0; border: 0; background: transparent; color: #fff284; }
+.game-menu-button svg, .mobile-game-actions button[data-bs-target="#gameModal"] svg { transform: scale(0.55); }
+.game-menu-button:hover, .game-menu-button:active, .mobile-game-actions button:hover, .mobile-game-actions button:active { background: #3c5f2f; }
+.game-menu-button:focus-visible, .mobile-game-actions button:focus-visible { outline: 2px solid #fff284; outline-offset: -4px; }
 
-/* Phone header: profile switcher beside one combined turn and status card. */
-@media (max-width: 575px) {
+/* Compact game layout lasts until the feed becomes a persistent desktop panel. */
+@media (max-width: 991.98px) {
     #game-grid { grid-template-columns: 5.5rem minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "profile now-playing" "content content"; }
     #game-grid > #now-playing { padding: 0 !important; overflow: hidden; align-items: stretch !important; }
-    .now-playing-content { display: flex; flex: 1; flex-direction: column; justify-content: center; gap: 0.6rem; min-width: 0; padding: 0.65rem; }
-    .now-playing-heading { display: flex; align-items: center; justify-content: center; gap: 0.4rem; min-width: 0; }
-    #now-playing .now-playing-heading h3 { font-size: 1rem; overflow-wrap: anywhere; text-align: center; }
-    #now-playing #insightModalButton { flex-shrink: 0; min-width: 0; min-height: 0; width: 2.75rem; height: 2.75rem; padding: 0.25rem; }
+    .now-playing-content { padding: 0.65rem; }
+    .now-playing-heading { gap: 0.4rem; }
+    #now-playing .now-playing-heading h3 { font-size: 1rem; }
+    #now-playing #insightModalButton { min-width: 0; min-height: 0; width: 2.75rem; height: 2.75rem; padding: 0.25rem; }
     #now-playing #insightModalButton img { width: 1.5rem; height: 1.5rem; }
-    .mobile-game-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.65rem; min-width: 0; }
-    .mobile-game-metric { display: grid; gap: 0.2rem; min-width: 0; }
-    .mobile-game-metric-label { color: #c6d7c3; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1; }
-    .mobile-game-metric-value { display: flex; align-items: baseline; gap: 0.35rem; line-height: 1.15; font-variant-numeric: tabular-nums; }
-    .mobile-game-metric-value strong { font-size: 1.1rem; font-weight: 600; color: #fff284; }
-    .mobile-game-metric-value > span { color: #c6d7c3; font-size: 0.7rem; white-space: nowrap; }
-    .mobile-game-metric progress { appearance: none; width: 100%; height: 5px; margin-top: 0.15rem; border: 0; border-radius: 2px; overflow: hidden; background: #4b6b40; color: #fff284; }
-    .mobile-game-metric progress::-webkit-progress-bar { background: #4b6b40; }
-    .mobile-game-metric progress::-webkit-progress-value { background: #fff284; border-radius: 2px; }
-    .mobile-game-metric progress::-moz-progress-bar { background: #fff284; border-radius: 2px; }
-    .mobile-turn-goes { display: flex; gap: 3px; height: 5px; margin-top: 0.15rem; }
-    .mobile-turn-goes > span { flex: 1; background: #4b6b40; border-radius: 2px; }
-    .mobile-turn-goes > .is-used, .mobile-turn-goes > .is-current { background: #fff284; }
+    .game-metrics { gap: 0.65rem; max-width: none; }
     .mobile-game-actions { flex-direction: column; flex-shrink: 0; align-items: stretch; border-left: 1px solid #4b6b40; }
-    .mobile-game-actions button { display: grid; place-items: center; width: 2.75rem; min-height: 2.75rem; flex: 1; padding: 0; border: 0; background: transparent; color: #fff284; }
+    .mobile-game-actions button { flex: 1; }
     .mobile-game-actions button + button { border-top: 1px solid #4b6b40; }
-    .mobile-game-actions button[data-bs-target="#gameModal"] svg { transform: scale(0.55); }
-    .mobile-game-actions button:hover, .mobile-game-actions button:active { background: #3c5f2f; }
-    .mobile-game-actions button:focus-visible { outline: 2px solid #fff284; outline-offset: -4px; }
 }

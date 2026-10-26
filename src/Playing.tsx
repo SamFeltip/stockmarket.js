@@ -1,4 +1,4 @@
-import { MobileGameActions, MobileGameMetrics } from "./MobileGameStatus";
+import { MobileGameActions, GameMetrics } from "./GameStatus";
 import { GameHeader, Profile } from "./GameHeader";
 import { Feed } from "./Feed";
 import { useState } from "react";
@@ -38,7 +38,7 @@ export function Playing({ board }: { board: Board })
                             {myTurn ? (
                                 <div className="text-center">
                                     <h3 className="primary">It's your turn</h3>
-                                    <p className="d-none d-sm-block">Buy, sell, use or pass</p>
+                                    <p className="d-none d-lg-block">Buy, sell, use or pass</p>
                                 </div>
                             )
                                 : (
@@ -51,7 +51,7 @@ export function Playing({ board }: { board: Board })
                                 </button>
                             )}
                         </div>
-                        <MobileGameMetrics board={board} />
+                        <GameMetrics board={board} />
                     </div>
                     <MobileGameActions />
                 </div>
@@ -79,7 +79,7 @@ export function Playing({ board }: { board: Board })
                         </Link>
                     </div>
                 </Modal>
-                <GameHeader board={board} />
+                <GameHeader />
                 <div id="content" className="d-grid" style={{ gridTemplateRows: "auto 1fr" }}>
                     <div id="tabs" className="overflow-hidden" style={{ height: 65 }}>
                         <div id="stock-tabs" className={`h-100 w-100 tabs-display-${view === "stocks" ? "center" : "left"}`} inert={view !== "stocks"} aria-hidden={view !== "stocks"}>
@@ -111,14 +111,14 @@ export function Playing({ board }: { board: Board })
                                         <button
                                             id={`player-tab-${player._id}`}
                                             aria-current={player._id === game.currentPlayerId ? "true" : undefined}
-                                            className={`player-tab player nav-link d-flex flex-column flex-sm-row flex-fill align-items-center justify-content-between gap-1 ${player._id === selectedPlayer?._id ? "active" : ""}`}
+                                            className={`player-tab player nav-link d-flex flex-column flex-lg-row flex-fill align-items-center justify-content-between gap-1 ${player._id === selectedPlayer?._id ? "active" : ""}`}
                                             onClick={() =>
                                             {
                                                 setPlayerId(player._id);
                                             }}
                                         >
                                             <div className="d-flex flex-row align-items-center gap-1"><img className="rounded" width={40} src={player.profileRoot} alt={player.name} /></div>
-                                            <div className="d-none d-sm-block">
+                                            <div className="d-none d-lg-block">
                                                 <p>{player.name}</p>
                                                 <p>
                                                     £

@@ -22,7 +22,7 @@ export function Portfolio({ board, player }: { board: Board; player: Player })
                     </div>
                 )}
                 <h4 className="text-black">Portfolio</h4>
-                <div className="p-4 p-sm-0 d-flex flex-row justify-content-between flex-wrap">
+                <div className="p-4 p-lg-0 d-flex flex-row justify-content-between flex-wrap">
                     {stocks.map((stock) => (
                         <div className="d-flex flex-column align-items-center px-4" key={stock.key}>
                             <img height={50} src={stock.imagePath} alt={stock.name} />
@@ -60,7 +60,7 @@ export function Portfolio({ board, player }: { board: Board; player: Player })
             </div>
             <div id="player-info" className="d-flex flex-column gap-2">
                 <h4 className="text-black">Info</h4>
-                <div id="info-details" className="d-flex flex-column d-sm-grid gap-3">
+                <div id="info-details" className="d-flex flex-column d-lg-grid gap-3">
                     {[[`${player.ranking} / ${board.players.length}`, "Ranking"], ["N/A", "Director"], [player.holdings.reduce((sum, item) => sum + item.quantity, 0), "Total Shares"]].map(([value, title]) => (
                         <div className="card flex-fill" key={title}>
                             <div className="card-body text-center">
