@@ -52,6 +52,7 @@ describe("TV spectator display parity", () =>
         const empty = render({ ...board, players: [] });
 
         expect(empty).toContain("Scan to join the game");
+        expect(empty).toContain("Add NPC");
         expect(empty).toContain("disabled=\"\">Launch Game");
         expect(render({ ...board, canControl: false })).not.toContain(">Launch Game</button>");
     });

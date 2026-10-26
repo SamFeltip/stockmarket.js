@@ -1,7 +1,8 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { currentUser, gameByCode, fail, member } from "./library";
+import { currentUser, gameByCode, fail, member, members } from "./library";
 
+import { spectatorHost } from "./game/hosting";
 import { advancePeriod } from "./advancePeriod";
 
 export const showSpecial = mutation({
@@ -62,6 +63,11 @@ export const next = mutation({
     {
         const user = await currentUser(context);
         const game = await gameByCode(context, code);
+        if (spectatorHost(game, await members(context, game._id)))
+        {
+            fail("Use the spectator display to start the next period");
+        }
+
         if (game.hostId !== user._id)
         {
             fail("Only the lobby host can advance the round");
@@ -70,6 +76,21 @@ export const next = mutation({
         if (game.tvTokenHash)
         {
             fail("Use the TV remote to start the next period");
+        }
+
+        await advancePeriod(context, game, expectedPeriod);
+    },
+});
+
+export const nextSpectator = mutation({
+    args: { code: v.string(), expectedPeriod: v.number() },
+    handler: async (context, { code, expectedPeriod }) =>
+    {
+        const user = await currentUser(context);
+        const game = await gameByCode(context, code);
+        if (spectatorHost(game, await members(context, game._id)) !== user._id)
+        {
+            fail("Only the spectator host can advance this game");
         }
 
         await advancePeriod(context, game, expectedPeriod);

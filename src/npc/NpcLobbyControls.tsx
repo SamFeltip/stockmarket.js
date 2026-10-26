@@ -6,14 +6,21 @@ import { Alert, useAction } from "../shared";
 import { NpcIdentity } from "./NpcIdentity";
 import type { Board } from "../types";
 
-export function NpcLobbyControls({ board }: { board: Board })
+type LobbyPlayer = Pick<Board["players"][number], "_id" | "name" | "profileRoot" | "kind" | "npcDifficulty" | "tagline">;
+interface LobbyBoard {
+    game: Pick<Board["game"], "code"> & Partial<Pick<Board["game"], "hostId">>;
+    players: LobbyPlayer[];
+    user?: Pick<Board["user"], "_id">;
+}
+
+export function NpcLobbyControls({ board, canManage }: { board: LobbyBoard; canManage?: boolean })
 {
     const add = useMutation(api.npc.lobby.add);
     const remove = useMutation(api.npc.lobby.remove);
     const setDifficulty = useMutation(api.npc.lobby.setDifficulty);
     const { run, busy, error } = useAction();
     const { game, players, user } = board;
-    const host = user._id === game.hostId;
+    const host = canManage ?? Boolean(user && user._id === game.hostId);
 
     return (
         <section className="npc-lobby-roster" aria-label="Lobby players">

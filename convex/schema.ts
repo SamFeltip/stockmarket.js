@@ -31,6 +31,7 @@ export default defineSchema({
     insights: defineTable(insightFields).index("by_key", ["key"]),
     games: defineTable({
         tvTokenHash: v.optional(v.string()),
+        spectatorHostId: v.optional(v.id("users")),
         code: v.string(), hostId: v.optional(v.id("users")), currentUserId: v.optional(v.id("users")),
         currentPlayerId: v.optional(v.id("players")), npcDifficulty: v.optional(difficultyValidator),
         rulesVersion: v.optional(v.number()), rosterRevision: v.optional(v.number()),

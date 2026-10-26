@@ -2,6 +2,7 @@ import type { MutationCtx as MutationContext } from "./_generated/server";
 import type { Doc as Document_ } from "./_generated/dataModel";
 import { minimumPlayers, maximumPlayers, validGameLength } from "../shared/rules";
 import { deal, fail, feedItem, members } from "./library";
+import { spectatorHost } from "./game/hosting";
 import { enqueueNextNpcIfNeeded } from "./npc/scheduling";
 
 export async function launchGame(context: MutationContext, game: Document_<"games">)
@@ -22,7 +23,7 @@ export async function launchGame(context: MutationContext, game: Document_<"game
         fail("Invalid game length");
     }
 
-    if (players.length > maximumPlayers || !players.some((seat) => seat.userId))
+    if (players.length > maximumPlayers || (!players.some((seat) => seat.userId) && !spectatorHost(game, players)))
     {
         fail("Invalid player roster");
     }

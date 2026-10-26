@@ -3,7 +3,7 @@ export function NpcIdentity({
     player,
     showTagline = false,
 }: {
-    player: Player;
+    player: Pick<Player, "kind" | "npcDifficulty" | "tagline">;
     showTagline?: boolean;
 })
 {

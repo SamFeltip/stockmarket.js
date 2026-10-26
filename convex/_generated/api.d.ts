@@ -15,6 +15,7 @@ import type * as catalog from "../catalog.js";
 import type * as catalogAdmin from "../catalogAdmin.js";
 import type * as crons from "../crons.js";
 import type * as game_commands from "../game/commands.js";
+import type * as game_hosting from "../game/hosting.js";
 import type * as game_legalActions from "../game/legalActions.js";
 import type * as game_seats from "../game/seats.js";
 import type * as games from "../games.js";
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   catalogAdmin: typeof catalogAdmin;
   crons: typeof crons;
   "game/commands": typeof game_commands;
+  "game/hosting": typeof game_hosting;
   "game/legalActions": typeof game_legalActions;
   "game/seats": typeof game_seats;
   games: typeof games;

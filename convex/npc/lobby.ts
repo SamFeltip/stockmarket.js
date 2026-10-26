@@ -1,24 +1,28 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import type { MutationCtx as MutationContext } from "../_generated/server";
-import { fail, member, members } from "../library";
+import { currentUser, gameByCode, fail, members } from "../library";
 import type { Doc as Document_ } from "../_generated/dataModel";
 import { maximumPlayers, minimumPlayers, startingCash } from "../../shared/rules";
 import { difficultyValidator } from "../schema";
 import { roster } from "../../packages/npc-engine/src/roster";
 import { random, shuffled } from "../../packages/npc-engine/src/random";
 import { engineVersion, tuningVersion } from "../../packages/npc-engine/src/difficulty";
+import { phoneHost, spectatorHost } from "../game/hosting";
 import { emptyMemory } from "../../packages/npc-engine/src/memory";
 
 async function hostLobby(context: MutationContext, code: string)
 {
-    const result = await member(context, code);
-    if (result.game.hostId !== result.user._id || result.game.status !== "waiting")
+    const user = await currentUser(context);
+    const game = await gameByCode(context, code);
+    const seats = await members(context, game._id);
+    const displayHost = spectatorHost(game, seats);
+    if ((phoneHost(game, seats) !== user._id && displayHost !== user._id) || game.status !== "waiting")
     {
         fail("Only the lobby host can configure NPCs while waiting");
     }
 
-    return result;
+    return { game, user };
 }
 
 async function addSeats(

@@ -28,7 +28,7 @@ export function RoundEnd({ board }: { board: Board })
     const pendingHolds = insights.some((insight) => !insight.resolved
       && stocks.find((stock) => stock.key === insight.stockKey)?.name === "Hold Stock Price");
     const reviewed = step >= groups.length;
-    const host = game.hostId === board.user._id && !game.tvControlled;
+    const host = game.hostId === board.user._id && !game.tvControlled && !game.spectatorControlled;
     const lastPlay = board.feed.find((item) => item.period === game.currentPeriod
       && item.colour !== "grey" && (item.quantity || item.message === "passed their go"));
     const ready = useRevealReady(lastPlay?._creationTime);
@@ -124,7 +124,12 @@ export function RoundEnd({ board }: { board: Board })
                                 {" →"}
                             </button>
                         </>
-                    ) : <p>{game.tvControlled ? "Use the TV remote to start the next period." : "Waiting for the game creator to continue."}</p>) : (
+                    ) : (
+                        <p>
+                            {game.tvControlled ? "Use the TV remote to start the next period." : (game.spectatorControlled
+                                ? "Use the spectator display to start the next period." : "Waiting for the game creator to continue.")}
+                        </p>
+                    )) : (
                         <button
                             className="btn btn-primary d-flex flex-row gap-2 align-items-center"
                             disabled={Boolean(unresolved)}

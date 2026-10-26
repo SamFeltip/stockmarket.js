@@ -3,6 +3,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { currentUser, fail, gameByCode, member, members, normalizeCode, seedCatalog } from "./library";
 
+import { phoneHost, spectatorHost } from "./game/hosting";
 import { launchGame } from "./launch";
 
 export const create = mutation({
@@ -25,7 +26,8 @@ export const create = mutation({
         const stocks = await context.db.query("stocks").collect();
         const prices = stocks.map((stock) => ({ stockKey: stock.key, value: stock.startingValue }));
         const gameId = await context.db.insert("games", {
-            code, hostId: user._id, currentUserId: user._id, periodCount: arguments_.periodCount,
+            code, hostId: user._id, spectatorHostId: arguments_.spectate ? user._id : undefined,
+            currentUserId: user._id, periodCount: arguments_.periodCount,
             currentPeriod: 0, turn: 0, status: "waiting", suspended: [],
             rulesVersion: 2, npcDifficulty: "medium", rosterRevision: 0,
             prices, priceHistory: [{ period: 0, prices }],
@@ -53,6 +55,12 @@ export const join = mutation({
         const user = await currentUser(context);
         const game = await gameByCode(context, code);
         const players = await members(context, game._id);
+        const displayHost = spectatorHost(game, players);
+        if (displayHost && !game.spectatorHostId)
+        {
+            await context.db.patch(game._id, { spectatorHostId: displayHost });
+        }
+
         const existing = players.find((player) => player.userId === user._id);
         if (existing)
         {
@@ -77,11 +85,11 @@ export const join = mutation({
             cash: startingCash, active: true,
             holdings: game.prices.map((price) => ({ stockKey: price.stockKey, quantity: 0 })),
         });
-        // A TV owns no seat: the first human joining becomes the phone host.
-        if (players.length === 0 && game.tvTokenHash)
+        // Displays own no seats. The first human gets the normal phone lobby controls.
+        if (!players.some((seat) => seat.userId) && (game.tvTokenHash || displayHost))
         {
-            await context.db.patch(game._id, { hostId: user._id, currentUserId: user._id,
-                currentPlayerId: playerId });
+            await context.db.patch(game._id, { hostId: user._id, spectatorHostId: displayHost,
+                currentUserId: user._id, currentPlayerId: playerId });
         }
 
         return game.code;
@@ -96,12 +104,12 @@ export const leave = mutation({
         // During play retain a seat for reconnection; leaving cannot strand the turn rotation.
         if (game.status === "waiting")
         {
+            const displayHost = spectatorHost(game, await members(context, game._id));
+
             await context.db.delete(player._id);
             const remaining = await members(context, game._id);
             const humans = remaining.filter((seat) => seat.controller?.kind !== "npc" && seat.userId);
-            const spectatorHost = game.hostId !== player.userId
-              && !remaining.some((seat) => seat.userId === game.hostId);
-            if (humans.length === 0 && !spectatorHost)
+            if (humans.length === 0 && !displayHost)
             {
                 for (const seat of remaining)
                 {
@@ -118,6 +126,11 @@ export const leave = mutation({
 
                 await context.db.delete(game._id);
             }
+            else if (humans.length === 0 && displayHost)
+            {
+                await context.db.patch(game._id, { hostId: displayHost, spectatorHostId: displayHost,
+                    currentUserId: undefined, currentPlayerId: undefined });
+            }
             else if (game.hostId === player.userId)
             {
                 await context.db.patch(game._id, { hostId: humans[0].userId!, currentUserId: humans[0].userId,
@@ -131,8 +144,11 @@ export const setLength = mutation({
     args: { code: v.string(), periodCount: v.number() },
     handler: async (context, { code, periodCount }) =>
     {
-        const { game, user } = await member(context, code);
-        if (game.hostId !== user._id || game.status !== "waiting")
+        const user = await currentUser(context);
+        const game = await gameByCode(context, code);
+        const seats = await members(context, game._id);
+        const displayHost = spectatorHost(game, seats);
+        if ((phoneHost(game, seats) !== user._id && displayHost !== user._id) || game.status !== "waiting")
         {
             fail("Only the lobby host can change game length");
         }
@@ -152,7 +168,9 @@ export const start = mutation({
     {
         const user = await currentUser(context);
         const game = await gameByCode(context, code);
-        if (game.hostId !== user._id)
+        const seats = await members(context, game._id);
+        const displayHost = spectatorHost(game, seats);
+        if (phoneHost(game, seats) !== user._id && displayHost !== user._id)
         {
             fail("Only the lobby host can launch the game");
         }

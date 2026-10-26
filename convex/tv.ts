@@ -4,6 +4,7 @@ import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { fail, gameByCode, members, netWorth, normalizeCode, roundInsights, seedCatalog } from "./library";
 import { publicIdentity } from "./npc/identity";
+import { spectatorHost } from "./game/hosting";
 import { launchGame } from "./launch";
 import { advancePeriod } from "./advancePeriod";
 import { validGameLength } from "../shared/rules";
@@ -121,7 +122,9 @@ export const board = query({
             const display = await publicIdentity(context, seat);
 
             return {
-                id: seat._id, name: display.name, profileRoot: display.profileRoot,
+                id: seat._id, name: display.name, profileRoot: display.profileRoot, kind: display.kind,
+                npcDifficulty: seat.controller?.kind === "npc" ? seat.npcDifficulty ?? game.npcDifficulty ?? "medium" : undefined,
+                tagline: display.tagline,
                 cash: seat.cash, holdings: seat.holdings.filter((holding) =>
                     stocks.some((stock) => stock.key === holding.stockKey)), netWorth: netWorth(seat, game),
             };
@@ -132,13 +135,14 @@ export const board = query({
             .filter((q) => q.gt(q.field("quantity"), 0)).order("desc").first();
 
         const viewerId = await getAuthUserId(context);
+        const displayHost = spectatorHost(game, seats);
 
         return {
-            canControl: Boolean(viewerId && viewerId === game.hostId && !game.tvTokenHash),
+            canControl: Boolean(viewerId && viewerId === (displayHost ?? game.hostId) && !game.tvTokenHash),
             reveal,
             latestPurchase: purchase ? { title: purchase.title, message: purchase.message } : null,
             game: { code: game.code, status: game.status, currentPeriod: game.currentPeriod,
-                tvControlled: Boolean(game.tvTokenHash),
+                tvControlled: Boolean(game.tvTokenHash), spectatorControlled: Boolean(displayHost),
                 periodCount: game.periodCount, turn: game.turn,
                 currentPlayerId: game.currentPlayerId
                   ?? seats.find((seat) => seat.userId === game.currentUserId)?._id },

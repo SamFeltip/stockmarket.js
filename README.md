@@ -103,3 +103,9 @@ Enable **Spectate** when creating a game to host from this display without takin
 Deploy the backend and frontend together: the creation mutation accepts the optional `spectate` flag, and the public board includes a viewer-specific `canControl` permission.
 
 The large-screen layout uses the TV lobby, dashboard, reveals and results styling. Run `node scripts/sync-spectator-styles.mjs` with the sibling `stockmarket-tv` checkout present to refresh `src/spectator/tv-display.css`; regular builds use the checked-in CSS and do not need that checkout. Browser keyboard hints and account-based host controls replace TV remote hints and device-token controls. Smaller browser windows retain the responsive website layout.
+
+### Spectator and phone lobby controls
+
+In web spectator-created games, the creator remains the spectator controller and takes no seat. The first phone player receives the normal host lobby, including NPC add/remove, per-NPC difficulty, game length and launch controls. The spectator creator has those NPC controls on the display too, and can launch a four-to-six-player roster, including an all-NPC roster.
+
+After trading closes, phones show the normal reveals and summary but wait for the spectator display to advance or finish the game. `rounds:next` rejects phone progression for these games; the authenticated spectator creator uses `rounds:nextSpectator`. This preserves spectator priority even if the creator also joins as a phone player. Older spectator-created games are recognised from their seat-free creator, and existing phone lobbies receive their host controls without recreating the game. Other spectator viewers remain read-only.

@@ -16,6 +16,7 @@ export function SpectatorScreen({ board }: { board: Board })
 {
     const start = useMutation(api.games.start);
     const next = useMutation(api.rounds.next);
+    const nextSpectator = useMutation(api.rounds.nextSpectator);
     const { run, busy, error } = useAction();
     const { game } = board;
     const phoneUrl = globalThis.location.origin;
@@ -49,7 +50,9 @@ export function SpectatorScreen({ board }: { board: Board })
                     onBack={back}
                     onNext={() =>
                     {
-                        void run(() => next({ code: game.code, expectedPeriod: game.currentPeriod }));
+                        void run(() => game.spectatorControlled
+                            ? nextSpectator({ code: game.code, expectedPeriod: game.currentPeriod })
+                            : next({ code: game.code, expectedPeriod: game.currentPeriod }));
                     }}
                 />
                 <PlayAnimation key={`actions-${game.currentPeriod}`} board={display} />

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Alert } from "../shared";
 import { JoinCard } from "./Dashboard";
-import { portrait } from "./assets";
+import { NpcLobbyControls } from "../npc/NpcLobbyControls";
 import type { Board } from "./types";
 
 export function SpectatorLobby({ board, phoneUrl, busy, error, onStart }: {
@@ -17,20 +17,14 @@ export function SpectatorLobby({ board, phoneUrl, busy, error, onStart }: {
                     <p>Lobby code:</p>
                     <h2 className="primary lobby-code">{game.code}</h2>
                     <p>{`Waiting for players to join (${board.players.length} / 6)`}</p>
-                    <div className="lobby-roster" aria-label="Lobby players">
-                        {board.players.map((player) => (
-                            <article className="lobby-player-card" key={player.id}>
-                                <div className="lobby-player-portrait"><img src={portrait(player.profileRoot)} alt={player.name} /></div>
-                                <h3>{player.name}</h3>
-                            </article>
-                        ))}
-                        {board.players.length === 0 && (
-                            <div className="empty-lobby bg-dark rounded">
-                                <img src="/static/imgs/icons/Handshake.svg" alt="" />
-                                <p>Scan to join the game</p>
-                            </div>
-                        )}
-                    </div>
+                    <NpcLobbyControls
+                        canManage={board.canControl}
+                        board={{
+                            game: { code: game.code },
+                            players: board.players.map(({ id, ...player }) => ({ ...player, _id: id })),
+                        }}
+                    />
+                    {board.players.length === 0 && <p className="lobby-hint">Scan to join the game or add NPCs.</p>}
                     <div className="game-length">
                         <p>Game length</p>
                         <span className="length-value bg-dark rounded">{`${game.periodCount + 1} periods`}</span>

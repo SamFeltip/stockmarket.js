@@ -3,6 +3,7 @@ import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { member, members, netWorth, roundInsights } from "./library";
 
+import { phoneHost, spectatorHost } from "./game/hosting";
 import { publicIdentity } from "./npc/identity";
 
 export const get = query({
@@ -32,10 +33,10 @@ export const get = query({
             .order("desc").take(100);
 
         return {
-            game: { _id: game._id, _creationTime: game._creationTime, code: game.code, hostId: game.hostId,
+            game: { _id: game._id, _creationTime: game._creationTime, code: game.code, hostId: phoneHost(game, seats),
                 currentPlayerId: game.currentPlayerId ?? seats.find((seat) => seat.userId === game.currentUserId)?._id,
                 currentUserId: game.currentUserId, currentPeriod: game.currentPeriod, periodCount: game.periodCount,
-                tvControlled: Boolean(game.tvTokenHash),
+                tvControlled: Boolean(game.tvTokenHash), spectatorControlled: Boolean(spectatorHost(game, seats)),
                 prices: game.prices, priceHistory: game.priceHistory, status: game.status, turn: game.turn,
                 suspended: game.suspended, npcDifficulty: game.npcDifficulty ?? "medium" },
             player, user: { _id: user._id, name: user.name, profileRoot: user.profileRoot }, stocks, feed,
