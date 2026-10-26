@@ -1,10 +1,10 @@
-import { floorTradeQuantity, sharesPerCompany, validTradeQuantity } from "../shared/rules";
+import { floorTradeQuantity, sharesPerCompany } from "../shared/rules";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { Alert, Modal, money, useAction } from "./shared";
+import { Modal, money, useAction } from "./shared";
 import { StockPreview } from "./StockPreview";
-import { resolveTradeDraft, sharesForCash, stepShares } from "./trades";
+import { resolveTradeDraft, sharesForCash, stepShares, tradeUnavailableReason } from "./trades";
 import type { TradeDraft } from "./trades";
 import type { Board, Stock } from "./types";
 
@@ -27,27 +27,20 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
         ? Math.min(available, sharesForCash(board.player.cash, price)) : held);
     const { quantity, shares, cash } = resolveTradeDraft(draft, price, limit);
     const previewQuantity = Number.isFinite(quantity) ? quantity : 0;
-    const valid = board.game.currentPlayerId === board.player._id && validTradeQuantity(quantity)
-      && quantity > 0 && quantity <= limit && price > 0;
+    const reason = tradeUnavailableReason({ mode, price, quantity, available, held, cash: board.player.cash,
+        isTurn: board.game.currentPlayerId === board.player._id,
+        isPlaying: board.game.status === "playing", tradable: stock.display });
+    const valid = !reason;
     const label = mode === "buy" ? "Buy" : "Sell";
 
     return (
-        <Modal id={`${mode}Modal`} title={`${label} ${stock.name}`}>
+        <Modal id={`${mode}Modal`} title={`${label} ${stock.name}`} mobileDrawer>
             <div className="modal-body d-flex flex-column gap-2">
-                <StockPreview board={board} stock={stock} large />
-                <h3 className="text-black">
-                    {label}
-                    {" "}
-                    stocks
-                </h3>
-                <p className="small" id={`${mode}-quantity-help`}>
-                    Trade shares in steps of 1,000, up to your available cash or shares.
-                    Entering cash selects the largest permitted trade within that amount.
-                </p>
+                <div className="trade-preview"><StockPreview board={board} stock={stock} large /></div>
                 <p className="small">{`Maximum: ${money(limit)} shares`}</p>
-                <Alert message={error} />
                 <form
                     id={`${mode}Stock`}
+                    noValidate
                     onSubmit={(event) =>
                     {
                         event.preventDefault();
@@ -73,7 +66,7 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                         <div className="input-stock-group input-group mb-0">
                             <input
                                 aria-label="Amount of stocks"
-                                aria-describedby={`${mode}-quantity-help`}
+                                aria-describedby={`${mode}-trade-feedback`}
                                 aria-invalid={quantity !== 0 && !valid}
                                 type="number"
                                 step={1000}
@@ -99,6 +92,7 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                                 disabled={busy}
                                 value={cash}
                                 aria-label="Value"
+                                aria-describedby={`${mode}-trade-feedback`}
                                 onChange={(event) =>
                                 {
                                     setDraft({ field: "cash", value: event.target.value });
@@ -176,7 +170,10 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                     </div>
                 </form>
             </div>
-            <div className="modal-footer d-flex flex-row">
+            <div className="modal-footer trade-footer d-flex flex-row">
+                <p id={`${mode}-trade-feedback`} className="trade-feedback" role="status" aria-live="polite" aria-atomic="true">
+                    {error || reason}
+                </p>
                 <button type="button" className="btn btn-secondary flex-fill" data-bs-dismiss="modal">Cancel</button>
                 <button
                     className={`btn btn-${mode === "buy" ? "success" : "danger"} flex-fill`}

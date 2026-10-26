@@ -95,6 +95,41 @@ button.nav-link { cursor: pointer; }
 }
 
 .modal .purchase-form { grid-template-rows: auto auto auto auto; grid-template-columns: minmax(0, 1fr) 1rem minmax(0, 1fr); }
+.trade-drawer-handle { display: none; }
+.trade-footer { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+.trade-footer > * { margin: 0; }
+.trade-feedback { grid-column: 1 / -1; min-height: 2.5em; margin: 0; font-size: 0.875rem; line-height: 1.25; color: #842029; overflow-wrap: anywhere; }
+.trade-footer > button { min-height: 2.75rem; }
+@media (max-width: 991.98px) {
+    .modal.trade-dialog { overflow: clip; overscroll-behavior: none; }
+    .trade-dialog .modal-dialog { position: fixed; inset: auto 0 0; width: 100%; max-width: none; height: 80dvh; min-height: 0; margin: 0; }
+    .modal.trade-dialog.fade .modal-dialog { transform: translateY(100%); transition: transform 0.3s ease; }
+    .modal.trade-dialog.show .modal-dialog { transform: translateY(0); }
+    .trade-dialog .modal-content { height: 100%; max-height: 100%; border: 0; border-radius: 1.25rem 1.25rem 0 0; overflow: clip; }
+    .trade-drawer-handle { display: grid; place-items: center; flex: 0 0 1.25rem; width: 100%; border: 0; padding: 0; background: transparent; touch-action: none; }
+    .trade-drawer-handle > span { width: 2.5rem; height: 4px; border-radius: 2px; background: #adb5aa; }
+    .trade-drawer-handle:focus-visible { outline: 2px solid #3c5f2f; outline-offset: -3px; }
+    .trade-dialog .modal-header { flex-shrink: 0; padding-block: 0.5rem; }
+    .trade-dialog .modal-body { min-height: 0; overflow: clip; overscroll-behavior: none; justify-content: center; padding-block: 0.75rem; }
+    .trade-dialog .modal-body > p { margin: 0; }
+    .trade-dialog .purchase-form { row-gap: 0.75rem; }
+    .trade-dialog .equals, .trade-dialog .transaction-body p { margin: 0; }
+    .trade-dialog .modal-footer { flex-shrink: 0; padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+    .trade-dialog input { font-size: 1rem; }
+}
+@media (max-width: 991.98px) and (max-height: 600px) {
+    .trade-dialog .trade-preview { display: none; }
+    .trade-dialog .modal-body { padding: 0.5rem 1rem; gap: 0.25rem !important; }
+    .trade-dialog .purchase-form { row-gap: 0.3rem; }
+    .trade-dialog .purchase-form .btn { min-height: 2rem; padding-block: 0.2rem; }
+    .trade-dialog .form-control, .trade-dialog .input-group-text { padding-block: 0.2rem; }
+    .trade-dialog .transaction-body { display: flex; justify-content: space-between; gap: 0.5rem; font-size: 0.8rem; }
+    .trade-dialog .modal-footer { padding-block: 0.5rem; gap: 0.25rem; }
+    .trade-dialog .trade-feedback { font-size: 0.8rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .modal.trade-dialog.fade .modal-dialog { transition: none; }
+}
 
 /* Stock details follow the available panel width, including beside the desktop feed. */
 #game-grid { height: 100dvh; min-height: 0; max-height: none; grid-template-rows: auto minmax(0, 1fr); }

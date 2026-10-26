@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { modalInstance } from "./bootstrap";
 import { friendlyError } from "./errors";
 import type { Insight, Stock } from "./types";
@@ -53,9 +54,12 @@ export function Alert({ message }: { message: string })
     return message ? <div className="alert alert-danger" role="alert">{message}</div> : null;
 }
 
-export function Modal({ id, title, children }: { id: string; title: string; children: ReactNode })
+export function Modal({ id, title, children, mobileDrawer = false }: {
+    id: string; title: string; children: ReactNode; mobileDrawer?: boolean;
+})
 {
     const reference = useRef<HTMLDivElement>(null);
+    const dragStart = useRef(0);
 
     useEffect(() =>
     {
@@ -70,10 +74,32 @@ export function Modal({ id, title, children }: { id: string; title: string; chil
         };
     }, []);
 
-    return (
-        <div ref={reference} className="modal fade" id={id} tabIndex={-1} aria-labelledby={`${id}Label`} aria-hidden="true">
+    const dialog = (
+        <div ref={reference} className={`modal fade${mobileDrawer ? " trade-dialog" : ""}`} id={id} tabIndex={-1} aria-labelledby={`${id}Label`} aria-hidden="true">
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content">
+                    {mobileDrawer && (
+                        <button
+                            type="button"
+                            className="trade-drawer-handle"
+                            aria-label="Close trade drawer"
+                            data-bs-dismiss="modal"
+                            onPointerDown={(event) =>
+                            {
+                                dragStart.current = event.clientY;
+                                event.currentTarget.setPointerCapture(event.pointerId);
+                            }}
+                            onPointerUp={(event) =>
+                            {
+                                if (event.clientY - dragStart.current > 40 && reference.current)
+                                {
+                                    modalInstance(reference.current)?.hide();
+                                }
+                            }}
+                        >
+                            <span />
+                        </button>
+                    )}
                     <div className="modal-header">
                         <h1 className="modal-title fs-5" id={`${id}Label`}>{title}</h1>
                         <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
@@ -83,6 +109,8 @@ export function Modal({ id, title, children }: { id: string; title: string; chil
             </div>
         </div>
     );
+
+    return mobileDrawer && typeof document !== "undefined" ? createPortal(dialog, document.body) : dialog;
 }
 
 export function Change({ value, button = false }: { value: number; button?: boolean })
