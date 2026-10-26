@@ -1,3 +1,4 @@
+import { stockCatalog } from "./catalog";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
@@ -98,7 +99,10 @@ export const board = query({
         }
 
         const seats = await members(context, game._id);
-        const catalog = (await context.db.query("stocks").collect()).toSorted((a, b) => a.variation - b.variation);
+        const catalog = (await context.db.query("stocks").collect())
+            .map((stock) => ({ ...stock,
+                variation: stockCatalog.find((item) => item.key === stock.key)?.variation ?? stock.variation }))
+            .toSorted((a, b) => a.variation - b.variation);
         const stocks = catalog.filter((stock) => stock.display);
         const canReveal = game.status === "closed" || game.status === "special_insights";
         const revealed = canReveal ? await roundInsights(context, game) : [];

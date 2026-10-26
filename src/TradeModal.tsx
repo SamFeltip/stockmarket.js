@@ -41,7 +41,7 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                     stocks
                 </h3>
                 <p className="small" id={`${mode}-quantity-help`}>
-                    Trade 1,000–5,000 shares in steps of 1,000; larger trades must be multiples of 10,000.
+                    Trade shares in steps of 1,000, up to your available cash or shares.
                     Entering cash selects the largest permitted trade within that amount.
                 </p>
                 <p className="small">{`Maximum: ${money(limit)} shares`}</p>

@@ -16,7 +16,7 @@ export function validTradeQuantity(quantity: number)
     const size = Math.abs(quantity);
 
     return Number.isSafeInteger(quantity) && size > 0
-      && (size <= 5000 ? size % 1000 === 0 : size % 10_000 === 0);
+      && size % 1000 === 0;
 }
 
 export function floorTradeQuantity(quantity: number)
@@ -26,8 +26,7 @@ export function floorTradeQuantity(quantity: number)
         return 0;
     }
 
-    return quantity <= 5000 ? Math.floor(quantity / 1000) * 1000
-        : Math.max(5000, Math.floor(quantity / 10_000) * 10_000);
+    return Math.floor(quantity / 1000) * 1000;
 }
 
 export const maximumPlayers = 6;
