@@ -412,3 +412,25 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 .trade-actions > #buy-button, .trade-actions > #sell-button { flex: 1; min-height: 2.75rem; text-transform: uppercase; font-size: 0.9rem; }
 .trade-actions > #pass-button { flex: 0 0 auto; min-height: 2.75rem; font-size: 0.75rem; padding: 0.35rem 0.65rem; }
 #game-grid > #offcanvasResponsive { grid-template-rows: minmax(0, 1fr) auto; }
+
+/* Phone header: one status card with actions integrated into its right edge. */
+@media (max-width: 575px) {
+    #game-grid { grid-template-columns: 5.5rem minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); grid-template-areas: "profile now-playing" "header header" "content content"; }
+    #game-grid > .game-status-card { padding: 0 !important; overflow: hidden; }
+    .mobile-game-status { align-items: stretch; min-width: 0; }
+    .mobile-game-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; flex: 1; min-width: 0; padding: 0.65rem 1rem; }
+    .mobile-game-metric { display: grid; gap: 0.2rem; min-width: 0; }
+    .mobile-game-metric-label { color: #c6d7c3; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1; }
+    .mobile-game-metric-value { display: flex; align-items: baseline; gap: 0.35rem; line-height: 1.15; font-variant-numeric: tabular-nums; }
+    .mobile-game-metric-value strong { font-size: 1.25rem; font-weight: 600; color: #fff284; }
+    .mobile-game-metric-value > span { color: #c6d7c3; font-size: 0.75rem; white-space: nowrap; }
+    .mobile-game-metric progress { appearance: none; width: 100%; height: 3px; margin-top: 0.15rem; border: 0; border-radius: 2px; overflow: hidden; background: #4b6b40; color: #fff284; }
+    .mobile-game-metric progress::-webkit-progress-bar { background: #4b6b40; }
+    .mobile-game-metric progress::-webkit-progress-value { background: #fff284; border-radius: 2px; }
+    .mobile-game-metric progress::-moz-progress-bar { background: #fff284; border-radius: 2px; }
+    .mobile-game-actions { display: flex; align-items: stretch; border-left: 1px solid #4b6b40; }
+    .mobile-game-actions button { display: grid; place-items: center; width: 2.75rem; min-height: 2.75rem; padding: 0; border: 0; background: transparent; color: #fff284; }
+    .mobile-game-actions button + button { border-left: 1px solid #4b6b40; }
+    .mobile-game-actions button:hover, .mobile-game-actions button:active { background: #3c5f2f; }
+    .mobile-game-actions button:focus-visible { outline: 2px solid #fff284; outline-offset: -4px; }
+}
