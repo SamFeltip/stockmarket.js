@@ -9,21 +9,20 @@ export function Home({ user }: { user: Board["user"] })
     const navigate = useNavigate();
 
     return (
-        <main className="d-flex flex-column justify-content-center p-2 position-relative">
-            <div className="position-absolute p-3 top-0 start-0">
+        <main className="home-page d-flex flex-column">
+            <div className="home-profile">
                 <Link to="/logout" className="d-flex flex-row align-items-center gap-2 text-decoration-none">
-                    <img height="64em" className="rounded-circle" src={user.profileRoot} alt={user.name} />
+                    <img height={64} width={64} className="rounded-circle" src={user.profileRoot} alt={user.name} />
                     <span className="text-white text-capitalize">{user.name}</span>
                 </Link>
             </div>
-            <div className="container-fluid rounded d-flex justify-content-center card card-green" style={{ maxWidth: "40rem" }}>
+            <div className="home-card container-fluid rounded d-flex justify-content-center card card-green">
                 <header className="card-header text-center">
                     <h1 id="stockmarket-header">Stockmarket!</h1>
-                    <h2>Welcome to stockmarket</h2>
                 </header>
                 <div id="home-screen" className="card-body d-grid gap-3">
                     <form
-                        className="bg-dark rounded text-center p-5"
+                        className="home-join bg-dark rounded text-center"
                         onSubmit={(event) =>
                         {
                             event.preventDefault();
@@ -46,12 +45,12 @@ export function Home({ user }: { user: Board["user"] })
                             pattern="[a-zA-Z0-9_-]+"
                             required
                         />
-                        <div className="d-flex justify-content-center gap-3">
-                            <button type="submit" className="btn btn-primary px-5">Join</button>
+                        <div className="home-join-actions d-flex justify-content-center gap-2">
+                            <button type="submit" className="btn btn-primary">Join</button>
                             <button type="submit" name="intent" value="spectate" className="btn btn-outline-light">Spectate</button>
                         </div>
                     </form>
-                    <Link to="/games/new" className="btn btn-primary d-flex flex-column justify-content-center align-items-center text-center p-5">
+                    <Link to="/games/new" className="home-start btn btn-primary d-flex flex-column justify-content-center align-items-center text-center">
                         <img width={48} height={39} src="/static/imgs/icons/Handshake.svg" alt="" />
                         <div>Start game</div>
                     </Link>

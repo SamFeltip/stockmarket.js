@@ -6,7 +6,16 @@
     font-weight: 400;
     font-display: swap;
 }
-#home-screen { grid-template-columns: 1fr; }
+.home-page { min-height: 100dvh; min-width: 0; width: 100%; gap: 1rem; padding: clamp(0.75rem, 3vw, 1.5rem); }
+.home-profile { flex-shrink: 0; min-width: 0; max-width: 100%; align-self: flex-start; }
+.home-profile img { flex-shrink: 0; object-fit: cover; }
+.home-profile span { min-width: 0; overflow-wrap: anywhere; }
+.home-card { width: 100%; max-width: 40rem; min-width: 0; flex-shrink: 0; margin-block: auto; }
+.home-card #stockmarket-header { font-size: clamp(1.6rem, 6vw, 2rem); margin-bottom: 0; }
+#home-screen { grid-template-columns: minmax(0, 1fr); }
+#home-screen > * { min-width: 0; }
+.home-join, .home-start { padding: clamp(0.75rem, 3vw, 1.5rem); }
+.home-join-actions > .btn { flex: 1; min-width: 0; padding-inline: 0.5rem; }
 .lobby-page { min-height: 100vh; }
 .lobby-card { max-width: 40rem; }
 .lobby-lengths { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -16,7 +25,7 @@
 .lobby-hint { color: #c6d7c3; font-size: 1rem; line-height: 1.5; }
 .lobby-length-detail { font-size: 0.9rem; margin-top: 0.25rem; }
 h2.primary { overflow-wrap: anywhere; }
-@media (min-width: 768px) { #home-screen { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 768px) { #home-screen { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .img-label { border: #204712 2px solid; }
 .img-label:has(input:checked) { border-color: white; }
 .btn-check:checked + .btn { background-color: #FFF284 !important; color: black; }
