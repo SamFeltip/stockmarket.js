@@ -27,9 +27,12 @@ export function Home({ user }: { user: Board["user"] })
                         onSubmit={(event) =>
                         {
                             event.preventDefault();
-                            const code = formText(new FormData(event.currentTarget), "game").trim().toLowerCase();
+                            const form = new FormData(event.currentTarget, (event.nativeEvent).submitter);
+                            const code = formText(form, "game").trim().toLowerCase();
 
-                            void navigate(`/games/show/${encodeURIComponent(code)}`);
+                            const path = form.get("intent") === "spectate" ? "/spectate" : "/games/show";
+
+                            void navigate(`${path}/${encodeURIComponent(code)}`);
                         }}
                     >
                         <h3>Join game</h3>
@@ -43,7 +46,10 @@ export function Home({ user }: { user: Board["user"] })
                             pattern="[a-zA-Z0-9_-]+"
                             required
                         />
-                        <input type="submit" value="Join" className="btn btn-primary px-5" />
+                        <div className="d-flex justify-content-center gap-3">
+                            <button type="submit" className="btn btn-primary px-5">Join</button>
+                            <button type="submit" name="intent" value="spectate" className="btn btn-outline-light">Spectate</button>
+                        </div>
                     </form>
                     <Link to="/games/new" className="btn btn-primary d-flex flex-column justify-content-center align-items-center text-center p-5">
                         <img width={48} height={39} src="/static/imgs/icons/Handshake.svg" alt="" />

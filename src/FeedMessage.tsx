@@ -1,4 +1,4 @@
-import type { Board } from "./types";
+import type { Board } from "./display-types";
 import { money } from "./shared";
 
 export function FeedMessage({ item, stocks, detailed = false }: {

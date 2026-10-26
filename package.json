@@ -24,6 +24,7 @@
         "@auth/core": "^0.41.3",
         "@convex-dev/auth": "latest",
         "convex": "latest",
+        "qrcode.react": "^4.2.0",
         "react": "latest",
         "react-dom": "latest",
         "react-is": "^19.3.1",

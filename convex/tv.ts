@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { fail, gameByCode, members, netWorth, normalizeCode, roundInsights, seedCatalog } from "./library";
 import { publicIdentity } from "./npc/identity";
 import { launchGame } from "./launch";
@@ -126,7 +127,10 @@ export const board = query({
         const purchase = await context.db.query("feed").withIndex("by_game", (q) => q.eq("gameId", game._id))
             .filter((q) => q.gt(q.field("quantity"), 0)).order("desc").first();
 
+        const viewerId = await getAuthUserId(context);
+
         return {
+            canControl: Boolean(viewerId && viewerId === game.hostId && !game.tvTokenHash),
             reveal,
             latestPurchase: purchase ? { title: purchase.title, message: purchase.message } : null,
             game: { code: game.code, status: game.status, currentPeriod: game.currentPeriod,

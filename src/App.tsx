@@ -1,4 +1,4 @@
-import { Component, useEffect } from "react";
+import { Component, lazy, Suspense, useEffect } from "react";
 import type { ErrorInfo, ReactNode } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth, useQuery } from "convex/react";
@@ -10,6 +10,8 @@ import { CreateGame } from "./CreateGame";
 import { GamePage } from "./GamePage";
 import { friendlyError } from "./errors";
 import { Loading } from "./shared";
+
+const SpectatorPage = lazy(async () => import("./spectator/SpectatorPage"));
 
 class Boundary extends Component<{ children: ReactNode }, { message: string }>
 {
@@ -84,12 +86,18 @@ export function App()
 
     return (
         <Boundary key={location.key}>
-            {isAuthenticated ? <ProtectedRoutes /> : (
-                <Routes>
-                    <Route path="/signup" element={<AuthPage signup />} />
-                    <Route path="*" element={<AuthPage />} />
-                </Routes>
-            )}
+            <Routes>
+                <Route path="/spectate/:code" element={<Suspense fallback={<Loading />}><SpectatorPage /></Suspense>} />
+                <Route
+                    path="*"
+                    element={isAuthenticated ? <ProtectedRoutes /> : (
+                        <Routes>
+                            <Route path="/signup" element={<AuthPage signup />} />
+                            <Route path="*" element={<AuthPage />} />
+                        </Routes>
+                    )}
+                />
+            </Routes>
         </Boundary>
     );
 }

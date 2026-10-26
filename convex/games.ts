@@ -6,7 +6,7 @@ import { currentUser, fail, gameByCode, member, members, normalizeCode, seedCata
 import { launchGame } from "./launch";
 
 export const create = mutation({
-    args: { code: v.string(), periodCount: v.number() },
+    args: { code: v.string(), periodCount: v.number(), spectate: v.optional(v.boolean()) },
     handler: async (context, arguments_) =>
     {
         const user = await currentUser(context);
@@ -30,6 +30,10 @@ export const create = mutation({
             rulesVersion: 2, npcDifficulty: "medium", rosterRevision: 0,
             prices, priceHistory: [{ period: 0, prices }],
         });
+        if (arguments_.spectate)
+        {
+            return code;
+        }
 
         const playerId = await context.db.insert("players", {
             gameId, userId: user._id, controller: { kind: "human", userId: user._id }, seatOrder: 0, active: true, cash: startingCash,
@@ -95,7 +99,9 @@ export const leave = mutation({
             await context.db.delete(player._id);
             const remaining = await members(context, game._id);
             const humans = remaining.filter((seat) => seat.controller?.kind !== "npc" && seat.userId);
-            if (humans.length === 0)
+            const spectatorHost = game.hostId !== player.userId
+              && !remaining.some((seat) => seat.userId === game.hostId);
+            if (humans.length === 0 && !spectatorHost)
             {
                 for (const seat of remaining)
                 {
@@ -144,7 +150,8 @@ export const start = mutation({
     args: { code: v.string() },
     handler: async (context, { code }) =>
     {
-        const { game, user } = await member(context, code);
+        const user = await currentUser(context);
+        const game = await gameByCode(context, code);
         if (game.hostId !== user._id)
         {
             fail("Only the lobby host can launch the game");

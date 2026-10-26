@@ -1,5 +1,5 @@
 import { priceSeries } from "./price-history";
-import type { Board } from "./types";
+import type { Board } from "./display-types";
 
 export function stockHistory(game: Board["game"], stockKey: number)
 {

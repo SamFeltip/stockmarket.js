@@ -5,7 +5,7 @@ import { MobilePortfolio } from "./MobilePortfolio";
 import { money } from "./shared";
 import { FinalHoldings } from "./FinalHoldings";
 import { StockHistoryStrip } from "./StockHistoryStrip";
-import type { Board } from "./types";
+import type { Board } from "./display-types";
 
 export function GameResults({ board, onBack }: { board: Board; onBack?: () => void })
 {

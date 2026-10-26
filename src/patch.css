@@ -32,6 +32,41 @@ button.nav-link { cursor: pointer; }
 .lobby-page:has(.create-game-form) { height: 100dvh; min-height: 0; }
 .create-game-form { padding: 1.5rem; gap: 1.25rem; }
 .create-game-form p { margin-bottom: 0; }
+.spectate-option { text-align: center; }
+.spectate-toggle { display: flex; align-items: center; justify-content: center; gap: 0.85rem; padding: 0; min-height: 2.75rem; }
+.spectate-toggle .form-check-label { display: flex; align-items: center; min-height: 2.75rem; font-size: 1.25rem; cursor: pointer; }
+.spectate-toggle .form-check-input {
+    appearance: none;
+    position: relative;
+    float: none;
+    flex-shrink: 0;
+    width: 3.6rem;
+    height: 2rem;
+    margin: 0;
+    border: 2px solid #c6d7c3;
+    border-radius: 2rem;
+    background-color: #204712;
+    background-image: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+.spectate-toggle .form-check-input::before {
+    content: "";
+    position: absolute;
+    top: 0.2rem;
+    left: 0.2rem;
+    width: 1.3rem;
+    height: 1.3rem;
+    border-radius: 50%;
+    background-color: #fff284;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.spectate-toggle .form-check-input:checked { background-color: #fff284; border-color: #fff284; background-image: none; }
+.spectate-toggle .form-check-input:checked::before { transform: translateX(1.6rem); background-color: #0f2c12; }
+.spectate-toggle .form-check-input:focus { border-color: #fff284; background-image: none; box-shadow: none; }
+.spectate-toggle .form-check-input:focus-visible { outline: 2px solid #fff284; outline-offset: 4px; }
+.spectate-toggle .form-check-input:disabled, .spectate-toggle .form-check-input:disabled + label { cursor: default; }
+.spectate-option .lobby-hint { max-width: 28rem; margin-inline: auto; }
 .create-game-form .alert { margin: 0; padding: 0.6rem; font-size: 0.95rem; }
 @media (max-height: 760px), (max-width: 375px) {
     .lobby-page:has(.create-game-form) .card-header { padding-top: 0.5rem !important; }

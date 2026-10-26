@@ -1,5 +1,5 @@
 import { money } from "./shared";
-import type { Board, Player } from "./types";
+import type { Board, Player } from "./display-types";
 
 export function FinalHoldings({ board, player }: { board: Board; player: Player })
 {

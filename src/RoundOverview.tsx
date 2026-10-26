@@ -1,6 +1,6 @@
 import { money } from "./shared";
 import { StockResult } from "./RoundReveal";
-import type { Board } from "./types";
+import type { Board } from "./display-types";
 
 export function RoundOverview({ before, after }: { before: Board; after: Board })
 {

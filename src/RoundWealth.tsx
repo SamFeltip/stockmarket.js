@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { money } from "./shared";
-import type { Player, Stock } from "./types";
+import type { Player, Stock } from "./display-types";
 
 export function NetWorthNumber({ value }: { value: number })
 {

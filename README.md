@@ -93,3 +93,13 @@ Official references: https://developers.cloudflare.com/pages/platform/limits/ an
 ## Original database backup
 
 The requested full schema-and-data SQL export and a separate schema-only reference are in `reference/`; see `reference/README.md` for checksums and restore instructions. The full data file is excluded from Git and from the public site.
+
+## Web spectator view
+
+Open `/spectate/:code` to watch a game without joining it or signing in. The home screen also has a Spectate button next to Join. The display shows public prices, portfolios, trade activity, round reveals, and final standings, with a QR code for players to join on their phones.
+
+Enable **Spectate** when creating a game to host from this display without taking a player seat. The signed-in creator launches the game after at least four players join and advances periods from the round summary. Reopen the same spectator URL while signed in as the creator to resume hosting. Other viewers remain read-only; private insights and hold-stock decisions stay with players. Leaving the display does not end the game.
+
+Deploy the backend and frontend together: the creation mutation accepts the optional `spectate` flag, and the public board includes a viewer-specific `canControl` permission.
+
+The large-screen layout uses the TV lobby, dashboard, reveals and results styling. Run `node scripts/sync-spectator-styles.mjs` with the sibling `stockmarket-tv` checkout present to refresh `src/spectator/tv-display.css`; regular builds use the checked-in CSS and do not need that checkout. Browser keyboard hints and account-based host controls replace TV remote hints and device-token controls. Smaller browser windows retain the responsive website layout.

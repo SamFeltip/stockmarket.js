@@ -1,6 +1,6 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { fail, member } from "./library";
+import { currentUser, gameByCode, fail, member } from "./library";
 
 import { advancePeriod } from "./advancePeriod";
 
@@ -60,7 +60,8 @@ export const next = mutation({
     args: { code: v.string(), expectedPeriod: v.number() },
     handler: async (context, { code, expectedPeriod }) =>
     {
-        const { game, user } = await member(context, code);
+        const user = await currentUser(context);
+        const game = await gameByCode(context, code);
         if (game.hostId !== user._id)
         {
             fail("Only the lobby host can advance the round");

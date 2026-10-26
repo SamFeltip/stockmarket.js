@@ -1,8 +1,8 @@
 import { portfolioWorth, roundCash, roundPrices } from "../shared/settlement";
 import { revealStocks } from "./reveals";
-import type { Board, Insight } from "./types";
+import type { Board, Insight } from "./display-types";
 
-export function previewRound(board: Board, insights: Insight[], revealedStockKeys: number[]): Board
+export function previewRound<T extends Board>(board: T, insights: Insight[], revealedStockKeys: number[]): T
 {
     const prices = roundPrices(board.game.prices, insights, board.stocks, board.game.suspended);
     const players = board.players.map((player) =>
@@ -23,7 +23,7 @@ export function previewRound(board: Board, insights: Insight[], revealedStockKey
     };
 }
 
-export function roundProgress(board: Board, step: number, index: number)
+export function roundProgress<T extends Board>(board: T, step: number, index: number)
 {
     const groups = revealStocks(board.stocks, board.insights);
     const current = groups[step];

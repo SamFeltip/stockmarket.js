@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Board } from "./types";
+import type { Board } from "./display-types";
 import { actionAnimationMs } from "../shared/presentation";
 import { FeedMessage } from "./FeedMessage";
 import { newPlayEvents } from "./play-events";

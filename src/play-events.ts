@@ -1,4 +1,4 @@
-import type { Board } from "./types";
+import type { Board } from "./display-types";
 
 export function newPlayEvents(board: Board, previousId?: string, previousAt = Infinity)
 {

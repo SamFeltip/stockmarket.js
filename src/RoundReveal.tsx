@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Change } from "./shared";
-import type { Board, Insight, Stock } from "./types";
+import type { Board, Insight, Stock } from "./display-types";
 
 const StockPriceChart = lazy(async () => import("./StockPriceChart"));
 

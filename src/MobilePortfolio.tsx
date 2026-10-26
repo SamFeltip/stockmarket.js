@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from "react";
 import { portfolioCollapse } from "./bootstrap";
 import { FinalHoldings } from "./FinalHoldings";
 import { money } from "./shared";
-import type { Board, Player } from "./types";
+import type { Board, Player } from "./display-types";
 
 export function MobilePortfolio({ board, player, initiallyOpen, select }: {
     board: Board; player: Player; initiallyOpen: boolean; select: Dispatch<SetStateAction<string | null>>;

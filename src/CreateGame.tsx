@@ -25,9 +25,10 @@ export function CreateGame()
                     {
                         const code = await create({
                             code: formText(form, "code"), periodCount: Number(form.get("difficulty")),
+                            spectate: form.get("spectate") === "on",
                         });
 
-                        await navigate(`/games/show/${code}`);
+                        await navigate(form.get("spectate") === "on" ? `/spectate/${code}` : `/games/show/${code}`);
                     });
                 }}
             >
@@ -72,6 +73,13 @@ export function CreateGame()
                         ))}
                     </div>
                 </fieldset>
+                <div className="spectate-option">
+                    <div className="form-check form-switch spectate-toggle">
+                        <input id="spectate" name="spectate" type="checkbox" role="switch" className="form-check-input" disabled={busy} aria-describedby="spectate-help" />
+                        <label className="form-check-label" htmlFor="spectate">Spectate</label>
+                    </div>
+                    <p id="spectate-help" className="lobby-hint mt-2">Use this screen as the game display. You host without taking a player seat.</p>
+                </div>
                 <Alert message={error} />
                 <div className="d-grid gap-3 lobby-actions">
                     <Link to="/" className="btn btn-secondary d-flex align-items-center justify-content-center">Back</Link>

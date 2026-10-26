@@ -2,7 +2,7 @@
 import { useRef } from "react";
 import { useMarquee } from "./use-marquee";
 import { stockHistory } from "./stock-history";
-import type { Board, Stock } from "./types";
+import type { Board, Stock } from "./display-types";
 
 function HistoryCard({ game, stock }: { game: Board["game"]; stock: Stock })
 {
