@@ -1,3 +1,4 @@
+import { MobileGameActions, MobileGameMetrics } from "./MobileGameStatus";
 import { GameHeader, Profile } from "./GameHeader";
 import { Feed } from "./Feed";
 import { useState } from "react";
@@ -32,21 +33,27 @@ export function Playing({ board }: { board: Board })
                 <Profile board={board} view={view} setView={setView} />
                 <Modal id="insightModal" title={`Special Insights - ${game.code}`}><div className="modal-body"><Insights insights={special} stocks={board.stocks} /></div></Modal>
                 <div id="now-playing" className="position-relative card card-green p-3 rounded d-flex flex-row align-items-center justify-content-center" style={{ backgroundColor: "var(--bs-card-bg)" }}>
-                    {myTurn ? (
-                        <div className="text-center">
-                            <h3 className="primary">It's your turn</h3>
-                            <p className="d-none d-sm-block">Buy, sell, use or pass</p>
+                    <div className="now-playing-content">
+                        <div className="now-playing-heading">
+                            {myTurn ? (
+                                <div className="text-center">
+                                    <h3 className="primary">It's your turn</h3>
+                                    <p className="d-none d-sm-block">Buy, sell, use or pass</p>
+                                </div>
+                            )
+                                : (
+                                    <NpcTurnStatus board={board} />
+                                )}
+                            {special.length > 0 && (
+                                <button id="insightModalButton" className="btn btn-primary position-relative position-lg-absolute" data-bs-toggle="modal" data-bs-target="#insightModal" aria-label="Special insights">
+                                    <img height={35} src="/static/imgs/icons/special-insight.svg" alt="special insight" />
+                                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{special.length}</span>
+                                </button>
+                            )}
                         </div>
-                    )
-                        : (
-                            <NpcTurnStatus board={board} />
-                        )}
-                    {special.length > 0 && (
-                        <button id="insightModalButton" className="btn btn-primary position-relative position-lg-absolute" data-bs-toggle="modal" data-bs-target="#insightModal" aria-label="Special insights">
-                            <img height={35} src="/static/imgs/icons/special-insight.svg" alt="special insight" />
-                            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{special.length}</span>
-                        </button>
-                    )}
+                        <MobileGameMetrics board={board} />
+                    </div>
+                    <MobileGameActions />
                 </div>
                 <Modal id="gameModal" title={`Stockmarket! - ${game.code}`}>
                     <div className="modal-body d-flex gap-2">

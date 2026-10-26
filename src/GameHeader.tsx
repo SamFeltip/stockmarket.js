@@ -1,7 +1,7 @@
 import { money } from "./shared";
 import type { Board } from "./types";
 
-function HeaderIcon({ menu = false }: { menu?: boolean })
+export function HeaderIcon({ menu = false }: { menu?: boolean })
 {
     return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
@@ -26,26 +26,7 @@ export function GameHeader({ board }: { board: Board })
     const { game, players } = board;
 
     return (
-        <header className="game-status-card d-flex flex-column justify-content-center card card-green rounded p-3" style={{ backgroundColor: "var(--bs-card-bg)" }}>
-            <div className="mobile-game-status d-flex d-sm-none">
-                <div className="mobile-game-metrics">
-                    {[{ label: "Period", value: game.currentPeriod + 1, total: game.periodCount + 1 },
-                        { label: "Turn", value: game.turn + 1, total: players.length * 3 }].map(({ label, value, total }) => (
-                        <div className="mobile-game-metric" key={label}>
-                            <span className="mobile-game-metric-label">{label}</span>
-                            <div className="mobile-game-metric-value">
-                                <strong>{value}</strong>
-                                <span>{`of ${total}`}</span>
-                            </div>
-                            <progress aria-label={`${label} progress`} value={Math.min(value, total)} max={Math.max(1, total)} />
-                        </div>
-                    ))}
-                </div>
-                <div className="mobile-game-actions">
-                    <button type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasResponsive" aria-label="Feed" title="Activity feed"><HeaderIcon /></button>
-                    <button type="button" data-bs-toggle="modal" data-bs-target="#gameModal" aria-label="Game menu" title="Game menu"><HeaderIcon menu /></button>
-                </div>
-            </div>
+        <header className="game-status-card d-none d-sm-flex flex-column justify-content-center card card-green rounded p-3" style={{ backgroundColor: "var(--bs-card-bg)" }}>
             <div className="d-none d-sm-flex flex-column">
                 <button type="button" className="p-0 border-0 bg-transparent" data-bs-toggle="modal" data-bs-target="#gameModal">
                     <h1
