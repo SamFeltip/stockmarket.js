@@ -141,6 +141,7 @@ describe("Stockmarket transactions", () =>
 
         await expect(bob.mutation(api.rounds.hold, { code: "test", insightId, stockKey: 8 })).rejects.toThrow();
         await expect(sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 })).rejects.toThrow("resolve");
+        await expect(t.mutation(api.rounds.nextSpectator, { code: "test", expectedPeriod: 0 })).rejects.toThrow("resolve");
         await sam.mutation(api.rounds.hold, { code: "test", insightId, stockKey: 8 });
         await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
         const finished = await sam.query(api.board.get, { code: "test" });

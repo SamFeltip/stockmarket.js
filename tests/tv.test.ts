@@ -138,7 +138,7 @@ describe("TV spectator integration", () =>
         expect(JSON.stringify(next)).not.toMatch(/"description"|"insights"/);
     });
 
-    it("gives only the creating TV authority to advance periods and finish the game", async () =>
+    it("validates TV control tokens and also lets web spectators continue TV games", async () =>
     {
         const { t, sam, clients } = await setup();
         const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
@@ -166,7 +166,11 @@ describe("TV spectator integration", () =>
                 .rejects.toThrow("TV remote");
             await expect(t.mutation(api.tv.next, { code: "test", token: "b".repeat(64), expectedPeriod: period }))
                 .rejects.toThrow("controlling TV");
-            await t.mutation(api.tv.next, { code: "test", token, expectedPeriod: period });
+
+            await (period % 2
+                ? t.mutation(api.rounds.nextSpectator, { code: "test", expectedPeriod: period })
+                : t.mutation(api.tv.next, { code: "test", token, expectedPeriod: period }));
+
             await expect(t.mutation(api.tv.next, { code: "test", token, expectedPeriod: period }))
                 .rejects.toThrow("already changed");
             const updated = await t.query(api.tv.board, { code: "test" });

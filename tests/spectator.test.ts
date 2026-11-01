@@ -10,6 +10,39 @@ afterEach(() =>
 
 describe("Web spectator host", () =>
 {
+    it("lets signed-out and non-member spectators continue a player-created game through completion", async () =>
+    {
+        const { t, sam, outsider, clients } = await setup();
+
+        await sam.mutation(api.games.start, { code: "test" });
+        await expect(t.mutation(api.rounds.nextSpectator, { code: "test", expectedPeriod: 0 }))
+            .rejects.toThrow("already changed");
+
+        for (let period = 0; period < 6; period++)
+        {
+            for (let turn = 0; turn < 12; turn++)
+            {
+                await clients[(period + turn) % 4].mutation(api.trading.play, {
+                    code: "test", expectedPeriod: period, expectedTurn: turn,
+                });
+            }
+
+            const display = period % 2 ? outsider : t;
+
+            expect((await display.query(api.tv.board, { code: "test" }))?.canControl).toBe(false);
+            await expect(outsider.mutation(api.rounds.next, { code: "test", expectedPeriod: period }))
+                .rejects.toThrow("Only the lobby host");
+            await display.mutation(api.rounds.nextSpectator, { code: "test", expectedPeriod: period });
+            await expect(sam.mutation(api.rounds.next, { code: "test", expectedPeriod: period }))
+                .rejects.toThrow("already changed");
+            const updated = await t.query(api.tv.board, { code: "test" });
+
+            expect(updated?.game.status).toBe(period === 5 ? "finished" : "playing");
+            expect(updated?.game.currentPeriod).toBe(Math.min(period + 1, 5));
+            expect(updated?.reveal).toBeNull();
+        }
+    });
+
     it("creates without a seat, retains hosting, and controls every period through completion", async () =>
     {
         const { t, sam, bob, pat, lee, outsider } = await setup();
@@ -64,12 +97,12 @@ describe("Web spectator host", () =>
             expect(closed?.reveal?.insights.length).toBeGreaterThan(0);
             await expect(bob.mutation(api.rounds.next, { code: "display", expectedPeriod: period }))
                 .rejects.toThrow("spectator display");
-            await expect(bob.mutation(api.rounds.nextSpectator, { code: "display", expectedPeriod: period }))
-                .rejects.toThrow("Only the spectator host");
             await expect(sam.mutation(api.rounds.next, { code: "display", expectedPeriod: period }))
                 .rejects.toThrow("spectator display");
             await expect(t.mutation(api.rounds.next, { code: "display", expectedPeriod: period })).rejects.toThrow();
-            await sam.mutation(api.rounds.nextSpectator, { code: "display", expectedPeriod: period });
+            const display = [sam, bob, t][period % 3];
+
+            await display.mutation(api.rounds.nextSpectator, { code: "display", expectedPeriod: period });
             await expect(sam.mutation(api.rounds.nextSpectator, { code: "display", expectedPeriod: period }))
                 .rejects.toThrow("already changed");
             const updated = await t.query(api.tv.board, { code: "display" });

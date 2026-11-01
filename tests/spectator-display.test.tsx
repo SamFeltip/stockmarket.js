@@ -102,7 +102,7 @@ describe("TV spectator display parity", () =>
         expect(shuffled.stocks.map((stock) => stock.key)).toEqual([10, 12, 8, 11, 7, 9]);
     });
 
-    it("shows public reveals, cash and share results, and gates the next-period and finish controls", async () =>
+    it("shows round results and lets spectators advance or finish once holds are resolved", async () =>
     {
         const { sam, clients } = await fixture();
 
@@ -114,10 +114,9 @@ describe("TV spectator display parity", () =>
         }
 
         const closed = (await sam.query(api.tv.board, { code: "test" }))!;
-        const summary = (snapshot: Board, canAdvance: boolean) => renderToStaticMarkup(
+        const summary = (snapshot: Board) => renderToStaticMarkup(
             <RoundPresentation
                 snapshot={snapshot}
-                canAdvance={canAdvance}
                 onNext={() => undefined}
                 busy={false}
                 error=""
@@ -135,9 +134,9 @@ describe("TV spectator display parity", () =>
         expect(reveal).toContain("Stock Values:");
         expect(reveal).toContain("Net Worth");
         expect(reveal).toContain("round-player-holdings");
-        expect(summary(closed, true)).toContain("Round overview");
-        expect(summary(closed, true)).toContain("Next Period");
-        expect(summary(closed, false)).toContain("Waiting for the game creator to continue.");
+        expect(summary(closed)).toContain("Round overview");
+        expect(summary(closed)).toContain("Next Period");
+        expect(summary({ ...closed, canControl: false })).toContain("Next Period");
         const publicReveal = closed.reveal!;
         const pending = { ...closed, reveal: { ...publicReveal,
             stocks: [...publicReveal.stocks, { key: 999, name: "Hold Stock Price", display: false,
@@ -145,11 +144,14 @@ describe("TV spectator display parity", () =>
             insights: [...publicReveal.insights, { ...publicReveal.insights[0], stockKey: 999, resolved: false }],
         } };
 
-        expect(summary(pending, true)).toContain("Waiting for players to resolve their hold-stock insights.");
-        expect(summary(pending, true)).toContain("disabled=\"\">Next Period");
-        expect(summary({ ...closed, game: { ...closed.game, tvControlled: true } }, false))
-            .toContain("Waiting for the controlling TV to continue.");
-        expect(summary({ ...closed, game: { ...closed.game, currentPeriod: closed.game.periodCount } }, true))
+        expect(summary(pending)).toContain("Waiting for players to resolve their hold-stock insights.");
+        expect(summary(pending)).toContain("disabled=\"\">Next Period");
+        expect(summary({ ...closed, canControl: false, game: { ...closed.game, tvControlled: true } }))
+            .toContain("Next Period");
+        const finalRound = { ...closed, canControl: false,
+            game: { ...closed.game, currentPeriod: closed.game.periodCount } };
+
+        expect(summary(finalRound))
             .toContain("Finish Game");
     });
 

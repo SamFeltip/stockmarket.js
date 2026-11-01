@@ -15,7 +15,6 @@ import "./tv-display.css";
 export function SpectatorScreen({ board }: { board: Board })
 {
     const start = useMutation(api.games.start);
-    const next = useMutation(api.rounds.next);
     const nextSpectator = useMutation(api.rounds.nextSpectator);
     const { run, busy, error } = useAction();
     const { game } = board;
@@ -44,15 +43,12 @@ export function SpectatorScreen({ board }: { board: Board })
                 <RoundPresentation
                     key={`${game.code}-${game.currentPeriod}`}
                     snapshot={board}
-                    canAdvance={board.canControl}
                     busy={busy}
                     error={error}
                     onBack={back}
                     onNext={() =>
                     {
-                        void run(() => game.spectatorControlled
-                            ? nextSpectator({ code: game.code, expectedPeriod: game.currentPeriod })
-                            : next({ code: game.code, expectedPeriod: game.currentPeriod }));
+                        void run(() => nextSpectator({ code: game.code, expectedPeriod: game.currentPeriod }));
                     }}
                 />
                 <PlayAnimation key={`actions-${game.currentPeriod}`} board={display} />

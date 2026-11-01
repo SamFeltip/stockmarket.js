@@ -8,8 +8,8 @@ import { RoundOverview } from "../RoundOverview";
 import { useRevealReady } from "../use-reveal-ready";
 import { RoundWealth } from "../RoundWealth";
 
-export function RoundPresentation({ snapshot, canAdvance, onNext, busy, error, onBack, overview = false }: {
-    snapshot: Board; canAdvance: boolean; onNext: () => void; busy: boolean;
+export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overview = false }: {
+    snapshot: Board; onNext: () => void; busy: boolean;
     error: string; onBack: () => void; overview?: boolean;
 })
 {
@@ -114,7 +114,7 @@ export function RoundPresentation({ snapshot, canAdvance, onNext, busy, error, o
                 <div id="next-step-wrapper" className="round-navigation p-3 d-flex gap-3 align-items-center" style={{ animation: "none" }}>
                     <button className="btn btn-secondary" onClick={onBack}>Back</button>
                     {error && <p className="error" role="alert">{error}</p>}
-                    {reviewed ? (canAdvance ? (
+                    {reviewed ? (
                         <>
                             {pendingHolds && <p>Waiting for players to resolve their hold-stock insights.</p>}
                             <button className="btn btn-primary" disabled={busy || pendingHolds} onClick={onNext}>
@@ -123,7 +123,7 @@ export function RoundPresentation({ snapshot, canAdvance, onNext, busy, error, o
                                 →
                             </button>
                         </>
-                    ) : <p>{snapshot.game.tvControlled ? "Waiting for the controlling TV to continue." : "Waiting for the game creator to continue."}</p>)
+                    )
                         : (
                             <button
                                 className="btn btn-primary"

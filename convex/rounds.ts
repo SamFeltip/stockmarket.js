@@ -86,13 +86,10 @@ export const nextSpectator = mutation({
     args: { code: v.string(), expectedPeriod: v.number() },
     handler: async (context, { code, expectedPeriod }) =>
     {
-        const user = await currentUser(context);
         const game = await gameByCode(context, code);
-        if (spectatorHost(game, await members(context, game._id)) !== user._id)
-        {
-            fail("Only the spectator host can advance this game");
-        }
 
+        // The public spectator display can continue on behalf of the creator.
+        // Settlement still checks the period and waits for unresolved hold-stock insights.
         await advancePeriod(context, game, expectedPeriod);
     },
 });
