@@ -548,3 +548,7 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
         #game-grid:has(> #player-dock) { padding-bottom: 0 !important; }
     }
 }
+
+.stock-chart-heading { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.5rem; }
+.stock-chart-heading h4 { margin: 0; }
+.stock-chart-change { display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap; font-size: 1.1rem; font-variant-numeric: tabular-nums; }

@@ -12,6 +12,9 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
 {
     const { game, player, players, insights, stocks } = board;
     const price = game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
+    const startingPrice = game.priceHistory?.find((snapshot) => snapshot.period === 0)?.prices
+        .find((item) => item.stockKey === stock.key)?.value ?? stock.startingValue;
+    const priceChange = Math.round((price - startingPrice) * 100) / 100;
     const held = player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0;
     const ownInsights = insights.filter((insight) => insight.stockKey === stock.key);
     const value = ownInsights.reduce((sum, insight) => sum + insight.value, 0);
@@ -35,7 +38,18 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
                     </section>
                     <Investors players={players} stockKey={stock.key} />
                     <section id="price-chart" aria-labelledby="price-chart-title">
-                        <h4 id="price-chart-title">Price Chart</h4>
+                        <div className="stock-chart-heading">
+                            <h4 id="price-chart-title">Price Chart</h4>
+                            <span
+                                className={`stock-chart-change text-${priceChange > 0 ? "success" : (priceChange < 0 ? "danger" : "secondary")}`}
+                                aria-label={`Price change since start: ${priceChange < 0 ? "minus" : "plus"} £${Math.abs(priceChange).toFixed(2)}`}
+                            >
+                                <svg width="24" height="18" viewBox="0 0 24 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                    <path d={priceChange < 0 ? "M2 3l7 7 4-4 9 9M15 15h7V8" : (priceChange > 0 ? "M2 15l7-7 4 4 9-9M15 3h7v7" : "M2 9h20m-6-6 6 6-6 6")} />
+                                </svg>
+                                <span>{`£${Math.abs(priceChange).toFixed(2)}`}</span>
+                            </span>
+                        </div>
                         <Suspense fallback={<div className="stock-price-chart" role="status">Loading price chart…</div>}>
                             <StockPriceChart game={game} stock={stock} />
                         </Suspense>
