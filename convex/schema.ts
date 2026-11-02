@@ -19,6 +19,8 @@ export const actionValidator = v.union(v.object({ kind: v.literal("pass") }), v.
     kind: v.union(v.literal("buy"), v.literal("sell")), stockKey: v.number(), quantity: v.number(),
 }));
 
+export const chanceKindValidator = v.union(v.literal("rights"), v.literal("hold"), v.literal("loan"), v.literal("debenture"), v.literal("option"));
+
 const pricesValidator = v.array(v.object({ stockKey: v.number(), value: v.number() }));
 
 export default defineSchema({
@@ -58,10 +60,11 @@ export default defineSchema({
     playerInsights: defineTable({
         gameId: v.id("games"), playerId: v.id("players"), period: v.number(),
         stockKey: v.number(), description: v.string(), value: v.number(), resolved: v.boolean(),
-        catalogCardId: v.optional(v.string()),
+        catalogCardId: v.optional(v.string()), chanceKind: v.optional(chanceKindValidator),
     }).index("by_game_period", ["gameId", "period"]).index("by_player_period", ["playerId", "period"]),
     gameCatalogs: defineTable({ gameId: v.id("games"), version: v.string(), cards: v.array(v.object({
         id: v.string(), stockKey: v.number(), value: v.number(), description: v.string(),
+        chanceKind: v.optional(chanceKindValidator),
     })) }).index("by_game", ["gameId"]),
     gameActions: defineTable({ gameId: v.id("games"), period: v.number(), turn: v.number(),
         actorPlayerId: v.id("players"), action: actionValidator,

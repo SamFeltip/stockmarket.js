@@ -1,3 +1,4 @@
+import { cashStock } from "../shared/chance-cards";
 import { portfolioWorth } from "../shared/settlement";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError } from "convex/values";
@@ -60,7 +61,12 @@ export async function member(context: QueryContext, code: string)
 
 export async function seedCatalog(context: MutationContext)
 {
-    if (await context.db.query("stocks").first())
+    if (!await context.db.query("stocks").withIndex("by_key", (q) => q.eq("key", cashStock.key)).unique())
+    {
+        await context.db.insert("stocks", cashStock);
+    }
+
+    if (await context.db.query("stocks").withIndex("by_key", (q) => q.eq("key", stockCatalog[0].key)).first())
     {
         return;
     }
@@ -107,7 +113,7 @@ export async function deal(context: MutationContext, game: Document_<"games">, p
             await context.db.insert("playerInsights", {
                 gameId: game._id, playerId: player._id, period: game.currentPeriod,
                 stockKey: insight.stockKey, description: insight.description, value: insight.value, resolved: false,
-                catalogCardId: insight.id,
+                catalogCardId: insight.id, chanceKind: "chanceKind" in insight ? insight.chanceKind : undefined,
             });
         }
     }

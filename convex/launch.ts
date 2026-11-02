@@ -1,7 +1,8 @@
 import type { MutationCtx as MutationContext } from "./_generated/server";
 import type { Doc as Document_ } from "./_generated/dataModel";
+import { specialDeck } from "../shared/chance-cards";
 import { minimumPlayers, maximumPlayers, validGameLength } from "../shared/rules";
-import { deal, fail, feedItem, members } from "./library";
+import { deal, fail, feedItem, members, seedCatalog } from "./library";
 import { spectatorHost } from "./game/hosting";
 import { enqueueNextNpcIfNeeded } from "./npc/scheduling";
 
@@ -34,6 +35,7 @@ export async function launchGame(context: MutationContext, game: Document_<"game
         fail("New NPC games are temporarily unavailable");
     }
 
+    await seedCatalog(context);
     const cards = await context.db.query("insights").collect();
     const stocks = await context.db.query("stocks").collect();
     if (hasNpcs && cards.some((card) => !stocks.some((stock) => stock.key === card.stockKey && stock.display)))
@@ -41,11 +43,11 @@ export async function launchGame(context: MutationContext, game: Document_<"game
         fail("NPC games require an ordinary-only insight catalog");
     }
 
-    const catalogVersion = `catalog:${game._id}`;
+    const catalogVersion = `boardgame-110-v1:${game._id}`;
 
     await context.db.insert("gameCatalogs", { gameId: game._id, version: catalogVersion,
         cards: cards.map((card) => ({ id: String(card._id), stockKey: card.stockKey, value: card.value,
-            description: card.description })) });
+            description: card.description })).concat(specialDeck()) });
 
     for (const [index, seat] of players.entries())
     {

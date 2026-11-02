@@ -45,7 +45,7 @@ export const create = mutation({
         }
 
         await seedCatalog(context);
-        const stocks = await context.db.query("stocks").collect();
+        const stocks = (await context.db.query("stocks").collect()).filter((stock) => stock.display);
         const prices = stocks.map((stock) => ({ stockKey: stock.key, value: stock.startingValue }));
 
         await context.db.insert("games", {

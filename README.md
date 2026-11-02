@@ -67,13 +67,26 @@ Convex mutations validate identity, membership, ownership, turn, quantities, cas
 
 The six simpler board-game rule changes are implemented and tested. See [the current board-game comparison](BOARD_GAME_DIFFERENCES_CURRENT.md) for completed changes and remaining differences, including special cards and shareholder powers.
 
+## Chance cards and cash insights
+
+New games on this branch use the board-game 110-card deck: 92 stock insights,
+four +10% and four −10% cash insights, and two copies of each of the five chance
+cards. The shared deck is shuffled and ten cards are dealt per player without
+replacement each round. Existing running games keep their pinned decks.
+
+The footer shows only the current player's aggregate cash signal and granted
+chance cards. All cash cards are revealed at period end and jointly affect every
+player's remaining cash, with the adjustment rounded to £1,000. Chance-card
+activation is disabled; its desktop dialogs and mobile drawers are in place.
+See [implementation and preview notes](experiments/README.md).
+
 ## Original assets and missing source data
 
 Original images were recovered from the iCloud copy at `Documents/Code/Decent Projects/stockmarket/backend/static`. The four original stylesheets and Bootstrap assets are preserved byte-for-byte. Assets retain their `/static/` URLs. Two broken source references were repaired: the favicon uses the existing `stocks/logo.svg`, and Legal & General's secondary logo uses the supplied `.png` (the SQL incorrectly referenced a nonexistent `.svg`).
 
 The original `BigCaslonRom.otf` file was missing from both source copies. Big Caslon was recovered from the Mac's installed fonts and bundled as `public/static/fonts/BigCaslon.ttf`. The authored stylesheet overrides the missing font source, so the title renders in Big Caslon on every device while the original stylesheets remain unchanged.
 
-The original PostgreSQL database was inspected through Portainer on 16 October 2026. It contains six ordinary stocks and 92 insights, and no hidden/special stock records. A canonical checksum over every insight ID, stock ID, description and value matched this migration exactly (`c5048da3c6a51ab02da732905f5743c4`). The database container was temporarily started for read-only queries and stopped again afterward. Both copies of `database/setup.sql` contain only the six ordinary stocks and their insights. There are no currency or hold-stock seed records, although the Go code supports them. Those mechanics are implemented and tested with fixtures, but the production deck deliberately uses the exact supplied SQL instead of inventing special-card probabilities, values or descriptions. To restore special cards from your original database, load their original records through the internal `catalogAdmin:importCatalog` function before creating new games. Input shape:
+The original PostgreSQL database was inspected through Portainer on 16 October 2026. It contains six ordinary stocks and 92 insights, and no hidden/special stock records. A canonical checksum over every insight ID, stock ID, description and value matched this migration exactly (`c5048da3c6a51ab02da732905f5743c4`). The database container was temporarily started for read-only queries and stopped again afterward. Both copies of `database/setup.sql` contain only the six ordinary stocks and their insights. There are no currency or hold-stock seed records, although the Go code supports them. Those mechanics are implemented and tested with fixtures, but the recovered base catalog uses the exact supplied SQL. This branch now supplements it at game launch with the 18 special cards from the patent Schedule of Cards, as described above. To restore special cards from your original database, load their original records through the internal `catalogAdmin:importCatalog` function before creating new games. Input shape:
 
 ```json
 {

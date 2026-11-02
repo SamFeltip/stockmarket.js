@@ -64,3 +64,6 @@ body:has(#player-dock) { overflow: hidden; }
     #game-grid:has(> #player-dock) #game-stock-info.watching { grid-template-rows: minmax(0, 1fr); grid-template-areas: "body body"; }
     #game-grid:has(> #player-dock) .stock-panel-sections { display: grid; }
 }
+/* Reuse the trade drawer shell, allowing longer chance-card descriptions to scroll. */
+.modal.trade-dialog:has(.dock-power-detail) .dock-power-detail { overflow: auto; align-content: center; }
+.modal.trade-dialog:has(.dock-power-detail) .trade-footer { flex-shrink: 0; }

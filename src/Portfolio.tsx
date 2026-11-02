@@ -1,3 +1,4 @@
+import { cashStockKey } from "../shared/chance-cards";
 import { Change, Insights, money } from "./shared";
 import type { Board, Player } from "./types";
 
@@ -7,7 +8,7 @@ export function Portfolio({ board, player }: { board: Board; player: Player })
 {
     const own = player._id === board.player._id;
     const stocks = board.stocks.filter((stock) => stock.display);
-    const insights = own ? board.insights : [];
+    const insights = own ? board.insights.filter((card) => !card.chanceKind && card.stockKey !== cashStockKey) : [];
 
     return (
         <div id="player-portfolio" className={`flex-fill p-3 gap-3 ${own ? "is-current-player" : ""}`}>

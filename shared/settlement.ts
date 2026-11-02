@@ -1,3 +1,5 @@
+import { cashStockKey } from "./chance-cards";
+
 interface Price { stockKey: number; value: number }
 interface Insight { stockKey: number; playerId: string; value: number }
 interface Stock { key: number; display: boolean; name: string }
@@ -26,7 +28,14 @@ export function roundCash(player: { _id: string; cash: number }, insights: Insig
       && stocks.some((stock) => stock.key === insight.stockKey && stock.name === "currency"))
         .reduce((sum, insight) => sum + insight.value, 0);
 
-    return Math.max(0, Math.trunc(player.cash * (1 + change)));
+    // New board-game cash cards affect everyone, just like company-price cards.
+    // Round the adjustment, not the player's existing balance, to the nearest £1,000.
+    const cashPercent = Math.round(insights.filter((insight) => insight.stockKey === cashStockKey)
+        .reduce((sum, insight) => sum + insight.value, 0) * 100);
+    const adjustment = Math.sign(cashPercent) * Math.round(player.cash * Math.abs(cashPercent) / 100 / 1000) * 1000;
+
+    // Preserve the old per-player semantics for explicitly imported legacy currency cards.
+    return Math.max(0, Math.trunc(player.cash * (1 + change)) + adjustment);
 }
 
 export function portfolioWorth(player: { cash: number; holdings: { stockKey: number; quantity: number }[] },

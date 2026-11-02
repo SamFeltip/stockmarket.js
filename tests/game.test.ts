@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { cashStockKey } from "../shared/chance-cards";
 import { setup } from "./game-setup";
 import { api, internal } from "../convex/_generated/api";
 
@@ -131,6 +132,15 @@ describe("Stockmarket transactions", () =>
         const board = await sam.query(api.board.get, { code: "test" });
         const insightId = await t.run(async (context) =>
         {
+            // Isolate the imported legacy-currency fixture from randomly dealt board-game cash cards.
+            for (const card of await context.db.query("playerInsights").collect())
+            {
+                if (card.stockKey === cashStockKey)
+                {
+                    await context.db.patch(card._id, { value: 0 });
+                }
+            }
+
             await context.db.insert("playerInsights", { gameId: board.game._id, playerId: board.player._id, period: 0,
                 stockKey: 13, description: "Currency test", value: 0.1, resolved: false });
             await context.db.patch(board.game._id, { status: "special_insights" });

@@ -23,7 +23,7 @@ export const create = mutation({
         }
 
         await seedCatalog(context);
-        const stocks = await context.db.query("stocks").collect();
+        const stocks = (await context.db.query("stocks").collect()).filter((stock) => stock.display);
         const prices = stocks.map((stock) => ({ stockKey: stock.key, value: stock.startingValue }));
         const gameId = await context.db.insert("games", {
             code, hostId: user._id, spectatorHostId: arguments_.spectate ? user._id : undefined,

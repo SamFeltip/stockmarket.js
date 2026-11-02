@@ -4,6 +4,24 @@ Researched and compared on 16 October 2026. Updated during implementation on the
 
 This tracked copy records current behavior. The local-only `local-notes/BOARD_GAME_DIFFERENCES.md` remains the original research snapshot. Rows marked **Aligned** are completed changes, rather than remaining differences.
 
+## Card-dealing implementation on `poc/player-cash-dock` (2 November 2026)
+
+This branch now deals the complete 110-card deck for newly launched games: the
+92 recovered share-price cards, four +10% and four −10% cash/gold cards, and two
+of each of the five chance cards. The cash counts are explicit in the original
+patent PDF's Schedule of Cards (page 4); the chance counts are on page 5.
+Each player receives ten cards without replacement each round from the pinned
+deck. Existing running games keep their original pinned catalogs.
+
+Cash is shown as a private aggregate in the footer, including grey +0%. At period
+end, the sum of everyone's dealt cash cards affects all remaining balances; the
+adjustment is rounded to £1,000. Legacy imported `currency` cards keep their
+previous per-player treatment. Chance cards are dealt and displayed, but Activate
+is disabled pending implementation of their effects and retained-card lifecycle.
+See `shared/chance-cards.ts`, `shared/settlement.ts`, `convex/launch.ts`, and
+`tests/chance-cards.test.tsx`. The original comparison below records the baseline
+before this branch's changes; its missing-card rows are superseded by this section.
+
 ## Scope and sources
 
 The likely reference is **Stockmarket! (Jordans Games, 1987)**, identified by [BoardGameGeek's English-edition listing](https://boardgamegeek.com/boardgameversion/28804/english-edition). This is an identification based on the title and matching mechanics; the user's physical edition has not been inspected.

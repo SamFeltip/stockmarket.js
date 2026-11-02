@@ -1,3 +1,4 @@
+import { cashStockKey } from "../shared/chance-cards";
 import { MobileGameActions, GameMetrics } from "./GameStatus";
 import { GameHeader, Profile } from "./GameHeader";
 import { Feed } from "./Feed";
@@ -13,7 +14,7 @@ import { Portfolio } from "./Portfolio";
 import { NpcTurnStatus } from "./npc/NpcTurnStatus";
 import type { Board } from "./types";
 
-export function Playing({ board, hasChanceCards = true }: { board: Board; hasChanceCards?: boolean })
+export function Playing({ board }: { board: Board })
 {
     const { game, players, insights } = board;
     const stocks = board.stocks.filter((stock) => stock.display);
@@ -26,7 +27,8 @@ export function Playing({ board, hasChanceCards = true }: { board: Board; hasCha
     const selectedStock = stocks.find((stock) => stock.key === stockKey) ?? stocks[0];
     const selectedPlayer = players.find((player) => player._id === playerId) ?? own;
     const myTurn = game.currentPlayerId === board.player._id;
-    const special = insights.filter((insight) => !stocks.some((stock) => stock.key === insight.stockKey));
+    const special = insights.filter((insight) => !insight.chanceKind && insight.stockKey !== cashStockKey
+      && board.stocks.some((stock) => stock.key === insight.stockKey && !stock.display));
 
     return (
         <>
@@ -136,7 +138,7 @@ export function Playing({ board, hasChanceCards = true }: { board: Board; hasCha
                     </div>
                 </div>
                 <Feed board={board} />
-                <PlayerDock board={board} hasChanceCards={hasChanceCards} />
+                <PlayerDock board={board} />
                 <Modal id="passModal" title="Are you sure you want to pass?">
                     <div className="modal-footer d-flex flex-row">
                         <button type="button" className="btn btn-secondary flex-fill" data-bs-dismiss="modal" disabled={busy}>Cancel</button>

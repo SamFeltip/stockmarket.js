@@ -1,19 +1,22 @@
 import { Modal, money } from "./shared";
+import { chanceCards, chanceStockKey, privateCashPercent } from "../shared/chance-cards";
 import type { Board } from "./types";
 import "./player-dock.css";
 
-// Names and effects follow BOARD_GAME_DIFFERENCES_CURRENT.md.
-const chanceCards = [
-    { name: "Rights Issue", kind: "rights", icon: "+", effect: "50% extra shares", description: "Choose a company. All holders receive 50% extra shares, rounded down.", timing: "Played as a bargain under the general chance-card rule; the individual card entry does not specify a turn cost" },
-    { name: "Share Suspended", kind: "hold", icon: "＝", effect: "Freeze a company’s price", description: "Choose one company to suspend. Its share price stays at the previous period’s level when this period settles. This card cannot be retained.", timing: "Play at the end of the round" },
-    { name: "Government Loan Stock", kind: "loan", icon: "£", effect: "Collect £10,000", description: "Your Government Loan Stock has matured. Collect £10,000 from the stockbroker.", timing: "Uses one bargain (turn)" },
-    { name: "Debenture", kind: "debenture", icon: "◇", effect: "Bankruptcy protection", description: "Retain this card as insurance. If a company goes bankrupt, claim the full purchase price of shares you still hold in that company.", timing: "Claim within two rounds of the bankruptcy" },
-    { name: "Option", kind: "option", icon: "⇄", effect: "Reserve a buy or sell price", description: "Choose a company and reserve its current share price for a future purchase or sale. Exercise the option and surrender the card within three periods.", timing: "Reserving the price and exercising the option each use one turn" },
-];
-
-/** POC only: chance cards and cash insights are examples, never trading mutations. */
-export function PlayerDock({ board, hasChanceCards = true }: { board: Board; hasChanceCards?: boolean })
+export function PlayerDock({ board }: { board: Board })
 {
+    const ownCards = board.insights.filter((card) => card.playerId === board.player._id
+      && card.period === board.game.currentPeriod);
+    const granted = ownCards.filter((card) => card.stockKey === chanceStockKey && card.chanceKind)
+        .flatMap((card) =>
+        {
+            const definition = chanceCards.find((item) => item.kind === card.chanceKind);
+
+            return definition ? [{ ...definition, id: card._id }] : [];
+        });
+    const cashPercent = privateCashPercent(ownCards, board.player._id);
+    const cashTone = cashPercent > 0 ? "success" : (cashPercent < 0 ? "danger" : "secondary");
+
     return (
         <section id="player-dock" className="card card-green rounded p-3" style={{ backgroundColor: "var(--bs-card-bg)" }} aria-label="Your cash, chance cards and cash insights">
             <div className="dock-cash">
@@ -23,23 +26,23 @@ export function PlayerDock({ board, hasChanceCards = true }: { board: Board; has
                 </strong>
                 <span className="dock-cash-label">cash</span>
                 <div className="dock-cash-insight card bg-white text-black text-center">
-                    <div className="total-insight text-success d-flex justify-content-center align-items-center">
-                        <img className="pe-2" height={16} src="/static/imgs/icons/stock_up.svg" alt="Cash rising" />
-                        <span>+20%</span>
+                    <div className={`total-insight text-${cashTone} d-flex justify-content-center align-items-center`}>
+                        {cashPercent !== 0 && <img className="pe-2" height={16} src={`/static/imgs/icons/stock_${cashPercent > 0 ? "up" : "down"}.svg`} alt={`Cash ${cashPercent > 0 ? "rising" : "falling"}`} />}
+                        <span>{`${cashPercent >= 0 ? "+" : "−"}${Math.abs(cashPercent)}%`}</span>
                     </div>
                     <p>Cash insight</p>
                 </div>
             </div>
-            {hasChanceCards ? (
+            {granted.length > 0 ? (
                 <div className="dock-powers">
                     <h2 id="chance-cards-label">Chance Cards</h2>
                     <div className="dock-power-cards" role="region" aria-labelledby="chance-cards-label">
-                        {chanceCards.map((power) => (
-                            <button key={power.kind} type="button" className={`dock-power-card dock-power-${power.kind}`} data-bs-toggle="modal" data-bs-target={`#power-preview-${power.kind}`} aria-label={`Preview ${power.name}: ${power.effect}`}>
-                                <span className="dock-power-icon" aria-hidden="true">{power.icon}</span>
+                        {granted.map((card) => (
+                            <button key={card.id} type="button" className={`dock-power-card dock-power-${card.kind}`} data-bs-toggle="modal" data-bs-target={`#chance-card-${card.id}`} aria-label={`${card.name}: ${card.effect}`}>
+                                <span className="dock-power-icon" aria-hidden="true">{card.icon}</span>
                                 <span className="dock-power-copy">
-                                    <strong>{power.name}</strong>
-                                    <span>{power.effect}</span>
+                                    <strong>{card.name}</strong>
+                                    <span>{card.effect}</span>
                                 </span>
                             </button>
                         ))}
@@ -51,18 +54,19 @@ export function PlayerDock({ board, hasChanceCards = true }: { board: Board; has
                     <p>Chance cards may appear here each round</p>
                 </div>
             )}
-            {hasChanceCards && chanceCards.map((power) => (
-                <Modal key={power.kind} id={`power-preview-${power.kind}`} title={power.name}>
+            {granted.map((card) => (
+                <Modal key={card.id} id={`chance-card-${card.id}`} title={card.name} mobileDrawer>
                     <div className="modal-body dock-power-detail">
-                        <span className="dock-preview">Coming soon · Example card</span>
-                        <h3>{power.effect}</h3>
-                        <p>{power.description}</p>
-                        <p className="dock-caption">
-                            {power.timing}
-                            . This preview does not affect your trades.
-                        </p>
+                        <h2 className="text-black">{card.name}</h2>
+                        <h3>{card.effect}</h3>
+                        <p>{card.description}</p>
+                        <p className="dock-caption">{card.timing}</p>
+                        <p className="dock-caption">Activation is coming soon.</p>
                     </div>
-                    <div className="modal-footer"><button type="button" className="btn btn-primary" data-bs-dismiss="modal">Got it</button></div>
+                    <div className="modal-footer trade-footer">
+                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" className="btn btn-primary" disabled>Activate</button>
+                    </div>
                 </Modal>
             ))}
         </section>
