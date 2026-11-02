@@ -1,7 +1,8 @@
+import { cashStockKey } from "../../shared/chance-cards";
 import { useEffect, useState } from "react";
 import type { Board } from "./types";
 import { websiteBoard } from "./presentation";
-import { revealStocks } from "../reveals";
+import { revealGroups } from "../reveals";
 import { roundProgress } from "../round-preview";
 import { RoundReveal } from "../RoundReveal";
 import { RoundOverview } from "../RoundOverview";
@@ -14,10 +15,11 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
 })
 {
     const board = websiteBoard(snapshot);
-    const groups = revealStocks(board.stocks, board.insights);
+    const groups = revealGroups(board.stocks, board.insights);
     const [step, setStep] = useState(overview ? groups.length : 0);
     const [index, setIndex] = useState(0);
     const stock = groups[step];
+    const cash = stock?.key === cashStockKey;
     const visible = board.insights.filter((insight) => insight.stockKey === stock?.key);
     const unresolved = stock?.name === "Hold Stock Price" ? visible.find((insight) => !insight.resolved) : undefined;
     const owner = board.players.find((player) => player._id === unresolved?.playerId);
@@ -56,7 +58,7 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
             <div className="round-end gap-3 p-4 d-grid">
                 <div className="d-flex flex-column align-items-center justify-content-center">
                     <h1>End of round</h1>
-                    {stock && !stock.display && <h2>Additional insights</h2>}
+                    {stock && !stock.display && !cash && <h2>Additional insights</h2>}
                 </div>
                 {reviewed ? <RoundOverview before={board} after={preview} /> : (
                     <>
@@ -141,7 +143,7 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
                                     }
                                 }}
                             >
-                                {index < visible.length ? "Skip to stock summary" : (step < groups.length - 1 ? `Next: ${groups[step + 1].name}` : "View round summary")}
+                                {index < visible.length ? (cash ? "Skip to cash summary" : "Skip to stock summary") : (step < groups.length - 1 ? `Next: ${groups[step + 1].name}` : "View round summary")}
                                 {" "}
                                 →
                             </button>

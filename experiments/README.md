@@ -50,6 +50,15 @@ branch `cash-dock-demo`, never `main`. No Convex deployment is needed.
 Dependencies are shared with the original checkout via a local `node_modules`
 symlink. Existing ignored PNG/font assets were copied from that checkout.
 
+## Cash reveal preview
+
+Append `?view=round` to walk through stock reveals, then cash, then the round
+summary. Cash cards reveal every 2.5 seconds with a running percentage total;
+"Skip to cash summary" reveals the total immediately. `&cash=-10` shows a fall;
+`&cash=0` shows an empty cash reveal. Cash effects appear in player balances and
+net worth when the cash reveal completes, using the same settlement rounding as
+the game. Player and spectator displays share the cash reveal and sequence.
+
 ## Validation
 
 `npm run check` runs lint, integration/UI tests, TypeScript, the production build,

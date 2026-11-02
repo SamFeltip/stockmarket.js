@@ -62,6 +62,7 @@ export default [
             "node_modules/",
             ".vite/",
             "dist/",
+            "dist-demo/",
             "dist-large/",
             ".astro/",
             ".generated/",

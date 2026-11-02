@@ -9,3 +9,13 @@ it("visits each stock once, including empty stocks, before additional insights",
     expect(revealStocks(stocks, insights).map((stock) => stock.key)).toEqual([8, 9, 14]);
     expect(revealStocks(stocks, []).map((stock) => stock.key)).toEqual([8, 9]);
 });
+
+it("reveals cash exactly once after all stock groups, even when no cash cards were dealt", async () =>
+{
+    const { revealGroups } = await import("../src/reveals");
+    const { cashStock } = await import("../shared/chance-cards");
+    const stocks = [cashStock, { ...cashStock, key: 8, display: true }];
+
+    expect(revealGroups(stocks, [{ stockKey: cashStock.key }]).map((stock) => stock.key)).toEqual([8, cashStock.key]);
+    expect(revealGroups(stocks, []).map((stock) => stock.key)).toEqual([8, cashStock.key]);
+});

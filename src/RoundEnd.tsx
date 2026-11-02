@@ -1,8 +1,9 @@
+import { cashStockKey } from "../shared/chance-cards";
 import { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Alert, useAction } from "./shared";
-import { revealStocks } from "./reveals";
+import { revealGroups } from "./reveals";
 import { GameResults } from "./GameResults";
 import { RoundOverview } from "./RoundOverview";
 import { RoundWealth } from "./RoundWealth";
@@ -19,9 +20,10 @@ export function RoundEnd({ board }: { board: Board })
     const { run, busy, error } = useAction();
     const [step, setStep] = useState(0);
     const [index, setIndex] = useState(0);
-    const groups = revealStocks(stocks, insights);
+    const groups = revealGroups(stocks, insights);
     const activeStock = groups[step];
-    const special = Boolean(activeStock && !activeStock.display);
+    const cash = activeStock?.key === cashStockKey;
+    const special = Boolean(activeStock && !activeStock.display && !cash);
     const visible = insights.filter((insight) => insight.stockKey === activeStock?.key);
     const holds = activeStock?.name === "Hold Stock Price" ? visible.filter((insight) => !insight.resolved) : [];
     const unresolved = holds.find((insight) => insight.playerId === board.player._id) ?? holds[0];
@@ -146,7 +148,7 @@ export function RoundEnd({ board }: { board: Board })
                                 }
                             }}
                         >
-                            {index < visible.length ? "Skip to stock summary"
+                            {index < visible.length ? (cash ? "Skip to cash summary" : "Skip to stock summary")
                                 : (step < groups.length - 1 ? `Next: ${groups[step + 1].name}` : "View round summary")}
                             {" →"}
                         </button>

@@ -1,3 +1,5 @@
+import { cashStockKey } from "../shared/chance-cards";
+import { CashReveal } from "./CashReveal";
 import { lazy, Suspense } from "react";
 import { RolePortrait } from "./RolePortrait";
 import { Change } from "./shared";
@@ -26,6 +28,11 @@ export function RoundReveal({ board, preview, stock, insights, index }: {
     board: Board; preview: Board; stock: Stock; insights: Insight[]; index: number;
 })
 {
+    if (stock.key === cashStockKey)
+    {
+        return <CashReveal insights={insights} index={index} />;
+    }
+
     const special = !stock.display;
     const active = insights[index];
     const description = active?.bonusRole === "chairman" ? "chairman influence" : active?.description;

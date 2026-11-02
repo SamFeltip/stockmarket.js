@@ -3,6 +3,7 @@ import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { BrowserRouter } from "react-router-dom";
 import { companyRoles } from "../shared/company-roles";
 import { specialDeck, cashStock } from "../shared/chance-cards";
+import { RoundEnd } from "../src/RoundEnd";
 import { Playing } from "../src/Playing";
 import raw from "./cash-dock-board.json";
 import "../src/patch.css";
@@ -66,10 +67,17 @@ if (parameters.get("cards") !== "none")
             stockKey: card.stockKey, chanceKind: card.chanceKind, value: 0, description: card.description })));
 }
 
+const roundView = parameters.get("view") === "round";
+if (roundView)
+{
+    board.game.status = "closed";
+    board.game.spectatorControlled = true;
+}
+
 const client = new ConvexReactClient("https://preview.convex.cloud");
 
 createRoot(document.querySelector("#root")!).render(
     <ConvexProvider client={client}>
-        <BrowserRouter><main className="position-relative overflow-x-hidden d-flex flex-column justify-content-center"><Playing board={board} /></main></BrowserRouter>
+        <BrowserRouter><main className="position-relative overflow-x-hidden d-flex flex-column justify-content-center">{roundView ? <RoundEnd board={board} /> : <Playing board={board} />}</main></BrowserRouter>
     </ConvexProvider>,
 );
