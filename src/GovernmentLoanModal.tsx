@@ -26,9 +26,9 @@ export function GovernmentLoanModal({ board, insightId, used, onActivate }: {
     }
 
     return (
-        <Modal id={id} title="Government Loan Stock" mobileDrawer>
+        <Modal id={id} title="Government Loan" mobileDrawer>
             <div className="modal-body loan-detail d-grid gap-3">
-                <h2 className="text-black mb-0">Government Loan Stock</h2>
+                <h2 className="text-black mb-0">Government Loan</h2>
                 <h3>{`Receive £${money(governmentLoanAmount)}`}</h3>
                 <p>This bonus goes straight into your cash balance. Invest it in shares or save it for later.</p>
                 <p>You can use this card once. Activating it uses one turn.</p>

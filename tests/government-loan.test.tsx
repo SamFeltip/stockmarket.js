@@ -16,7 +16,7 @@ async function loanGame()
     const insightId = await fixture.t.run(async (context) => await context.db.insert("playerInsights", {
         gameId: board.game._id, playerId: board.player._id, period: board.game.currentPeriod,
         stockKey: chanceStockKey, chanceKind: "loan", value: 0, resolved: false,
-        description: "Government Loan Stock",
+        description: "Government Loan",
     }));
 
     return { ...fixture, board, insightId, command: { code: "test", expectedTurn: 0, expectedPeriod: 0, insightId } };

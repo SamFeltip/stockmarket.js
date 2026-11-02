@@ -22,7 +22,7 @@ from zero. Settlement and the browser round preview use the same function.
 Explicitly imported legacy `currency` cards preserve their old per-player logic.
 
 Chance-card details use the existing trade modal/drawer shell. Government Loan
-Stock shows £10k above its name and can be activated during your turn to receive
+shows £10k above its name and can be activated during your turn to receive
 £10,000. Activation consumes that dealt card and one turn, records a public bonus
 event, and triggers the usual action popup with the money SVG. Redemption checks
 membership, card ownership, period, turn, kind, and prior use in one transaction.

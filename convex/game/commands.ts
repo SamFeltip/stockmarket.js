@@ -43,7 +43,7 @@ export async function applyTurn(
           || card.period !== game.currentPeriod || card.stockKey !== chanceStockKey
           || card.chanceKind !== "loan" || card.used)
         {
-            fail("This Government Loan Stock card cannot be used");
+            fail("This Government Loan card cannot be used");
         }
 
         await context.db.patch(card._id, { used: true });

@@ -108,7 +108,7 @@ describe("board-game special cards", () =>
         const html = renderDock(own);
 
         expect(opponent.insights).toHaveLength(0);
-        expect(html).toContain("Government Loan Stock");
+        expect(html).toContain("Government Loan");
         expect(html).not.toContain("Rights Issue");
         expect(html).not.toContain("disabled=\"\">Activate");
         expect(html).toContain("£10k");
