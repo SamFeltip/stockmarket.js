@@ -1,3 +1,4 @@
+import { StockRoleFooter } from "./StockRoleFooter";
 import { money } from "./shared";
 import { StockResult } from "./RoundReveal";
 import type { Board } from "./display-types";
@@ -17,6 +18,7 @@ export function RoundOverview({ before, after }: { before: Board; after: Board }
                             after={after.game.prices.find((price) => price.stockKey === stock.key)?.value ?? 0}
                         />
                         {after.game.suspended.includes(stock.key) && <p>Stock price held</p>}
+                        <StockRoleFooter board={before} stock={stock} />
                     </article>
                 ))}
             </div>

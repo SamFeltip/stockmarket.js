@@ -1,4 +1,7 @@
+import { RolePortrait } from "../RolePortrait";
+import { TradeRoleLabel } from "../TradeRole";
 /* eslint-disable jsx-a11y/no-noninteractive-tabindex -- The feed is a native keyboard scroll region. */
+import { CompanyHolding } from "../CompanyHolding";
 import { QRCodeSVG } from "qrcode.react";
 import type { Board } from "./types";
 
@@ -68,14 +71,25 @@ export function Feed({ board }: { board: Board })
             >
                 {board.feed.length > 0 ? board.feed.map((item) => (
                     <article key={item.id}>
-                        <img
-                            className={`feed-avatar${item.colour === "grey" ? " feed-system" : ""}`}
-                            src={portrait(item.imageRoot
-                              || board.players.find((player) => player.name === item.title)?.profileRoot)}
-                            alt=""
-                        />
+                        {item.roleAfter ? (
+                            <div className="trade-avatar">
+                                <RolePortrait
+                                    name={item.title}
+                                    role={item.roleAfter}
+                                    profileRoot={portrait(item.imageRoot)}
+                                />
+                            </div>
+                        ) : (
+                            <img
+                                className={`feed-avatar${item.colour === "grey" ? " feed-system" : ""}`}
+                                src={portrait(item.imageRoot
+                                  || board.players.find((player) => player.name === item.title)?.profileRoot)}
+                                alt=""
+                            />
+                        )}
                         <div>
                             <h3>{item.title}</h3>
+                            <TradeRoleLabel role={item.roleAfter} />
                             <FeedMessage
                                 item={{ ...item, _id: item.id, _creationTime: item.at }}
                                 stocks={board.stocks.map((stock) => ({ ...stock, display: true,
@@ -169,7 +183,12 @@ export function Dashboard({ board, phoneUrl }: { board: Board; phoneUrl: string 
                                 <td>{money(player.cash)}</td>
                                 {stocks.map((stock) => (
                                     <td key={stock.key}>
-                                        {count(player.holdings.find((h) => h.stockKey === stock.key)?.quantity ?? 0)}
+                                        <CompanyHolding
+                                            quantity={count(player.holdings.find((h) =>
+                                                h.stockKey === stock.key)?.quantity ?? 0)}
+                                            role={player.roles.find((item) => item.stockKey === stock.key)?.role}
+                                            company={stock.name}
+                                        />
                                     </td>
                                 ))}
                                 <td className="wealth">{money(player.netWorth)}</td>

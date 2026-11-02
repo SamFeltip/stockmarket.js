@@ -162,7 +162,6 @@ button.nav-link { cursor: pointer; }
 #game-stock-info #insights > .overflow-auto { max-height: none !important; overflow: visible !important; }
 #game-stock-info #insight-list { gap: 0.4rem !important; }
 #game-stock-info #insight-list .card-body { padding: 0.5rem; }
-#game-stock-info #insight-list .card-body > .justify-content-center:first-child { display: none !important; }
 #game-stock-info #insight-list p { font-size: 0.8rem; line-height: 1.25; overflow-wrap: anywhere; }
 #game-stock-info #insight-list h5 { font-size: 1rem; }
 .stock-investors { display: flex; flex-wrap: wrap; align-items: start; gap: 0.75rem; }
@@ -171,7 +170,7 @@ button.nav-link { cursor: pointer; }
 .stock-investors img { width: clamp(2rem, 6vh, 3rem); height: clamp(2rem, 6vh, 3rem); object-fit: cover; border-radius: 0.35rem; }
 .stock-empty, .stock-chart-hint { color: #596356; font-size: 0.75rem; }
 .stock-price-chart { width: 100%; height: clamp(8rem, 24dvh, 17rem); min-width: 0; border: 1px solid #adb5aa; border-radius: 0.35rem; }
-.stock-info-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+.stock-info-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
 .stock-info-cards .card-body { padding: 0.5rem 0.2rem; }
 .stock-info-cards .card-body > p:first-child { font-weight: 600; font-size: clamp(0.8rem, 2vh, 1rem); }
 .stock-info-cards .text-secondary { font-size: 0.65rem; line-height: 1.2; overflow-wrap: anywhere; }
@@ -307,7 +306,7 @@ button.nav-link { cursor: pointer; }
 .round-overview-players p { font-size: clamp(0.75rem, 1.1vw, 0.95rem); margin: 0; }
 @media (min-width: 992px) and (min-height: 700px) {
     .round-end:has(.round-overview) { height: 100dvh; min-height: 0; grid-template-rows: auto minmax(0, 1fr) auto; padding: clamp(0.75rem, 2dvh, 1.5rem) !important; }
-    .round-overview { grid-template-rows: auto minmax(0, 1fr) auto; }
+    .round-overview { grid-template-rows: auto minmax(min-content, 1fr) auto; }
     .round-overview > h2 { margin: 0; font-size: clamp(1rem, 2.5dvh, 1.5rem); }
 }
 
@@ -507,3 +506,5 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
     #game-grid > #offcanvasResponsive { padding: 1rem !important; }
     #game-grid #buy-button, #game-grid #sell-button, #game-grid #feed-pass-button { min-height: 2.75rem; padding: 0.375rem 0.75rem; font-size: 1rem; line-height: 1.5; }
 }
+
+.round-overview { overflow-y: auto; }

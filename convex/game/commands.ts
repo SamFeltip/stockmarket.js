@@ -1,3 +1,4 @@
+import { companyRoles, type CompanyRole } from "../../shared/company-roles";
 import type { MutationCtx as MutationContext } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import type { Action } from "../../packages/game-contracts/src";
@@ -32,6 +33,8 @@ export async function applyTurn(
     const action = command.action;
     const market = marketFor(game, player, players);
     let message = "passed their go";
+    let roleBefore: CompanyRole | undefined;
+    let roleAfter: CompanyRole | undefined;
     if (action.kind !== "pass")
     {
         const stock = await context.db
@@ -49,9 +52,23 @@ export async function applyTurn(
             fail(error);
         }
 
+        roleBefore = companyRoles(players, action.stockKey).find((role) => role.playerId === player._id)?.role;
         const updated = transition(market, action).players.find((seat) => seat.id === player._id)!;
 
-        await context.db.patch(player._id, { cash: updated.cash, holdings: [...updated.holdings] });
+        const chairmanSince = (player.chairmanSince ?? []).filter((item) =>
+            (updated.holdings.find((holding) => holding.stockKey === item.stockKey)?.quantity ?? 0) >= 100_000);
+        const before = player.holdings.find((holding) => holding.stockKey === action.stockKey)?.quantity ?? 0;
+        const after = updated.holdings.find((holding) => holding.stockKey === action.stockKey)?.quantity ?? 0;
+        if (before < 100_000 && after >= 100_000)
+        {
+            chairmanSince.push({ stockKey: action.stockKey, order: game.currentPeriod * 100 + game.turn });
+        }
+
+        const updatedPlayer = { ...player, cash: updated.cash, holdings: [...updated.holdings], chairmanSince };
+
+        roleAfter = companyRoles(players.map((seat) => seat._id === player._id ? updatedPlayer : seat), action.stockKey)
+            .find((role) => role.playerId === player._id)?.role;
+        await context.db.patch(player._id, { cash: updated.cash, holdings: [...updated.holdings], chairmanSince });
         message = `${action.kind === "buy" ? "bought" : "sold"} ${action.quantity} shares in ${stock.name}`;
     }
 
@@ -68,6 +85,7 @@ export async function applyTurn(
             : {
                 stockKey: action.stockKey,
                 quantity: action.quantity * (action.kind === "buy" ? 1 : -1),
+                roleBefore, roleAfter,
             };
 
     await feedItem(context, game, display.name, message, display.profileRoot, "", trade);

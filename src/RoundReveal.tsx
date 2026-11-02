@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import { RolePortrait } from "./RolePortrait";
 import { Change } from "./shared";
 import type { Board, Insight, Stock } from "./display-types";
 
@@ -27,6 +28,8 @@ export function RoundReveal({ board, preview, stock, insights, index }: {
 {
     const special = !stock.display;
     const active = insights[index];
+    const description = active?.bonusRole === "chairman" ? "chairman influence" : active?.description;
+    const bonusPlayer = active?.bonusRole ? board.players.find((player) => player._id === active.playerId) : undefined;
     const sum = insights.slice(0, index + 1).reduce((total, insight) => total + insight.value, 0);
     const before = board.game.prices.find((price) => price.stockKey === stock.key)?.value ?? 0;
     const after = preview.game.prices.find((price) => price.stockKey === stock.key)?.value ?? before;
@@ -45,9 +48,18 @@ export function RoundReveal({ board, preview, stock, insights, index }: {
             </div>
             {active ? (
                 <div key={active._id} className="game-insight-card p-4 gap-2 rounded bg-white text-black d-flex flex-column align-items-center justify-content-center">
-                    <img height={120} src={stock.imagePath} alt={stock.name} />
-                    {special ? <h2 className="text-black">{`${active.value * 100}%`}</h2> : <Change value={active.value} />}
-                    <p>{active.description}</p>
+                    {bonusPlayer ? (
+                        <RolePortrait
+                            name={bonusPlayer.name}
+                            profileRoot={bonusPlayer.profileRoot}
+                            role={active.bonusRole}
+                        />
+                    )
+                        : <img height={120} src={stock.imagePath} alt={stock.name} />}
+                    <p className="insight-company-name">{stock.name}</p>
+                    {active.bonusRole ? <div className="total-insight text-success">{`+£${active.value.toFixed(2)}`}</div>
+                        : (special ? <h2 className="text-black">{`${active.value * 100}%`}</h2> : <Change value={active.value} />)}
+                    <p>{bonusPlayer ? `${bonusPlayer.name} — ${description}` : description}</p>
                 </div>
             ) : (
                 <div className="round-result d-flex flex-column justify-content-center bg-white rounded text-black">

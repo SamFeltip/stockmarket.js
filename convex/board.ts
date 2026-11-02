@@ -1,3 +1,4 @@
+import { withRoleBonuses, companyRoles } from "../shared/company-roles";
 import { stockCatalog } from "./catalog";
 import { query } from "./_generated/server";
 import { v } from "convex/values";
@@ -24,6 +25,9 @@ export const get = query({
 
             return { _id: seat._id, _creationTime: seat._creationTime, gameId: seat.gameId,
                 userId: seat.userId, controller: seat.controller ?? { kind: "human" as const, userId: seat.userId! },
+                roles: stocks.flatMap((stock) => companyRoles(seats, stock.key)
+                    .filter((role) => role.playerId === seat._id)
+                    .map((role) => ({ stockKey: stock.key, role: role.role }))),
                 cash: seat.cash, holdings: seat.holdings, active: seat.active, ...display,
                 npcDifficulty: display.kind === "npc" ? seat.npcDifficulty ?? game.npcDifficulty ?? "medium" : undefined,
                 netWorth: netWorth(seat, game) };
@@ -44,7 +48,8 @@ export const get = query({
                 ...seat, ranking: ranking.findIndex((item) => item._id === seat._id) + 1,
             })),
             // Opponents' private insights never cross the wire while trading is open.
-            insights: allInsights.filter((insight) => reveal || insight.playerId === player._id),
+            insights: withRoleBonuses(allInsights.filter((insight) => reveal || insight.playerId === player._id),
+                seats, reveal ? stocks : []),
         };
     },
 });

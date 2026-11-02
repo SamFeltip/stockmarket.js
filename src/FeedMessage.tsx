@@ -1,3 +1,4 @@
+import { TradeRoleChange } from "./TradeRole";
 import type { Board } from "./display-types";
 import { money } from "./shared";
 
@@ -25,6 +26,7 @@ export function FeedMessage({ item, stocks, detailed = false }: {
                 {money(quantity)}
             </p>
             {detailed && <p className="trade-description">{`${quantity > 0 ? "Purchased" : "Sold"} ${money(Math.abs(quantity))} ${stock.name} stocks`}</p>}
+            {detailed && <TradeRoleChange item={item} />}
         </div>
     );
 }

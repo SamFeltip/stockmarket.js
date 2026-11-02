@@ -11,6 +11,8 @@ export const insightFields = {
     key: v.number(), stockKey: v.number(), description: v.string(), value: v.number(),
 };
 
+export const companyRoleValidator = v.union(v.literal("chairman"), v.literal("director"));
+
 export const difficultyValidator = v.union(v.literal("easy"), v.literal("medium"), v.literal("hard"));
 
 export const personalityValidator = v.union(v.literal("frankie"), v.literal("casey"), v.literal("ada"), v.literal("felix"), v.literal("morgan"));
@@ -52,6 +54,7 @@ export default defineSchema({
         npcDifficulty: v.optional(difficultyValidator),
         seatOrder: v.optional(v.number()), periodStartRanking: v.optional(v.number()), cash: v.number(),
         active: v.boolean(),
+        chairmanSince: v.optional(v.array(v.object({ stockKey: v.number(), order: v.number() }))),
         holdings: v.array(v.object({ stockKey: v.number(), quantity: v.number() })),
     }).index("by_game", ["gameId"]).index("by_user", ["userId"])
         .index("by_game_user", ["gameId", "userId"]),
@@ -85,5 +88,6 @@ export default defineSchema({
         gameId: v.id("games"), period: v.number(), title: v.string(),
         message: v.string(), imageRoot: v.string(), colour: v.string(),
         stockKey: v.optional(v.number()), quantity: v.optional(v.number()),
+        roleBefore: v.optional(companyRoleValidator), roleAfter: v.optional(companyRoleValidator),
     }).index("by_game", ["gameId"]),
 });

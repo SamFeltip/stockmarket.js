@@ -102,7 +102,7 @@ button,input{font:inherit}button{cursor:pointer;border:1px solid transparent;bor
 
 
 /* TV typography scales in rem with the viewport, including portraits and cards. */
-.website-presentation .round-overview { grid-template-rows: auto minmax(0, 1fr) auto; gap: .6rem!important; }
+.website-presentation .round-overview { grid-template-rows: auto minmax(min-content, 1fr) auto; gap: .6rem!important; }
 .website-presentation .round-overview-stocks { min-height: 0; gap: .6rem; }
 .website-presentation .round-overview-stocks article { min-height: 0; }
 .website-presentation .round-overview-stocks article > img { height: 2rem; max-width: 100%; }
@@ -126,6 +126,19 @@ button,input{font:inherit}button{cursor:pointer;border:1px solid transparent;bor
 .website-presentation .round-wealth-players > div { min-width: 0; }
 .website-presentation .round-player-holdings { overflow-wrap: anywhere; }
 
+
+.website-presentation .game-insight-card .role-portrait .investor-photo { width: 4rem; height: 4rem; }
+.website-presentation .game-insight-card .role-portrait .company-role-badge { width: 1.4rem; height: 1.4rem; top: -.35rem; left: -.35rem; }
+.website-presentation .stock-role-footer { gap: .35rem; padding-top: .5rem; margin-top: .5rem; }
+.website-presentation .stock-role-entry p { font-size: .85rem; }
+.website-presentation .stock-role-footer .role-portrait .investor-photo { width: 1.8rem; height: 1.8rem; }
+.website-presentation .stock-role-footer .role-portrait .company-role-badge { width: .8rem; height: .8rem; top: -.2rem; left: -.2rem; }
+.holding-role { display: inline-flex; align-items: center; justify-content: flex-end; gap: .2rem; }
+.holding-role img { width: .9rem; height: .9rem; flex-shrink: 0; }
+
+#play-notif .role-portrait .investor-photo { width: 15rem; height: 15rem; }
+.activity .trade-role-label { font-size: .65rem; color: #6c757d; }
+.activity .trade-role-change p { font-size: .65rem; }
 
         h1#stockmarket-header { font-family: "Big Caslon", serif; }
     }
