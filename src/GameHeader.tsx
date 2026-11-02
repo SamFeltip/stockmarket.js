@@ -83,13 +83,10 @@ export function Profile({ board, view, setView }: { board: Board; view: "stocks"
             <div className="d-none d-lg-block">
                 <h2 className="text-capitalize mb-0" style={{ fontSize: "1.5rem" }}>{user.name}</h2>
                 <p>
-                    Cash £
-                    {money(board.player.cash)}
-                </p>
-                <p>
-                    Net £
+                    £
                     {money(own?.netWorth ?? 0)}
                 </p>
+                <small className="d-block" style={{ fontSize: "0.75rem", lineHeight: 1.2 }}>net worth</small>
             </div>
         </div>
     );

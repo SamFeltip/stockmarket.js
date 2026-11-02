@@ -33,6 +33,7 @@ board.feed = board.players.slice(1, 4).map((player, index) => ({
     ...board.feed[0],
     _id: `${board.feed[0]._id}${index}` as Board["feed"][number]["_id"],
     title: player.name,
+    colour: "",
     imageRoot: player.profileRoot,
     message: ["bought 10000 shares in UB", "sold 5000 shares in Thames", "bought 2000 shares in Natwest"][index],
 }));
