@@ -165,7 +165,7 @@ button.nav-link { cursor: pointer; }
 }
 
 /* Stock details follow the available panel width, including beside the desktop feed. */
-#game-grid { height: 100dvh; min-height: 0; max-height: none; grid-template-rows: auto minmax(0, 1fr); }
+#game-grid { --game-grid-spacing: 8px; height: 100dvh; min-height: 0; max-height: none; gap: var(--game-grid-spacing); padding: var(--game-grid-spacing) !important; grid-template-rows: auto minmax(0, 1fr); }
 #game-grid > *, #content, #content-wrapper { min-width: 0; min-height: 0; }
 #content-wrapper { container-type: inline-size; overflow: auto; }
 #game-stock-info, #game-stock-info.watching {
@@ -237,7 +237,6 @@ button.nav-link { cursor: pointer; }
     #game-stock-info.watching { grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "stocks investors" "insights price-chart" "insights stock-info"; }
 }
 @media (max-height: 600px) {
-    #game-grid { gap: 0.5rem; padding: 0.5rem !important; }
     #game-stock-info, #game-stock-info.watching { gap: 0.65rem; padding: 0.75rem; }
     .stock-price-chart { height: clamp(7rem, 26dvh, 10rem); }
     #game-stock-info #stocks { padding: 0.6rem; }

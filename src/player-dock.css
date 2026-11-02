@@ -1,7 +1,6 @@
 /* Reserve a bottom row so the dock never covers the board's trade controls. */
 #game-grid:has(> #player-dock) {
     --game-panel-padding: 1rem;
-    padding-block: 0 !important;
     grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas: "profile now-playing header" "content content feed" "dock dock dock";
 }
@@ -55,7 +54,7 @@
         border-bottom-left-radius: 0.375rem !important;
         border-bottom-right-radius: 0.375rem !important;
     }
-    #game-grid:has(> #player-dock) { --game-panel-padding: 0.5rem; padding-block: 1rem !important; grid-template-areas: "profile now-playing" "content content" "dock dock"; }
+    #game-grid:has(> #player-dock) { --game-panel-padding: 0.5rem; grid-template-areas: "profile now-playing" "content content" "dock dock"; }
     #player-dock { grid-template-columns: 6.25rem minmax(0, 1fr); gap: 0.5rem; }
     #player-dock .dock-balance { font-size: 1.15rem; }
     #player-dock .dock-cash-label { font-size: 0.6rem; margin: 0.1rem 0 0.4rem; }
@@ -86,7 +85,3 @@ body:has(#player-dock) { overflow: hidden; }
 /* Reuse the trade drawer shell, allowing longer chance-card descriptions to scroll. */
 .modal.trade-dialog:has(.dock-power-detail) .dock-power-detail { overflow: auto; align-content: center; }
 .modal.trade-dialog:has(.dock-power-detail) .trade-footer { flex-shrink: 0; }
-
-@media (max-width: 991.98px) and (max-height: 600px) {
-    #game-grid:has(> #player-dock) { padding-block: 0.5rem !important; }
-}
