@@ -54,7 +54,7 @@ export function Playing({ board }: { board: Board })
                     </div>
                     <MobileGameActions />
                 </div>
-                <Modal id="gameModal" title={`Stockmarket! - ${game.code}`}>
+                <Modal id="gameModal" title={`Stockmarket! - ${game.code}`} portal>
                     <div className="modal-body d-flex gap-2">
                         <Link
                             className="btn btn-primary"
@@ -135,7 +135,7 @@ export function Playing({ board }: { board: Board })
                     </div>
                 </div>
                 <Feed board={board} />
-                <Modal id="passModal" title="Are you sure you want to pass?">
+                <Modal id="passModal" title="Are you sure you want to pass?" portal>
                     <div className="modal-footer d-flex flex-row">
                         <button type="button" className="btn btn-secondary flex-fill" data-bs-dismiss="modal" disabled={busy}>Cancel</button>
                         <button
