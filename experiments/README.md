@@ -3,7 +3,7 @@
 Branch: `poc/player-cash-dock`.
 
 The playing board now reserves a full-width bottom row for the current player's
-cash, two example power-up cards, and one compact cash insight beneath the balance.
+cash, all five example chance cards, and one compact cash insight beneath the balance.
 Stock and portfolio details scroll within the shorter middle panel. The dock
 and trade buttons stay visible. The desktop feed ends above the dock.
 
@@ -41,12 +41,19 @@ unchanged and not part of this feature commit.
   stationary. Final browser check reports no warnings/errors or missing images.
 - Screenshots are saved as PNG files in `../screenshots/`.
 
-## Dummy special-card references
+## Dummy chance-card references
 
-The two example cards follow `BOARD_GAME_DIFFERENCES_CURRENT.md`:
+All five examples follow the “Chance cards” schedule in the rules reproduced at
+https://patents.google.com/patent/EP0297870A1/en#description, also summarized in
+`BOARD_GAME_DIFFERENCES_CURRENT.md`:
 
-- **Rights Issue:** chosen company grants 50% extra shares to all holders, rounded down.
-- **Hold Stock Price** (**Share Suspended** in the board-game comparison): suppress one company's end-of-period price movement.
+- **Rights Issue:** 50% extra shares for all holders of the chosen company.
+- **Share Suspended:** freeze one company's price at period end; cannot be retained.
+- **Government Loan Stock:** collect £10,000 using one turn.
+- **Debenture:** retain bankruptcy insurance; claim within two rounds of bankruptcy.
+- **Option:** reserve a price and exercise within three periods, using a turn each time.
 
-The document also lists Government Loan Stock, Debenture, and Option. The dock
-shows two example cards rather than suggesting every special card is owned.
+The general rules define exercising a chance card as a bargain (turn), but the
+individual Rights Issue entry does not explicitly state the turn cost. The demo
+explains this distinction in its preview dialog. Only the chance-card strip
+scrolls horizontally; cash and its private insight remain fixed beside it.

@@ -19,8 +19,10 @@
 #player-dock .dock-cash-insight .total-insight { font-size: 1.2rem; line-height: 1.2; }
 #player-dock .dock-cash-insight .total-insight span { font-size: inherit; }
 #player-dock .dock-cash-insight p { font-size: 1rem; margin: 0; }
-.dock-power-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-.dock-power-card { display: flex; align-items: center; gap: 1rem; min-height: 4.5rem; padding: 0.75rem 1rem; border: 1px solid #70845b; border-radius: 0.375rem; background: #0f2c12; color: white; text-align: left; }
+#player-dock .dock-powers h2 { margin: 0 0 0.25rem; color: #fff284; font-size: 0.75rem; font-weight: 400; }
+.dock-power-cards { display: flex; gap: 1rem; overflow-x: auto; overscroll-behavior-x: contain; padding: 0.25rem 0.2rem 0.5rem; scrollbar-width: thin; scrollbar-color: #70845b #0f2c12; }
+.dock-power-cards:focus-visible { outline: 2px solid #fff284; outline-offset: 2px; }
+.dock-power-card { flex: 0 0 16rem; display: flex; align-items: center; gap: 1rem; min-height: 4.5rem; padding: 0.75rem 1rem; border: 1px solid #70845b; border-radius: 0.375rem; background: #0f2c12; color: white; text-align: left; }
 .dock-power-card:hover { background: #304f24; border-color: #fff284; }
 .dock-power-card:focus-visible { outline: 2px solid #fff284; outline-offset: 3px; }
 #player-dock .dock-power-icon { flex-shrink: 0; color: #fff284; font-size: 2rem; line-height: 1; }
@@ -39,7 +41,7 @@
     #player-dock .dock-cash-insight p { font-size: 0.85rem; }
     #player-dock .dock-cash-insight .total-insight { font-size: 1.1rem; }
     .dock-power-cards { gap: 0.5rem; }
-    .dock-power-card { flex-direction: column; justify-content: center; gap: 0.4rem; padding: 0.5rem 0.35rem; min-height: 5rem; text-align: center; }
+    .dock-power-card { flex-basis: 7.25rem; flex-direction: column; justify-content: center; gap: 0.4rem; padding: 0.5rem 0.35rem; min-height: 5rem; text-align: center; }
     #player-dock .dock-power-icon { font-size: 1.5rem; }
     .dock-power-copy strong { font-size: 0.85rem; }
     #player-dock .dock-power-copy > span { display: none; }

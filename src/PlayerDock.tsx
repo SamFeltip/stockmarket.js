@@ -3,16 +3,19 @@ import type { Board } from "./types";
 import "./player-dock.css";
 
 // Names and effects follow BOARD_GAME_DIFFERENCES_CURRENT.md.
-const powerUps = [
-    { name: "Rights Issue", kind: "rights", icon: "+", effect: "50% extra shares", description: "Choose a company. All holders receive 50% extra shares, rounded down.", timing: "Applies to all holders of the chosen company" },
-    { name: "Hold Stock Price", kind: "hold", icon: "＝", effect: "Freeze a company’s price", description: "Choose one company to suspend. Its share price stays unchanged when this period settles.", timing: "Choose a company before period-end settlement" },
+const chanceCards = [
+    { name: "Rights Issue", kind: "rights", icon: "+", effect: "50% extra shares", description: "Choose a company. All holders receive 50% extra shares, rounded down.", timing: "Played as a bargain under the general chance-card rule; the individual card entry does not specify a turn cost" },
+    { name: "Share Suspended", kind: "hold", icon: "＝", effect: "Freeze a company’s price", description: "Choose one company to suspend. Its share price stays at the previous period’s level when this period settles. This card cannot be retained.", timing: "Play at the end of the round" },
+    { name: "Government Loan Stock", kind: "loan", icon: "£", effect: "Collect £10,000", description: "Your Government Loan Stock has matured. Collect £10,000 from the stockbroker.", timing: "Uses one bargain (turn)" },
+    { name: "Debenture", kind: "debenture", icon: "◇", effect: "Bankruptcy protection", description: "Retain this card as insurance. If a company goes bankrupt, claim the full purchase price of shares you still hold in that company.", timing: "Claim within two rounds of the bankruptcy" },
+    { name: "Option", kind: "option", icon: "⇄", effect: "Reserve a buy or sell price", description: "Choose a company and reserve its current share price for a future purchase or sale. Exercise the option and surrender the card within three periods.", timing: "Reserving the price and exercising the option each use one turn" },
 ];
 
-/** POC only: power-ups and cash insights are examples, never trading mutations. */
+/** POC only: chance cards and cash insights are examples, never trading mutations. */
 export function PlayerDock({ board }: { board: Board })
 {
     return (
-        <section id="player-dock" className="card card-green rounded p-3" style={{ backgroundColor: "var(--bs-card-bg)" }} aria-label="Your cash, power-ups and cash insights">
+        <section id="player-dock" className="card card-green rounded p-3" style={{ backgroundColor: "var(--bs-card-bg)" }} aria-label="Your cash, chance cards and cash insights">
             <div className="dock-cash">
                 <strong className="dock-balance">
                     £
@@ -28,8 +31,9 @@ export function PlayerDock({ board }: { board: Board })
                 </div>
             </div>
             <div className="dock-powers">
-                <div className="dock-power-cards">
-                    {powerUps.map((power) => (
+                <h2 id="chance-cards-label">chance cards</h2>
+                <div className="dock-power-cards" role="region" aria-labelledby="chance-cards-label">
+                    {chanceCards.map((power) => (
                         <button key={power.kind} type="button" className={`dock-power-card dock-power-${power.kind}`} data-bs-toggle="modal" data-bs-target={`#power-preview-${power.kind}`} aria-label={`Preview ${power.name}: ${power.effect}`}>
                             <span className="dock-power-icon" aria-hidden="true">{power.icon}</span>
                             <span className="dock-power-copy">
@@ -40,7 +44,7 @@ export function PlayerDock({ board }: { board: Board })
                     ))}
                 </div>
             </div>
-            {powerUps.map((power) => (
+            {chanceCards.map((power) => (
                 <Modal key={power.kind} id={`power-preview-${power.kind}`} title={power.name}>
                     <div className="modal-body dock-power-detail">
                         <span className="dock-preview">Coming soon · Example card</span>
