@@ -20,7 +20,7 @@ From this worktree:
 npm run dev:frontend -- --host 127.0.0.1 --port 5181
 ```
 
-Open http://127.0.0.1:5181/experiments/cash-dock.html. The preview uses a dummy
+Open http://127.0.0.1:5181/experiments/cash-dock.html for all five cards, or append `?cards=none` to preview an empty hand. The preview uses a dummy
 board fixture, requires no login or configured backend, and is a Vite development
 entry point (not a production application route). Use the power-up buttons and
 profile toggle to inspect the UI. Existing buy/sell/pass controls belong to the

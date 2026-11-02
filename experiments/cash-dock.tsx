@@ -40,6 +40,6 @@ const client = new ConvexReactClient("https://preview.convex.cloud");
 
 createRoot(document.querySelector("#root")!).render(
     <ConvexProvider client={client}>
-        <BrowserRouter><main className="position-relative overflow-x-hidden d-flex flex-column justify-content-center"><Playing board={board} /></main></BrowserRouter>
+        <BrowserRouter><main className="position-relative overflow-x-hidden d-flex flex-column justify-content-center"><Playing board={board} hasChanceCards={new URLSearchParams(location.search).get("cards") !== "none"} /></main></BrowserRouter>
     </ConvexProvider>,
 );

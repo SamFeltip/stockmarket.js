@@ -13,7 +13,7 @@ import { Portfolio } from "./Portfolio";
 import { NpcTurnStatus } from "./npc/NpcTurnStatus";
 import type { Board } from "./types";
 
-export function Playing({ board }: { board: Board })
+export function Playing({ board, hasChanceCards = true }: { board: Board; hasChanceCards?: boolean })
 {
     const { game, players, insights } = board;
     const stocks = board.stocks.filter((stock) => stock.display);
@@ -136,7 +136,7 @@ export function Playing({ board }: { board: Board })
                     </div>
                 </div>
                 <Feed board={board} />
-                <PlayerDock board={board} />
+                <PlayerDock board={board} hasChanceCards={hasChanceCards} />
                 <Modal id="passModal" title="Are you sure you want to pass?">
                     <div className="modal-footer d-flex flex-row">
                         <button type="button" className="btn btn-secondary flex-fill" data-bs-dismiss="modal" disabled={busy}>Cancel</button>

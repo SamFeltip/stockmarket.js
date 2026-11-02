@@ -12,6 +12,9 @@
     color: white;
 }
 #player-dock > * { min-width: 0; }
+.dock-empty-cards { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; text-align: center; color: white; }
+#player-dock .dock-empty-cards p { margin: 0; font-size: 1rem; }
+#player-dock .dock-empty-cards p:first-child { font-size: 1.2rem; }
 .dock-cash { display: flex; flex-direction: column; align-items: center; }
 #player-dock .dock-cash-label { font-size: 0.7rem; line-height: 1; margin: 0.2rem 0 0.5rem; }
 #player-dock .dock-balance { display: block; color: #fff284; text-align: center; margin-bottom: 0; font-size: 1.5rem; font-weight: 500; line-height: 1.2; font-variant-numeric: tabular-nums; }
@@ -38,6 +41,8 @@
 @media (max-width: 575.98px) {
     #player-dock { grid-template-columns: 6.75rem minmax(0, 1fr); gap: 0.75rem; padding: 0.75rem !important; padding-bottom: max(0.75rem, env(safe-area-inset-bottom)) !important; }
     #player-dock .dock-balance { font-size: 1.25rem; }
+    #player-dock .dock-empty-cards p { font-size: 0.8rem; line-height: 1.35; }
+    #player-dock .dock-empty-cards p:first-child { font-size: 1rem; }
     #player-dock .dock-cash-insight p { font-size: 0.85rem; }
     #player-dock .dock-cash-insight .total-insight { font-size: 1.1rem; }
     .dock-power-cards { gap: 0.5rem; }

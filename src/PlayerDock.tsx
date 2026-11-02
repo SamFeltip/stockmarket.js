@@ -12,7 +12,7 @@ const chanceCards = [
 ];
 
 /** POC only: chance cards and cash insights are examples, never trading mutations. */
-export function PlayerDock({ board }: { board: Board })
+export function PlayerDock({ board, hasChanceCards = true }: { board: Board; hasChanceCards?: boolean })
 {
     return (
         <section id="player-dock" className="card card-green rounded p-3" style={{ backgroundColor: "var(--bs-card-bg)" }} aria-label="Your cash, chance cards and cash insights">
@@ -30,21 +30,28 @@ export function PlayerDock({ board }: { board: Board })
                     <p>Cash insight</p>
                 </div>
             </div>
-            <div className="dock-powers">
-                <h2 id="chance-cards-label">chance cards</h2>
-                <div className="dock-power-cards" role="region" aria-labelledby="chance-cards-label">
-                    {chanceCards.map((power) => (
-                        <button key={power.kind} type="button" className={`dock-power-card dock-power-${power.kind}`} data-bs-toggle="modal" data-bs-target={`#power-preview-${power.kind}`} aria-label={`Preview ${power.name}: ${power.effect}`}>
-                            <span className="dock-power-icon" aria-hidden="true">{power.icon}</span>
-                            <span className="dock-power-copy">
-                                <strong>{power.name}</strong>
-                                <span>{power.effect}</span>
-                            </span>
-                        </button>
-                    ))}
+            {hasChanceCards ? (
+                <div className="dock-powers">
+                    <h2 id="chance-cards-label">Chance Cards</h2>
+                    <div className="dock-power-cards" role="region" aria-labelledby="chance-cards-label">
+                        {chanceCards.map((power) => (
+                            <button key={power.kind} type="button" className={`dock-power-card dock-power-${power.kind}`} data-bs-toggle="modal" data-bs-target={`#power-preview-${power.kind}`} aria-label={`Preview ${power.name}: ${power.effect}`}>
+                                <span className="dock-power-icon" aria-hidden="true">{power.icon}</span>
+                                <span className="dock-power-copy">
+                                    <strong>{power.name}</strong>
+                                    <span>{power.effect}</span>
+                                </span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
-            </div>
-            {chanceCards.map((power) => (
+            ) : (
+                <div className="dock-empty-cards">
+                    <p>No Chance Cards</p>
+                    <p>Chance cards may appear here each round</p>
+                </div>
+            )}
+            {hasChanceCards && chanceCards.map((power) => (
                 <Modal key={power.kind} id={`power-preview-${power.kind}`} title={power.name}>
                     <div className="modal-body dock-power-detail">
                         <span className="dock-preview">Coming soon · Example card</span>
