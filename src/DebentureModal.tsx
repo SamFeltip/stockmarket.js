@@ -39,11 +39,8 @@ export function DebentureModal({ board, insightId, used, onActivate }: {
         <Modal id={id} title="Debenture" mobileDrawer>
             <div className="modal-body loan-detail debenture-detail d-grid gap-3">
                 <h2 className="text-black mb-0">Debenture</h2>
-                <p>
-                    Keep this card between rounds. If a company you own goes bankrupt,
-                    you have two rounds to claim back what you paid.
-                </p>
-                <p>Choose one company to sell all your stocks in it. Selling uses one turn and spends this card.</p>
+                <p>Choose one bankrupt company and sell all your stocks in it.</p>
+                <p>Single use. Stays in your hand for 2 trading periods.</p>
                 <div className="debenture-stock-list" role="radiogroup" aria-label="Bankrupt stocks you own">
                     {offers.length > 0 ? offers.map((offer) => (
                         <DebentureStockChoice

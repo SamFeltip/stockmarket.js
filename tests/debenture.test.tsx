@@ -27,7 +27,8 @@ it("retains unused debentures privately across deals and removes their physical 
     const html = renderToStaticMarkup(<ConvexProvider client={client}><PlayerDock board={board} /></ConvexProvider>);
 
     expect(html).toContain(`data-bs-target="#chance-card-${insightId}"`);
-    expect(html).toContain("Keep this card between rounds");
+    expect(html).toContain("Choose one bankrupt company and sell all your stocks in it.");
+    expect(html).toContain("Single use. Stays in your hand for 2 trading periods.");
     expect(html).toContain("20,000 stocks");
     expect(html).toContain("£2.50 each");
     expect(html).toContain("role=\"radiogroup\"");
@@ -133,7 +134,7 @@ it("keeps the empty-state dialog useful and closes trading when a claim uses the
     expect(html).not.toContain("type=\"radio\"");
     expect(html).not.toContain("Choose a stock to see its payout");
     expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Sell<\/button>/);
-    expect(html).toContain("Keep this card between rounds");
+    expect(html).toContain("Single use. Stays in your hand for 2 trading periods.");
     const turn = board.players.length * 3 - 1;
 
     await t.run(async (context) => await context.db.patch(board.game._id, { turn }));
