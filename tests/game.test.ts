@@ -72,7 +72,10 @@ describe("Stockmarket transactions", () =>
 
         expect(next.game.status).toBe("playing");
         expect(next.game.currentPeriod).toBe(1);
-        expect(next.insights).toHaveLength(10);
+        expect(next.insights.filter((insight) => insight.period === next.game.currentPeriod)).toHaveLength(10);
+        expect(next.insights.filter((insight) => insight.period < next.game.currentPeriod))
+            .toEqual(expect.arrayContaining(closed.insights.filter((insight) =>
+                insight.playerId === next.player._id && insight.chanceKind === "debenture" && !insight.used)));
 
         for (const price of next.game.prices)
         {

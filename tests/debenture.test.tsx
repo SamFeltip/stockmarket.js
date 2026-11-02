@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { PlayAnimation } from "../src/PlayAnimation";
-import { DebentureModal } from "../src/DebentureModal";
+import { DebentureModal, DebentureStockChoice } from "../src/DebentureModal";
 import { PlayerDock } from "../src/PlayerDock";
 import { bankruptGame } from "./debenture-setup";
 
@@ -129,11 +129,72 @@ it("keeps the empty-state dialog useful and closes trading when a claim uses the
         </ConvexProvider>,
     );
 
-    expect(html).toContain("You don’t own any bankrupt stocks right now");
-    expect(html).toContain("Keep this card for a later round");
+    expect(html).toMatch(/class="debenture-stock-list"[^>]*><div class="debenture-empty">no bankrupt stocks to sell<\/div><\/div>/);
+    expect(html).not.toContain("type=\"radio\"");
+    expect(html).not.toContain("Choose a stock to see its payout");
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Sell<\/button>/);
+    expect(html).toContain("Keep this card between rounds");
     const turn = board.players.length * 3 - 1;
 
     await t.run(async (context) => await context.db.patch(board.game._id, { turn }));
     await sam.mutation(api.trading.redeemDebenture, { ...command, expectedTurn: turn });
     expect((await sam.query(api.board.get, { code: "test" })).game.status).toBe("closed");
+});
+
+it("places the selected check outside the logo and shows it on only the chosen stock box", async () =>
+{
+    const { board } = await bankruptGame();
+    const offer = { ...board.debentureOffers[0], stock: board.stocks.find((stock) => stock.key === 8)! };
+    for (const selectedIndex of [0, 1])
+    {
+        const html = renderToStaticMarkup(
+            <>
+                {[0, 1].map((index) => (
+                    <DebentureStockChoice
+                        key={index}
+                        offer={offer}
+                        selected={index === selectedIndex}
+                        busy={false}
+                        name="debenture-test"
+                        onSelect={() => undefined}
+                    />
+                ))}
+            </>,
+        );
+
+        expect(html.match(/class="debenture-stock-check"/g)).toHaveLength(1);
+        expect(html.match(/checked=""/g)).toHaveLength(1);
+        expect(html.match(/debenture-stock is-selected/g)).toHaveLength(1);
+        // The check is a sibling of the picture, so its positioned parent is the whole stock box.
+        expect(html).toMatch(/class="debenture-stock-picture"><img[^>]*\/><\/span><span class="debenture-stock-check"/);
+        expect(html).toContain("aria-label=\"UB: 20,000 stocks\"");
+        expect(html).toContain("£2.50 each");
+    }
+});
+
+it("keeps unavailable and busy stock choices disabled without hiding their details", async () =>
+{
+    const { board } = await bankruptGame();
+    const offer = { ...board.debentureOffers[0], stock: board.stocks.find((stock) => stock.key === 8)! };
+    for (const [busy, unavailableReason] of [[true, null], [false, "The claim window has ended."]] as const)
+    {
+        const html = renderToStaticMarkup(
+            <DebentureStockChoice
+                offer={{ ...offer, unavailableReason }}
+                selected={false}
+                busy={busy}
+                name="debenture-test"
+                onSelect={() => undefined}
+            />,
+        );
+
+        expect(html).toMatch(/<input[^>]*disabled=""/);
+        expect(html).not.toContain("debenture-stock-check");
+        expect(html).toContain("20,000 stocks");
+
+        if (unavailableReason)
+        {
+            expect(html).toContain(unavailableReason);
+        }
+    }
 });

@@ -37,45 +37,25 @@ export function DebentureModal({ board, insightId, used, onActivate }: {
 
     return (
         <Modal id={id} title="Debenture" mobileDrawer>
-            <div className="modal-body loan-detail d-grid gap-3">
+            <div className="modal-body loan-detail debenture-detail d-grid gap-3">
                 <h2 className="text-black mb-0">Debenture</h2>
                 <p>
                     Keep this card between rounds. If a company you own goes bankrupt,
                     you have two rounds to claim back what you paid.
                 </p>
                 <p>Choose one company to sell all your stocks in it. Selling uses one turn and spends this card.</p>
-                {offers.length > 0 ? (
-                    <div className="debenture-stock-list" role="radiogroup" aria-label="Bankrupt stocks you own">
-                        {offers.map((offer) => (
-                            <label key={offer.stockKey} className={`debenture-stock ${stockKey === offer.stockKey ? "is-selected" : ""}`}>
-                                <input
-                                    className="visually-hidden"
-                                    type="radio"
-                                    name={`${id}-stock`}
-                                    aria-label={`${offer.stock.name}: ${money(offer.quantity)} stocks`}
-                                    checked={stockKey === offer.stockKey}
-                                    disabled={busy || Boolean(offer.unavailableReason)}
-                                    onChange={() => setStockKey(offer.stockKey)}
-                                />
-                                <span className="debenture-stock-picture">
-                                    <img src={offer.stock.imagePath} alt={offer.stock.name} />
-                                    {stockKey === offer.stockKey && (
-                                        <span className="debenture-stock-check" aria-hidden="true">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m5 12 4 4 10-10" /></svg>
-                                        </span>
-                                    )}
-                                </span>
-                                <span>{`${money(offer.quantity)} stocks`}</span>
-                                {offer.unitPrice !== null && (
-                                    <span className="debenture-stock-price">
-                                        {`${Math.abs(offer.unitPrice * 100 - Math.round(offer.unitPrice * 100)) > 0.000_001 ? "≈" : ""}£${offer.unitPrice.toFixed(2)} each`}
-                                    </span>
-                                )}
-                                {offer.unavailableReason && <span className="debenture-unavailable">{offer.unavailableReason}</span>}
-                            </label>
-                        ))}
-                    </div>
-                ) : <p className="debenture-empty">You don’t own any bankrupt stocks right now. Keep this card for a later round.</p>}
+                <div className="debenture-stock-list" role="radiogroup" aria-label="Bankrupt stocks you own">
+                    {offers.length > 0 ? offers.map((offer) => (
+                        <DebentureStockChoice
+                            key={offer.stockKey}
+                            offer={offer}
+                            selected={stockKey === offer.stockKey}
+                            busy={busy}
+                            name={`${id}-stock`}
+                            onSelect={() => setStockKey(offer.stockKey)}
+                        />
+                    )) : <div className="debenture-empty">no bankrupt stocks to sell</div>}
+                </div>
                 {offers.some((offer) => !offer.unavailableReason) && (
                     <h3 className="mb-0" aria-live="polite">
                         {selected ? `Sell for £${money(selected.amount ?? 0)}` : "Choose a stock to see its payout"}
@@ -111,5 +91,41 @@ export function DebentureModal({ board, insightId, used, onActivate }: {
                 </button>
             </div>
         </Modal>
+    );
+}
+
+type DebentureOffer = NonNullable<Board["debentureOffers"]>[number] & { stock: Board["stocks"][number] };
+
+export function DebentureStockChoice({ offer, selected, busy, name, onSelect }: {
+    offer: DebentureOffer; selected: boolean; busy: boolean; name: string; onSelect: () => void;
+})
+{
+    return (
+        <label className={`debenture-stock ${selected ? "is-selected" : ""}`}>
+            <input
+                className="visually-hidden"
+                type="radio"
+                name={name}
+                aria-label={`${offer.stock.name}: ${money(offer.quantity)} stocks`}
+                checked={selected}
+                disabled={busy || Boolean(offer.unavailableReason)}
+                onChange={onSelect}
+            />
+            <span className="debenture-stock-picture">
+                <img src={offer.stock.imagePath} alt={offer.stock.name} />
+            </span>
+            {selected && (
+                <span className="debenture-stock-check" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m5 12 4 4 10-10" /></svg>
+                </span>
+            )}
+            <span>{`${money(offer.quantity)} stocks`}</span>
+            {offer.unitPrice !== null && (
+                <span className="debenture-stock-price">
+                    {`${Math.abs(offer.unitPrice * 100 - Math.round(offer.unitPrice * 100)) > 0.000_001 ? "≈" : ""}£${offer.unitPrice.toFixed(2)} each`}
+                </span>
+            )}
+            {offer.unavailableReason && <span className="debenture-unavailable">{offer.unavailableReason}</span>}
+        </label>
     );
 }

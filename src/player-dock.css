@@ -91,12 +91,15 @@ body:has(#player-dock) { overflow: hidden; }
 .modal.trade-dialog .modal-body.loan-detail { align-content: start; justify-content: stretch; overflow: auto; }
 
 .debenture-stock-list { display: flex; gap: 0.75rem; overflow-x: auto; padding: 0.25rem 0.25rem 0.75rem; min-width: 0; }
+.debenture-empty { display: grid; place-items: center; flex: 0 0 9rem; min-height: 9rem; padding: 0.75rem; border-radius: 0.5rem; background: #eee; color: #636b66; text-align: center; font-size: 0.95rem; }
 .debenture-stock { position: relative; display: flex; flex: 0 0 9rem; flex-direction: column; align-items: center; gap: 0.5rem; border: 2px solid #d4d9d2; border-radius: 0.5rem; padding: 0.75rem 0.5rem; background: white; color: #111; cursor: pointer; text-align: center; }
 .debenture-stock.is-selected { border-color: #198754; background: #f0f6eb; }
 .debenture-stock:has(input:focus-visible) { outline: 2px solid #198754; outline-offset: 2px; }
 .debenture-stock:has(input:disabled) { opacity: 0.6; cursor: not-allowed; }
 .debenture-stock-picture { display: flex; align-items: center; justify-content: center; width: 4.5rem; height: 4.5rem; position: relative; }
 .debenture-stock-picture img { width: 100%; height: 100%; object-fit: contain; }
-.debenture-stock-check { position: absolute; top: -0.25rem; right: -0.25rem; display: grid; place-items: center; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: #198754; color: white; }
+.debenture-stock-check { position: absolute; top: 0.375rem; right: 0.375rem; display: grid; place-items: center; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: #198754; color: white; }
+.debenture-detail > h2 { font-weight: 600; }
+.debenture-detail > p { color: #636b66; font-weight: 400; line-height: 1.45; }
 .debenture-stock > span { font-size: 0.95rem; }
 .debenture-stock .debenture-stock-price, .debenture-stock .debenture-unavailable { font-size: 0.8rem; }
