@@ -25,9 +25,14 @@ export function PlayerDock({ board }: { board: Board })
                     {money(board.player.cash)}
                 </strong>
                 <span className="dock-cash-label">cash</span>
-                <div className="dock-cash-insight card bg-white text-black text-center">
+                <div className="dock-cash-insight card text-black text-center" aria-label={`Cash insight: ${cashPercent >= 0 ? "+" : "−"}${Math.abs(cashPercent)}%`}>
                     <div className={`total-insight text-${cashTone} d-flex justify-content-center align-items-center`}>
-                        {cashPercent !== 0 && <img className="pe-2" height={16} src={`/static/imgs/icons/stock_${cashPercent > 0 ? "up" : "down"}.svg`} alt={`Cash ${cashPercent > 0 ? "rising" : "falling"}`} />}
+                        {cashPercent !== 0 && (
+                            <picture>
+                                <source media="(max-width: 991.98px)" srcSet={`/static/imgs/icons/stock_${cashPercent > 0 ? "up" : "down"}_black.svg`} />
+                                <img className="pe-2" height={16} src={`/static/imgs/icons/stock_${cashPercent > 0 ? "up" : "down"}.svg`} alt={`Cash ${cashPercent > 0 ? "rising" : "falling"}`} />
+                            </picture>
+                        )}
                         <span>{`${cashPercent >= 0 ? "+" : "−"}${Math.abs(cashPercent)}%`}</span>
                     </div>
                     <p>Cash insight</p>
