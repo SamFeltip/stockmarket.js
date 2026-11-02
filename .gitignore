@@ -20,3 +20,5 @@ package-lock.json
 
 # Keep worktree-local Vite caches out of Git.
 /.vite/
+
+/dist-demo/

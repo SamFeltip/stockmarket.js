@@ -42,7 +42,10 @@ Open http://127.0.0.1:5181/experiments/cash-dock.html for all five example cards
 Append `?cards=none` for an empty hand; append `?cash=0` or `?cash=-10` to inspect
 zero/negative cash totals (combine with `&cards=none` if needed). The preview uses
 an offline fixture; the normal Playing component reads persisted dealt cards.
-The preview is a Vite development entry point, not a production route.
+The preview is separate from the production game. Build it for standalone hosting
+with `npm run build:demo`; `dist-demo/` serves the demo at `/` and at
+`/experiments/cash-dock.html`. Publish only that directory to the Pages preview
+branch `cash-dock-demo`, never `main`. No Convex deployment is needed.
 
 Dependencies are shared with the original checkout via a local `node_modules`
 symlink. Existing ignored PNG/font assets were copied from that checkout.
