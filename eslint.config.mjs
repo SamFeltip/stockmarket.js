@@ -60,6 +60,7 @@ export default [
     {
         ignores: [
             "node_modules/",
+            ".vite/",
             "dist/",
             "dist-large/",
             ".astro/",

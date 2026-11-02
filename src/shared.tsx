@@ -55,8 +55,8 @@ export function Alert({ message }: { message: string })
     return message ? <div className="alert alert-danger" role="alert">{message}</div> : null;
 }
 
-export function Modal({ id, title, children, mobileDrawer = false }: {
-    id: string; title: string; children: ReactNode; mobileDrawer?: boolean;
+export function Modal({ id, title, children, mobileDrawer = false, portal = false }: {
+    id: string; title: string; children: ReactNode; mobileDrawer?: boolean; portal?: boolean;
 })
 {
     const reference = useRef<HTMLDivElement>(null);
@@ -91,7 +91,8 @@ export function Modal({ id, title, children, mobileDrawer = false }: {
         </div>
     );
 
-    return mobileDrawer && typeof document !== "undefined" ? createPortal(dialog, document.body) : dialog;
+    // Fixed game containers create a stacking context below Bootstrap's body-level backdrop.
+    return (mobileDrawer || portal) && typeof document !== "undefined" ? createPortal(dialog, document.body) : dialog;
 }
 
 export function Change({ value, button = false }: { value: number; button?: boolean })
