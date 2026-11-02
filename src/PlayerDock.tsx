@@ -11,27 +11,23 @@ const powerUps = [
 export function PlayerDock({ board }: { board: Board })
 {
     return (
-        <section id="player-dock" aria-label="Your cash, power-ups and cash insights">
+        <section id="player-dock" className="card card-green rounded p-3" style={{ backgroundColor: "var(--bs-card-bg)" }} aria-label="Your cash, power-ups and cash insights">
             <div className="dock-cash">
-                <div className="dock-eyebrow">
-                    <span className="dock-cash-symbol" aria-hidden="true">£</span>
-                    {" "}
-                    Your cash
-                </div>
                 <strong className="dock-balance">
                     £
                     {money(board.player.cash)}
                 </strong>
-                <p className="dock-caption">Available to invest</p>
+                <div className="dock-cash-insight">
+                    <span>Cash insight</span>
+                    <strong>
+                        <img src="/static/imgs/icons/stock_up.svg" alt="Cash rising" />
+                        {" "}
+                        +20%
+                    </strong>
+                </div>
             </div>
             <div className="dock-powers">
-                <div className="dock-section-heading">
-                    <h2>
-                        Power-ups
-                        <span className="dock-count">2</span>
-                    </h2>
-                    <span className="dock-preview">Coming soon · Preview</span>
-                </div>
+                <h2>Power-ups</h2>
                 <div className="dock-power-cards">
                     {powerUps.map((power) => (
                         <button key={power.kind} type="button" className={`dock-power-card dock-power-${power.kind}`} data-bs-toggle="modal" data-bs-target={`#power-preview-${power.kind}`} aria-label={`Preview ${power.name}: ${power.effect}`}>
@@ -40,29 +36,9 @@ export function PlayerDock({ board }: { board: Board })
                                 <strong>{power.name}</strong>
                                 <span>{power.effect}</span>
                             </span>
-                            <span className="dock-card-arrow" aria-hidden="true">↗</span>
                         </button>
                     ))}
                 </div>
-            </div>
-            <div className="dock-insights">
-                <div className="dock-section-heading">
-                    <h2>Cash insights</h2>
-                    <span className="dock-private">Only you</span>
-                </div>
-                <div className="dock-insight-cards">
-                    <div className="dock-cash-insight dock-insight-up">
-                        <span aria-hidden="true">↗</span>
-                        <strong>+10%</strong>
-                        <span>Interest windfall</span>
-                    </div>
-                    <div className="dock-cash-insight dock-insight-down">
-                        <span aria-hidden="true">↘</span>
-                        <strong>−5%</strong>
-                        <span>Bank levy</span>
-                    </div>
-                </div>
-                <p className="dock-caption">Sample allocation · Revealed at period end</p>
             </div>
             {powerUps.map((power) => (
                 <Modal key={power.kind} id={`power-preview-${power.kind}`} title={power.name}>
