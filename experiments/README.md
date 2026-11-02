@@ -8,7 +8,7 @@ Stock and portfolio details scroll within the shorter middle panel. The dock
 and trade buttons stay visible. The desktop feed ends above the dock.
 
 Cash comes from `board.player.cash`. Power-ups and cash insights are static dummy
-data. The cash insight is a single sample +20% value. Power-up dialogs explain that they are previews. Opening a power-up explains its
+data. The cash insight is a single sample +20% value in the same white card and green movement style as private stock insights. Power-up dialogs explain that they are previews. Opening a power-up explains its
 proposed ability; nothing is activated, persisted, or applied to a trade. No
 backend/schema changes or random assignment logic are included.
 
@@ -40,3 +40,13 @@ unchanged and not part of this feature commit.
 - Both power-up previews open and dismiss. Portfolio scrolling leaves the dock
   stationary. Final browser check reports no warnings/errors or missing images.
 - Screenshots are saved as PNG files in `../screenshots/`.
+
+## Dummy special-card references
+
+The two example cards follow `BOARD_GAME_DIFFERENCES_CURRENT.md`:
+
+- **Rights Issue:** chosen company grants 50% extra shares to all holders, rounded down.
+- **Hold Stock Price** (**Share Suspended** in the board-game comparison): suppress one company's end-of-period price movement.
+
+The document also lists Government Loan Stock, Debenture, and Option. The dock
+shows two example cards rather than suggesting every special card is owned.

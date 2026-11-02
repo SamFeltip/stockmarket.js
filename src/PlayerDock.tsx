@@ -2,9 +2,10 @@ import { Modal, money } from "./shared";
 import type { Board } from "./types";
 import "./player-dock.css";
 
+// Names and effects follow BOARD_GAME_DIFFERENCES_CURRENT.md.
 const powerUps = [
-    { name: "Buying power", kind: "buy", icon: "↗", effect: "+10% shares", description: "Get 10% extra shares on your next purchase. A little more stock for the same cash.", timing: "Use before buying" },
-    { name: "Safety sell", kind: "sell", icon: "◇", effect: "Price protection", description: "Sell at the period’s opening price if the current price is lower. Protect one sale from a falling market.", timing: "Use before selling" },
+    { name: "Rights Issue", kind: "rights", icon: "+", effect: "50% extra shares", description: "Choose a company. All holders receive 50% extra shares, rounded down.", timing: "Applies to all holders of the chosen company" },
+    { name: "Hold Stock Price", kind: "hold", icon: "＝", effect: "Freeze a company’s price", description: "Choose one company to suspend. Its share price stays unchanged when this period settles.", timing: "Choose a company before period-end settlement" },
 ];
 
 /** POC only: power-ups and cash insights are examples, never trading mutations. */
@@ -17,17 +18,15 @@ export function PlayerDock({ board }: { board: Board })
                     £
                     {money(board.player.cash)}
                 </strong>
-                <div className="dock-cash-insight">
-                    <span>Cash insight</span>
-                    <strong>
-                        <img src="/static/imgs/icons/stock_up.svg" alt="Cash rising" />
-                        {" "}
-                        +20%
-                    </strong>
+                <div className="dock-cash-insight card bg-white text-black text-center">
+                    <div className="total-insight text-success d-flex justify-content-center align-items-center">
+                        <img className="pe-2" height={16} src="/static/imgs/icons/stock_up.svg" alt="Cash rising" />
+                        <span>+20%</span>
+                    </div>
+                    <p>Cash insight</p>
                 </div>
             </div>
             <div className="dock-powers">
-                <h2>Power-ups</h2>
                 <div className="dock-power-cards">
                     {powerUps.map((power) => (
                         <button key={power.kind} type="button" className={`dock-power-card dock-power-${power.kind}`} data-bs-toggle="modal" data-bs-target={`#power-preview-${power.kind}`} aria-label={`Preview ${power.name}: ${power.effect}`}>
