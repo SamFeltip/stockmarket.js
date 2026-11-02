@@ -63,14 +63,17 @@ export default defineSchema({
     playerInsights: defineTable({
         gameId: v.id("games"), playerId: v.id("players"), period: v.number(),
         stockKey: v.number(), description: v.string(), value: v.number(), resolved: v.boolean(),
-        catalogCardId: v.optional(v.string()), chanceKind: v.optional(chanceKindValidator),
+        used: v.optional(v.boolean()), catalogCardId: v.optional(v.string()),
+        chanceKind: v.optional(chanceKindValidator),
     }).index("by_game_period", ["gameId", "period"]).index("by_player_period", ["playerId", "period"]),
     gameCatalogs: defineTable({ gameId: v.id("games"), version: v.string(), cards: v.array(v.object({
         id: v.string(), stockKey: v.number(), value: v.number(), description: v.string(),
         chanceKind: v.optional(chanceKindValidator),
     })) }).index("by_game", ["gameId"]),
     gameActions: defineTable({ gameId: v.id("games"), period: v.number(), turn: v.number(),
-        actorPlayerId: v.id("players"), action: actionValidator,
+        actorPlayerId: v.id("players"), action: v.union(actionValidator, v.object({
+            kind: v.literal("government-loan"), insightId: v.id("playerInsights"),
+        })),
     }).index("by_game_period_turn", ["gameId", "period", "turn"]),
     periodSummaries: defineTable({ gameId: v.id("games"), period: v.number(), opening: pricesValidator, settled: pricesValidator,
     }).index("by_game_period", ["gameId", "period"]),
@@ -90,7 +93,7 @@ export default defineSchema({
     feed: defineTable({
         gameId: v.id("games"), period: v.number(), title: v.string(),
         message: v.string(), imageRoot: v.string(), colour: v.string(),
-        stockKey: v.optional(v.number()), quantity: v.optional(v.number()),
+        cashBonus: v.optional(v.number()), stockKey: v.optional(v.number()), quantity: v.optional(v.number()),
         roleBefore: v.optional(companyRoleValidator), roleAfter: v.optional(companyRoleValidator),
     }).index("by_game", ["gameId"]),
 });

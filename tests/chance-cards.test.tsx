@@ -1,3 +1,5 @@
+import { ConvexProvider, ConvexReactClient } from "convex/react";
+import type { Board } from "../src/types";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { api } from "../convex/_generated/api";
@@ -7,6 +9,11 @@ import { roundCash } from "../shared/settlement";
 import { PlayerDock } from "../src/PlayerDock";
 import { previewRound } from "../src/round-preview";
 import { setup } from "./game-setup";
+
+const client = new ConvexReactClient("https://chance-cards-test.invalid");
+const renderDock = (board: Board) => renderToStaticMarkup(
+    <ConvexProvider client={client}><PlayerDock board={board} /></ConvexProvider>,
+);
 
 describe("board-game special cards", () =>
 {
@@ -75,7 +82,7 @@ describe("board-game special cards", () =>
         expect(next.insights.some((card) => first.insights.some((old) => old._id === card._id))).toBe(false);
     });
 
-    it("keeps cash/chance hands private, shows only granted cards and disables activation", async () =>
+    it("keeps cash/chance hands private and enables only an unused loan on your turn", async () =>
     {
         const { t, sam, bob } = await setup();
 
@@ -98,17 +105,31 @@ describe("board-game special cards", () =>
         });
         const own = await sam.query(api.board.get, { code: "test" });
         const opponent = await bob.query(api.board.get, { code: "test" });
-        const html = renderToStaticMarkup(<PlayerDock board={own} />);
+        const html = renderDock(own);
 
         expect(opponent.insights).toHaveLength(0);
         expect(html).toContain("Government Loan Stock");
         expect(html).not.toContain("Rights Issue");
-        expect(html).toContain("disabled=\"\">Activate");
+        expect(html).not.toContain("disabled=\"\">Activate");
+        expect(html).toContain("£10k");
+        expect(html).toContain("Receive £10,000");
         expect(html).toContain("trade-dialog");
         expect(html).toContain("Drag down to close trade drawer");
         expect(html).toContain("text-secondary");
         expect(html).toContain("+0%");
-        expect(renderToStaticMarkup(<PlayerDock board={opponent} />)).toContain("No Chance Cards");
+        expect(renderDock(opponent)).toContain("No Chance Cards");
+        const waiting = renderDock({ ...own, game: { ...own.game, currentPlayerId: own.players[1]._id } });
+
+        expect(waiting).toContain("Wait for your turn to activate.");
+        expect(waiting).toContain("disabled=\"\">Activate");
+        expect(renderDock({ ...own, insights: own.insights.map((card) => ({ ...card, chanceKind: "rights" })) }))
+            .toContain("disabled=\"\">Activate");
+        await sam.mutation(api.trading.activateGovernmentLoan, { code: "test", expectedTurn: own.game.turn,
+            expectedPeriod: own.game.currentPeriod, insightId: own.insights[0]._id });
+        const redeemed = renderDock(await sam.query(api.board.get, { code: "test" }));
+
+        expect(redeemed).not.toContain("dock-power-card dock-power-loan");
+        expect(redeemed).toContain("No Chance Cards");
     });
 
     it("totals only a player's private cash cards, including cancellation to zero", () =>

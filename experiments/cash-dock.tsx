@@ -1,8 +1,10 @@
+import { useState } from "react";
+import { PlayAnimation } from "../src/PlayAnimation";
 import { createRoot } from "react-dom/client";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { BrowserRouter } from "react-router-dom";
 import { companyRoles } from "../shared/company-roles";
-import { specialDeck, cashStock } from "../shared/chance-cards";
+import { specialDeck, cashStock, governmentLoanAmount } from "../shared/chance-cards";
 import { RoundEnd } from "../src/RoundEnd";
 import { Playing } from "../src/Playing";
 import raw from "./cash-dock-board.json";
@@ -76,8 +78,53 @@ if (roundView)
 
 const client = new ConvexReactClient("https://preview.convex.cloud");
 
+function CashDockDemo()
+{
+    const [demoBoard, setDemoBoard] = useState(board);
+
+    function activateLoan(insightId: Board["insights"][number]["_id"])
+    {
+        const card = demoBoard.insights.find((item) => item._id === insightId);
+        if (!card || card.used || card.chanceKind !== "loan"
+          || demoBoard.game.currentPlayerId !== demoBoard.player._id || demoBoard.game.status !== "playing")
+        {
+            return Promise.reject(new Error("This card cannot be used"));
+        }
+
+        setDemoBoard((current) =>
+        {
+            const player = { ...current.player, cash: current.player.cash + governmentLoanAmount };
+            const next = current.players[(current.players.findIndex((seat) => seat._id === player._id) + 1)
+              % current.players.length];
+            const turn = current.game.turn + 1;
+
+            return { ...current, player,
+                players: current.players.map((seat) => seat._id === player._id
+                    ? { ...seat, cash: player.cash, netWorth: seat.netWorth + governmentLoanAmount } : seat),
+                insights: current.insights.map((item) => item._id === insightId ? { ...item, used: true } : item),
+                game: { ...current.game, turn, currentPlayerId: next._id, currentUserId: next.userId,
+                    status: turn >= current.players.length * 3 ? "closed" : "playing" },
+                feed: [{ _id: `loan-${Date.now()}` as Board["feed"][number]["_id"], _creationTime: Date.now(),
+                    gameId: current.game._id, period: current.game.currentPeriod, title: current.user.name,
+                    message: "received government bonus", imageRoot: current.user.profileRoot, colour: "",
+                    cashBonus: governmentLoanAmount }, ...current.feed],
+            };
+        });
+
+        return Promise.resolve();
+    }
+
+    return (
+        <main className="position-relative overflow-x-hidden d-flex flex-column justify-content-center">
+            {demoBoard.game.status === "playing" ? <Playing board={demoBoard} onActivateLoan={activateLoan} />
+                : <RoundEnd board={demoBoard} />}
+            <PlayAnimation board={demoBoard} />
+        </main>
+    );
+}
+
 createRoot(document.querySelector("#root")!).render(
     <ConvexProvider client={client}>
-        <BrowserRouter><main className="position-relative overflow-x-hidden d-flex flex-column justify-content-center">{roundView ? <RoundEnd board={board} /> : <Playing board={board} />}</main></BrowserRouter>
+        <BrowserRouter><CashDockDemo /></BrowserRouter>
     </ConvexProvider>,
 );

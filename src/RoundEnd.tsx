@@ -32,7 +32,7 @@ export function RoundEnd({ board }: { board: Board })
     const reviewed = step >= groups.length;
     const host = game.hostId === board.user._id && !game.tvControlled && !game.spectatorControlled;
     const lastPlay = board.feed.find((item) => item.period === game.currentPeriod
-      && item.colour !== "grey" && (item.quantity || item.message === "passed their go"));
+      && item.colour !== "grey" && (item.quantity || item.cashBonus || item.message === "passed their go"));
     const ready = useRevealReady(lastPlay?._creationTime);
     const { preview, wealth } = roundProgress(board, step, index);
 

@@ -1,7 +1,8 @@
 import { companyRoles, type CompanyRole } from "../../shared/company-roles";
 import type { MutationCtx as MutationContext } from "../_generated/server";
+import { chanceStockKey, governmentLoanAmount } from "../../shared/chance-cards";
+import type { Doc as Document_ } from "../_generated/dataModel";
 import type { Id } from "../_generated/dataModel";
-import type { Action } from "../../packages/game-contracts/src";
 import { transition, tradeError } from "../../packages/game-contracts/src";
 import { fail, feedItem, members } from "../library";
 import { isCurrent } from "./seats";
@@ -12,7 +13,7 @@ export async function applyTurn(
         playerId: Id<"players">;
         expectedPeriod: number;
         expectedTurn: number;
-        action: Action;
+        action: Document_<"gameActions">["action"];
     },
     display: { name: string; profileRoot: string },
 ): Promise<void>
@@ -35,7 +36,21 @@ export async function applyTurn(
     let message = "passed their go";
     let roleBefore: CompanyRole | undefined;
     let roleAfter: CompanyRole | undefined;
-    if (action.kind !== "pass")
+    if (action.kind === "government-loan")
+    {
+        const card = await context.db.get(action.insightId);
+        if (!card || card.gameId !== game._id || card.playerId !== player._id
+          || card.period !== game.currentPeriod || card.stockKey !== chanceStockKey
+          || card.chanceKind !== "loan" || card.used)
+        {
+            fail("This Government Loan Stock card cannot be used");
+        }
+
+        await context.db.patch(card._id, { used: true });
+        await context.db.patch(player._id, { cash: player.cash + governmentLoanAmount });
+        message = "received government bonus";
+    }
+    else if (action.kind !== "pass")
     {
         const stock = await context.db
             .query("stocks")
@@ -80,13 +95,13 @@ export async function applyTurn(
         action,
     });
     const trade
-        = action.kind === "pass"
-            ? {}
-            : {
+        = action.kind === "government-loan"
+            ? { cashBonus: governmentLoanAmount }
+            : (action.kind === "pass" ? {} : {
                 stockKey: action.stockKey,
                 quantity: action.quantity * (action.kind === "buy" ? 1 : -1),
                 roleBefore, roleAfter,
-            };
+            });
 
     await feedItem(context, game, display.name, message, display.profileRoot, "", trade);
     const next

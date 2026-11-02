@@ -1,3 +1,4 @@
+import { cashStock } from "../shared/chance-cards";
 import { TradeRoleChange } from "./TradeRole";
 import type { Board } from "./display-types";
 import { money } from "./shared";
@@ -6,6 +7,19 @@ export function FeedMessage({ item, stocks, detailed = false }: {
     item: Board["feed"][number]; stocks: Board["stocks"]; detailed?: boolean;
 })
 {
+    if (item.cashBonus)
+    {
+        return (
+            <div>
+                <p className="trade-message text-success" aria-label={`Received £${money(item.cashBonus)} government bonus`}>
+                    <img src={cashStock.imagePath} alt="" />
+                    {`£${money(item.cashBonus)}`}
+                </p>
+                {detailed && <p className="trade-description">received government bonus</p>}
+            </div>
+        );
+    }
+
     // Older games have text-only events; keep their history readable after upgrading.
     const legacy = /^(bought|sold) (\d+) shares in (.+)$/.exec(item.message);
     const stock = stocks.find((candidate) => candidate.key === item.stockKey

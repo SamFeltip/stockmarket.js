@@ -162,7 +162,7 @@ export const board = query({
             players,
             feed: feed.map((item) => ({ id: item._id, at: item._creationTime, period: item.period,
                 title: item.title, message: item.message, imageRoot: item.imageRoot, colour: item.colour,
-                stockKey: item.stockKey, quantity: item.quantity,
+                stockKey: item.stockKey, quantity: item.quantity, cashBonus: item.cashBonus,
                 roleBefore: item.roleBefore, roleAfter: item.roleAfter })),
         };
     },

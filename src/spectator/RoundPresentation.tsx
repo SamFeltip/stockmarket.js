@@ -25,7 +25,7 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
     const owner = board.players.find((player) => player._id === unresolved?.playerId);
     const reviewed = step >= groups.length;
     const lastPlay = snapshot.feed.find((item) => item.period === snapshot.game.currentPeriod
-      && item.colour !== "grey" && (item.quantity || item.message === "passed their go"));
+      && item.colour !== "grey" && (item.quantity || item.cashBonus || item.message === "passed their go"));
     const ready = useRevealReady(lastPlay?.at);
     const pendingHolds = board.insights.some((insight) => !insight.resolved
       && board.stocks.find((item) => item.key === insight.stockKey)?.name === "Hold Stock Price");

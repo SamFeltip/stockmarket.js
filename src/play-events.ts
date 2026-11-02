@@ -7,6 +7,6 @@ export function newPlayEvents(board: Board, previousId?: string, previousAt = In
         ? board.feed.filter((item) => item._creationTime > previousAt)
         : board.feed.slice(0, anchor);
 
-    return items.filter((item) => item.colour !== "grey" && (Boolean(item.quantity)
+    return items.filter((item) => item.colour !== "grey" && (Boolean(item.quantity || item.cashBonus)
       || item.message === "passed their go")).toReversed();
 }

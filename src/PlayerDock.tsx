@@ -1,19 +1,22 @@
+import { GovernmentLoanModal } from "./GovernmentLoanModal";
+import type { LoanActivation } from "./GovernmentLoanModal";
 import { Modal, money } from "./shared";
 import { chanceCards, chanceStockKey, privateCashPercent } from "../shared/chance-cards";
 import type { Board } from "./types";
 import "./player-dock.css";
 
-export function PlayerDock({ board }: { board: Board })
+export function PlayerDock({ board, onActivateLoan }: { board: Board; onActivateLoan?: LoanActivation })
 {
     const ownCards = board.insights.filter((card) => card.playerId === board.player._id
       && card.period === board.game.currentPeriod);
-    const granted = ownCards.filter((card) => card.stockKey === chanceStockKey && card.chanceKind)
+    const cards = ownCards.filter((card) => card.stockKey === chanceStockKey && card.chanceKind)
         .flatMap((card) =>
         {
             const definition = chanceCards.find((item) => item.kind === card.chanceKind);
 
-            return definition ? [{ ...definition, id: card._id }] : [];
+            return definition ? [{ ...definition, id: card._id, used: Boolean(card.used) }] : [];
         });
+    const granted = cards.filter((card) => !card.used);
     const cashPercent = privateCashPercent(ownCards, board.player._id);
     const cashTone = cashPercent > 0 ? "success" : (cashPercent < 0 ? "danger" : "secondary");
 
@@ -58,7 +61,15 @@ export function PlayerDock({ board }: { board: Board })
                     <p>Chance cards may appear here each round</p>
                 </div>
             )}
-            {granted.map((card) => (
+            {cards.map((card) => card.kind === "loan" ? (
+                <GovernmentLoanModal
+                    key={card.id}
+                    board={board}
+                    insightId={card.id}
+                    used={card.used}
+                    onActivate={onActivateLoan}
+                />
+            ) : (
                 <Modal key={card.id} id={`chance-card-${card.id}`} title={card.name} mobileDrawer>
                     <div className="modal-body dock-power-detail">
                         <h2 className="text-black">{card.name}</h2>

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { modalInstance } from "./bootstrap";
+import { hideModal } from "./bootstrap";
 import { TradeDrawerHandle } from "./TradeDrawerHandle";
 import { friendlyError } from "./errors";
 import type { Insight, Stock } from "./types";
@@ -69,7 +69,7 @@ export function Modal({ id, title, children, mobileDrawer = false, portal = fals
         {
             if (element)
             {
-                modalInstance(element)?.hide();
+                hideModal(element);
             }
         };
     }, []);

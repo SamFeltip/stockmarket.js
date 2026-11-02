@@ -21,11 +21,15 @@ cash. The adjustment is rounded to the nearest £1,000, with half-thousands away
 from zero. Settlement and the browser round preview use the same function.
 Explicitly imported legacy `currency` cards preserve their old per-player logic.
 
-Chance-card details use the existing trade modal/drawer shell. Activate is always
-disabled: no chance-card effects, turn costs, retention, insurance claims, or
-option expiry are implemented in this step. The cards are newly dealt each round.
-New Share Suspended cards do not invoke the legacy hold mutation or block round
-settlement. Duplicate physical cards appear as separate granted cards.
+Chance-card details use the existing trade modal/drawer shell. Government Loan
+Stock shows £10k above its name and can be activated during your turn to receive
+£10,000. Activation consumes that dealt card and one turn, records a public bonus
+event, and triggers the usual action popup with the money SVG. Redemption checks
+membership, card ownership, period, turn, kind, and prior use in one transaction.
+It advances the round normally when used on the last turn. Other chance-card
+effects remain disabled. Cards are newly dealt each round; duplicate physical
+cards can each be redeemed on separate turns. New Share Suspended cards do not
+invoke the legacy hold mutation or block round settlement.
 
 Rules: EP0297870A1, Schedule of Cards, PDF pages 4–5:
 https://patents.google.com/patent/EP0297870A1/en#description
@@ -42,6 +46,8 @@ Open http://127.0.0.1:5181/experiments/cash-dock.html for all five example cards
 Append `?cards=none` for an empty hand; append `?cash=0` or `?cash=-10` to inspect
 zero/negative cash totals (combine with `&cards=none` if needed). The preview uses
 an offline fixture; the normal Playing component reads persisted dealt cards.
+Government Loan activation in the demo updates local cash, removes the card,
+advances the turn, and displays the bonus popup. Reload to reset the fixture.
 The preview is separate from the production game. Build it for standalone hosting
 with `npm run build:demo`; `dist-demo/` serves the demo at `/` and at
 `/experiments/cash-dock.html`. Publish only that directory to the Pages preview
@@ -64,6 +70,11 @@ the game. Player and spectator displays share the cash reveal and sequence.
 `npm run check` runs lint, integration/UI tests, TypeScript, the production build,
 and asset validation. `tests/chance-cards.test.tsx` covers deck composition,
 shared dealing without replacement, per-round redealing, privacy, only granted
-cards appearing, disabled activation, zero/positive/negative cash totals, shared
+cards appearing, unsupported powers remaining disabled, zero/positive/negative cash totals, shared
 settlement and rounding, preview parity, and duplicate settlement rejection.
 PNG screenshots in `../screenshots/` record desktop and mobile layouts.
+
+`tests/government-loan.test.tsx` verifies single-use redemption, ownership and
+turn checks, final-turn closure, shared/public notifications, and NPC observation
+compatibility. Production backend changes require the normal coordinated
+backend/frontend deployment; the standalone staging demo needs only `build:demo`.

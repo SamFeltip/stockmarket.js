@@ -13,6 +13,25 @@ export function modalInstance(element: HTMLElement)
     return bootstrap?.Modal.getInstance(element);
 }
 
+/** Close safely even while Bootstrap is still opening the dialog. */
+export function hideModal(element: HTMLElement)
+{
+    const instance = modalInstance(element);
+    if (!instance || !element.classList.contains("show"))
+    {
+        return;
+    }
+
+    const close = () => instance.hide();
+
+    element.addEventListener("shown.bs.modal", close, { once: true });
+    element.addEventListener("hidden.bs.modal", () =>
+    {
+        element.removeEventListener("shown.bs.modal", close);
+    }, { once: true });
+    close();
+}
+
 export interface CollapseInstance {
     show: () => void;
     hide: () => void;

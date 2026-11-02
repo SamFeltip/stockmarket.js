@@ -59,7 +59,8 @@ export async function buildNpcObservation(
             period,
             turn,
             actorPlayerId,
-            action,
+            // Loan redemption spends a turn but is not a stock signal for NPCs.
+            action: action.kind === "government-loan" ? { kind: "pass" as const } : action,
         })),
         settledPeriods: settled.map(({ period, opening, settled }) => ({
             period,
