@@ -29,7 +29,6 @@ export function PlayerDock({ board }: { board: Board })
                     <div className={`total-insight text-${cashTone} d-flex justify-content-center align-items-center`}>
                         {cashPercent !== 0 && (
                             <picture>
-                                <source media="(max-width: 991.98px)" srcSet={`/static/imgs/icons/stock_${cashPercent > 0 ? "up" : "down"}_black.svg`} />
                                 <img className="pe-2" height={16} src={`/static/imgs/icons/stock_${cashPercent > 0 ? "up" : "down"}.svg`} alt={`Cash ${cashPercent > 0 ? "rising" : "falling"}`} />
                             </picture>
                         )}
