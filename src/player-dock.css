@@ -86,6 +86,6 @@ body:has(#player-dock) { overflow: hidden; }
 .modal.trade-dialog:has(.dock-power-detail) .dock-power-detail { overflow: auto; align-content: center; }
 .modal.trade-dialog:has(.dock-power-detail) .trade-footer { flex-shrink: 0; }
 
-.modal-footer.loan-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 1rem; }
-.loan-footer p { margin: 0; font-size: 0.85rem; }
 .dock-power-loan { flex-direction: column; justify-content: center; gap: 0.3rem; text-align: center; }
+
+.modal.trade-dialog .modal-body.loan-detail { align-content: start; justify-content: stretch; overflow: auto; }
