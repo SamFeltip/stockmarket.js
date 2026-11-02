@@ -177,7 +177,8 @@ button.nav-link { cursor: pointer; }
     grid-template-areas: "stocks stocks" "investors investors" "price-chart price-chart" "insights insights" "stock-info stock-info" "actions actions";
 }
 #game-stock-info > * { min-width: 0; min-height: 0; }
-#game-stock-info h4 { font-size: clamp(1rem, 2vh, 1.25rem); color: #111; margin-bottom: 0.5rem; }
+#game-stock-info h4, .stock-chart-change { font-size: clamp(1rem, 2vh, 1.25rem); }
+#game-stock-info h4 { color: #111; margin-bottom: 0.5rem; }
 #game-stock-info p { margin-bottom: 0; }
 #game-stock-info #stocks { padding: 0; text-align: center; align-self: start; }
 #game-stock-info #stocks p { font-size: 0.8rem; }
@@ -550,5 +551,7 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 }
 
 .stock-chart-heading { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.5rem; }
-.stock-chart-heading h4 { margin: 0; }
-.stock-chart-change { display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap; font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+#game-stock-info .stock-chart-heading h4 { margin: 0; }
+.stock-chart-change { display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.stock-chart-change svg { width: 1.2em; height: 0.9em; flex-shrink: 0; }
