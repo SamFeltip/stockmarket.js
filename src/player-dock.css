@@ -75,6 +75,16 @@
     #player-dock .dock-balance { margin-bottom: 0.25rem; }
     .dock-power-card { padding-block: 0.4rem; }
 }
+/* Match window.matchMedia('(display-mode: standalone)') without changing browser tabs. */
+@media (max-width: 991.98px) and (display-mode: standalone) {
+    /* viewport-fit=cover also exposes the notch; keep the header below it. */
+    #game-grid:has(> #player-dock) {
+        padding-top: calc(var(--game-grid-spacing, 16px) + env(safe-area-inset-top, 0px)) !important;
+    }
+    #game-grid:has(> #player-dock) > #player-dock {
+        padding-bottom: calc(var(--game-panel-padding) + env(safe-area-inset-bottom, 0px) + 0.25rem) !important;
+    }
+}
 /* Details scroll within the middle panel while the dock remains in view. */
 body:has(#player-dock) { overflow: hidden; }
 @media (max-height: 650px) {

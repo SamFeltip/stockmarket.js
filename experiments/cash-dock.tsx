@@ -10,6 +10,11 @@ import { Playing } from "../src/Playing";
 import raw from "./cash-dock-board.json";
 import "../src/patch.css";
 import type { Board } from "../src/types";
+import { setupStandaloneSafeArea } from "../src/standalone-safe-area";
+
+const cleanupSafeArea = setupStandaloneSafeArea();
+
+import.meta.hot?.dispose(cleanupSafeArea);
 
 // An offline fixture: no authentication, backend writes or real game required.
 const board = raw as unknown as Board;

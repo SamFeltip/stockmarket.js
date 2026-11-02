@@ -159,8 +159,16 @@ button.nav-link { cursor: pointer; }
     .trade-dialog .transaction-body { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; font-size: 0.8rem; }
     .trade-dialog .transaction-body p { font-size: inherit; }
     .trade-dialog .trade-role-progress { margin-top: 0.25rem; gap: 0.25rem; font-size: 0.8rem; }
-    .trade-dialog .modal-footer { padding-block: 0.5rem; gap: 0.25rem; }
+    .trade-dialog .modal-footer { --drawer-footer-padding: 0.5rem; padding-block: 0.5rem; gap: 0.25rem; }
     .trade-dialog .trade-feedback { font-size: 0.8rem; }
+}
+@media (max-width: 991.98px) and (display-mode: standalone) {
+    .trade-dialog .modal-footer {
+        padding-bottom: calc(var(--drawer-footer-padding, 1rem) + env(safe-area-inset-bottom, 0px) + 0.25rem);
+    }
+    #game-grid > .offcanvas-lg {
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px) + 0.25rem) !important;
+    }
 }
 @media (prefers-reduced-motion: reduce) {
     .modal.trade-dialog, .modal.trade-dialog.fade .modal-dialog { transition: none; }

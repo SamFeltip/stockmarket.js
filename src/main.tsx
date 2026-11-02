@@ -5,6 +5,11 @@ import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import "./patch.css";
+import { setupStandaloneSafeArea } from "./standalone-safe-area";
+
+const cleanupSafeArea = setupStandaloneSafeArea();
+
+import.meta.hot?.dispose(cleanupSafeArea);
 
 const root = document.querySelector("#root");
 if (!root)
