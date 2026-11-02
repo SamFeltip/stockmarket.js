@@ -51,10 +51,10 @@
         border-top-right-radius: 0.375rem !important;
     }
     #player-dock {
-        border-bottom-left-radius: 0.375rem !important;
-        border-bottom-right-radius: 0.375rem !important;
+        margin-inline: calc(-1 * var(--game-grid-spacing, 16px));
+        border-radius: 0 !important;
     }
-    #game-grid:has(> #player-dock) { --game-panel-padding: 0.5rem; grid-template-areas: "profile now-playing" "content content" "dock dock"; }
+    #game-grid:has(> #player-dock) { --game-panel-padding: 0.5rem; padding-bottom: 0 !important; grid-template-areas: "profile now-playing" "content content" "dock dock"; }
     #player-dock { grid-template-columns: 6.25rem minmax(0, 1fr); gap: 0.5rem; }
     #player-dock .dock-balance { font-size: 1.15rem; }
     #player-dock .dock-cash-label { font-size: 0.6rem; margin: 0.1rem 0 0.4rem; }
