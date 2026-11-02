@@ -23,17 +23,15 @@ export function CashReveal({ insights, index }: { insights: Insight[]; index: nu
                     {active && <p className={`cash-reveal-delta text-${tone(active.value)}`}>{percent(active.value)}</p>}
                 </div>
             </div>
-            <div className={`cash-reveal-stack ${insights.length > 1 ? "has-stack" : ""}`}>
-                <div key={active?._id ?? "complete"} className="game-insight-card cash-reveal-card rounded bg-white text-black">
-                    <img src={cashStock.imagePath} alt="" />
-                    <div className={`cash-reveal-percent text-${tone(active?.value ?? sum)}`}>
-                        <svg width="32" height="24" viewBox="0 0 24 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d={(active?.value ?? sum) < 0 ? "M2 3l7 7 4-4 9 9M15 15h7V8" : ((active?.value ?? sum) > 0 ? "M2 15l7-7 4 4 9-9M15 3h7v7" : "M2 9h20m-6-6 6 6-6 6")} />
-                        </svg>
-                        <span>{percent(active?.value ?? sum)}</span>
-                    </div>
-                    <p>{complete ? (insights.length > 0 ? "All cash insights revealed" : "No cash insights this round") : active?.description}</p>
+            <div key={active?._id ?? "complete"} className={`${active ? "game-insight-card " : ""}cash-reveal-card rounded bg-white text-black`}>
+                <img src={cashStock.imagePath} alt="" />
+                <div className={`cash-reveal-percent text-${tone(active?.value ?? sum)}`}>
+                    <svg width="32" height="24" viewBox="0 0 24 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d={(active?.value ?? sum) < 0 ? "M2 3l7 7 4-4 9 9M15 15h7V8" : ((active?.value ?? sum) > 0 ? "M2 15l7-7 4 4 9-9M15 3h7v7" : "M2 9h20m-6-6 6 6-6 6")} />
+                    </svg>
+                    <span>{percent(active?.value ?? sum)}</span>
                 </div>
+                <p>{complete ? (insights.length > 0 ? "All cash insights revealed" : "No cash insights this round") : active?.description}</p>
             </div>
         </div>
     );

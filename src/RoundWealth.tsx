@@ -38,7 +38,12 @@ export function RoundWealth({ players, stock }: { players: Player[]; stock?: Sto
                         <img className="rounded" src={player.profileRoot} alt="" />
                         <span className="round-player-name">{player.name}</span>
                         <NetWorthNumber value={player.netWorth} />
-                        {stock?.key === cashStockKey && <span className="round-player-holdings">{`Cash £${money(player.cash)}`}</span>}
+                        {stock?.key === cashStockKey && (
+                            <span className="round-player-holdings round-player-cash">
+                                {"Cash "}
+                                <NetWorthNumber value={player.cash} />
+                            </span>
+                        )}
                         {stock?.display && (
                             <span className="round-player-holdings">
                                 {`${money(player.holdings.find((holding) =>

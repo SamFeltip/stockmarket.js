@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { actionAnimationMs, revealDelay, revealPauseMs } from "../shared/presentation";
+import { cashStock } from "../shared/chance-cards";
 import { RoundWealth } from "../src/RoundWealth";
 import { setup } from "./game-setup";
 import { api } from "../convex/_generated/api";
@@ -27,5 +28,11 @@ describe("round presentation", () =>
         expect(html).toContain(`0 ${stock.name} shares`);
         expect(renderToStaticMarkup(<RoundWealth players={players} stock={{ ...stock, display: false }} />))
             .not.toContain("round-player-holdings");
+        const cashHtml = renderToStaticMarkup(<RoundWealth players={players} stock={cashStock} />);
+
+        expect(cashHtml).toContain("class=\"round-player-holdings round-player-cash\"");
+        expect(cashHtml).toContain("Cash <span class=\"net-worth-number\"");
+        expect(cashHtml).toContain("£60,000");
+        expect(cashHtml).not.toContain(`${stock.name} shares`);
     });
 });

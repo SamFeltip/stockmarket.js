@@ -548,17 +548,14 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 
 .stock-chart-change svg { width: 1.2em; height: 0.9em; flex-shrink: 0; }
 
-.cash-reveal { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: stretch; gap: 2rem; padding-bottom: 1rem; }
+.cash-reveal { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: stretch; gap: 2rem; }
 .cash-reveal-total { background: #3c5f2f; display: flex; align-items: center; justify-content: space-around; gap: 1rem; padding: 2rem; }
 .cash-reveal-identity { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
 .cash-reveal-identity img { width: clamp(5rem, 12vw, 10rem); filter: brightness(0) invert(1); }
 .cash-reveal-total p, .cash-reveal-total h1, .cash-reveal-total h2 { margin: 0; }
 .cash-reveal-total h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
 .cash-reveal-delta { font-size: 1.1rem; font-weight: 600; }
-.cash-reveal-stack { position: relative; isolation: isolate; min-width: 0; }
-.cash-reveal-stack.has-stack::before, .cash-reveal-stack.has-stack::after { content: ""; position: absolute; inset: 0; border-radius: 0.75rem; background: white; border: 1px solid #294023; z-index: -1; transform: translateY(0.5rem); }
-.cash-reveal-stack.has-stack::before { transform: translateY(1rem); }
-.cash-reveal-card { animation: glideIn 0.25s both; height: 100%; min-height: 12rem; border: 1px solid #294023; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; padding: 1.5rem; text-align: center; }
+.cash-reveal-card { height: 100%; min-height: 12rem; border: 1px solid #294023; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; padding: 1.5rem; text-align: center; }
 .cash-reveal-card > img { width: 3rem; height: 2rem; object-fit: contain; filter: brightness(0); }
 .cash-reveal-percent { display: flex; align-items: center; gap: 0.6rem; font-size: 2rem; font-weight: 600; }
 .cash-reveal-card p { margin: 0; font-size: 1.1rem; }
@@ -576,3 +573,5 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 .cash-reveal-delta.text-success { color: #a5ed94 !important; }
 .cash-reveal-delta.text-danger { color: #ffb4b4 !important; }
 .cash-reveal-delta.text-secondary { color: #c1c8be !important; }
+
+.round-player-cash .net-worth-number, .round-player-cash .wealth-delta { font-size: inherit; }
