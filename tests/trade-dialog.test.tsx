@@ -62,6 +62,16 @@ describe("trade availability feedback", () =>
             expect(html).not.toContain("btn-close");
             expect(html).not.toContain("Trade shares in steps");
             expect(html).not.toContain("Entering cash selects");
+
+            if (mode === "buy")
+            {
+                expect(html).toContain("100,000 stocks until chairman");
+                expect(html).toContain("50,000 stocks until director");
+            }
+            else
+            {
+                expect(html).not.toContain("trade-role-progress");
+            }
         }
 
         await client.close();

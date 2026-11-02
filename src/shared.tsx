@@ -133,15 +133,18 @@ export function Insights({ insights, stocks }: { insights: Insight[]; stocks: St
                     return (
                         <div className="card" key={insight._id}>
                             <div className="card-body text-center">
-                                {stock && <div className="d-flex justify-content-center"><img height={35} src={stock.imagePath} alt={stock.name} /></div>}
-                                {insight.value !== 0 && (
-                                    <div className="d-flex flex-row justify-content-center align-items-center">
-                                        <img className="pe-2" height={16} src={`/static/imgs/icons/stock_${insight.value > 0 ? "up" : "down"}.svg`} alt="stock movement" />
-                                        <h5 className={`text-${insight.value < 0 ? "danger" : "success"} mb-0`}>
-                                            {stock?.display ? `£${insight.value.toFixed(2)}` : `${insight.value * 100}%`}
-                                        </h5>
+                                {stock && (
+                                    <div className="insight-stock-label">
+                                        <img height={35} src={stock.imagePath} alt="" />
+                                        <span className="insight-company-name">{stock.name}</span>
                                     </div>
                                 )}
+                                <div className="d-flex flex-row justify-content-center align-items-center">
+                                    {insight.value !== 0 && <img className="pe-2" height={16} src={`/static/imgs/icons/stock_${insight.value > 0 ? "up" : "down"}.svg`} alt="stock movement" />}
+                                    <h5 className={`text-${insight.value === 0 ? "secondary" : (insight.value < 0 ? "danger" : "success")} mb-0`}>
+                                        {stock?.display ? `£${insight.value.toFixed(2)}` : `${insight.value * 100}%`}
+                                    </h5>
+                                </div>
                                 {insight.description && <p>{insight.description}</p>}
                             </div>
                         </div>

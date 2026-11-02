@@ -50,7 +50,7 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
                     <div id="stock-info" className="d-flex flex-column gap-2">
                         <h4 className="text-black">Info</h4>
                         <div className="stock-info-cards">
-                            {[[`${stock.variation}/6`, "Volatility"], ["N/A", "Director"], [money(available), "Shares available"]].map(([number, title]) => (
+                            {[[`${stock.variation}/6`, "Volatility"], [money(available), "Shares available"]].map(([number, title]) => (
                                 <div className="card flex-fill" key={title}>
                                     <div className="card-body text-center">
                                         <p>{number}</p>

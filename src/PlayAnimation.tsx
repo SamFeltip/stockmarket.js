@@ -1,3 +1,4 @@
+import { RolePortrait } from "./RolePortrait";
 import { useEffect, useState } from "react";
 import type { Board } from "./display-types";
 import { actionAnimationMs } from "../shared/presentation";
@@ -42,7 +43,7 @@ export function PlayAnimation({ board, preview = false }: { board: Board; previe
     return (
         <div key={active._id} id="play-notif" className="play-notification d-flex justify-content-center align-items-center" role="status" aria-live="polite">
             <div className="d-flex flex-column align-items-center text-center gap-3">
-                <img className="rounded" src={active.imageRoot || player?.profileRoot} alt={active.title} />
+                <RolePortrait name={active.title} profileRoot={active.imageRoot || player?.profileRoot || ""} role={active.roleAfter} />
                 <h1>{active.title}</h1>
                 <FeedMessage item={active} stocks={board.stocks} detailed />
             </div>

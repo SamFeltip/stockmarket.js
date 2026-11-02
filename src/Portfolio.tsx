@@ -62,7 +62,7 @@ export function Portfolio({ board, player }: { board: Board; player: Player })
             <div id="player-info" className="d-flex flex-column gap-2">
                 <h4 className="text-black">Info</h4>
                 <div id="info-details" className="d-flex flex-column d-lg-grid gap-3">
-                    {[[`${player.ranking} / ${board.players.length}`, "Ranking"], ["N/A", "Director"], [player.holdings.reduce((sum, item) => sum + item.quantity, 0), "Total Shares"]].map(([value, title]) => (
+                    {[[`${player.ranking} / ${board.players.length}`, "Ranking"], [player.holdings.reduce((sum, item) => sum + item.quantity, 0), "Total Shares"]].map(([value, title]) => (
                         <div className="card flex-fill" key={title}>
                             <div className="card-body text-center">
                                 <p>{value}</p>

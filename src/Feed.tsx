@@ -1,3 +1,5 @@
+import { RolePortrait } from "./RolePortrait";
+import { TradeRoleLabel } from "./TradeRole";
 import { FeedMessage } from "./FeedMessage";
 import type { Board } from "./types";
 export function Feed({ board }: { board: Board })
@@ -18,9 +20,18 @@ export function Feed({ board }: { board: Board })
                 <div id="feed-body" className="d-flex flex-column gap-1 overflow-auto">
                     {feed.length === 0 ? <p>no feed items yet</p> : feed.map((item) => (
                         <div className="d-flex flex-row gap-1 mb-3" key={item._id}>
-                            <img height={56} width={56} className={`rounded bg-secondary ${item.colour === "grey" ? "p-2" : ""}`} src={item.imageRoot} alt={item.title} />
+                            {item.roleAfter ? (
+                                <div className="trade-avatar">
+                                    <RolePortrait
+                                        name={item.title}
+                                        profileRoot={item.imageRoot}
+                                        role={item.roleAfter}
+                                    />
+                                </div>
+                            ) : <img height={56} width={56} className={`rounded bg-secondary ${item.colour === "grey" ? "p-2" : ""}`} src={item.imageRoot} alt={item.title} />}
                             <div>
                                 <h3 style={{ fontSize: "1.4rem" }} className="fw-bold text-capitalize text-black mb-0">{item.title}</h3>
+                                <TradeRoleLabel role={item.roleAfter} />
                                 <FeedMessage item={item} stocks={board.stocks} />
                             </div>
                         </div>

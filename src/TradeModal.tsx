@@ -1,4 +1,5 @@
 import { floorTradeQuantity, sharesPerCompany } from "../shared/rules";
+import { companyRoleThresholds } from "../shared/company-roles";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
@@ -28,6 +29,7 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
         ? Math.min(available, sharesForCash(board.player.cash, price)) : held);
     const { quantity, shares, cash } = resolveTradeDraft(draft, price, limit);
     const previewQuantity = Number.isFinite(quantity) ? quantity : 0;
+    const projectedHolding = held + (mode === "buy" ? previewQuantity : -previewQuantity);
     const reason = tradeUnavailableReason({ mode, price, quantity, available, held, cash: board.player.cash,
         isTurn: board.game.currentPlayerId === board.player._id,
         isPlaying: board.game.status === "playing", tradable: stock.display });
@@ -167,11 +169,29 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                                 Cash £
                                 {money(board.player.cash + (mode === "buy" ? -1 : 1) * previewQuantity * price)}
                             </p>
-                            <p>
+                            <p className="trade-shares-held">
                                 Shares held
                                 {" "}
-                                {held + (mode === "buy" ? previewQuantity : -previewQuantity)}
+                                {money(projectedHolding)}
                             </p>
+                            {mode === "buy" && (
+                                <div className="trade-role-progress">
+                                    {(["chairman", "director"] as const).map((role) =>
+                                    {
+                                        const remaining = Math.max(0, companyRoleThresholds[role] - projectedHolding);
+
+                                        return (
+                                            <div key={role}>
+                                                <img src={`/static/imgs/icons/${role}.svg`} alt="" />
+                                                <span>
+                                                    {remaining > 0 ? `${money(remaining)} stocks until ${role}`
+                                                        : `${role === "chairman" ? "Chairman" : "Director"} threshold reached`}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </form>

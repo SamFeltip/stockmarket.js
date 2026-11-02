@@ -1,3 +1,4 @@
+import { withRoleBonuses } from "../shared/company-roles";
 import type { MutationCtx as MutationContext } from "./_generated/server";
 import type { Doc as Document_ } from "./_generated/dataModel";
 import { roundCash, roundPrices } from "../shared/settlement";
@@ -20,8 +21,9 @@ export async function advancePeriod(context: MutationContext, game: Document_<"g
         fail("Wait for players to resolve their hold-stock insights");
     }
 
-    const prices = roundPrices(game.prices, insights, stocks, game.suspended);
     const players = await members(context, game._id);
+    const effectiveInsights = withRoleBonuses(insights, players, stocks);
+    const prices = roundPrices(game.prices, effectiveInsights, stocks, game.suspended);
     for (const seat of players)
     {
         await context.db.patch(seat._id, { cash: roundCash(seat, insights, stocks) });

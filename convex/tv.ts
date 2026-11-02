@@ -1,3 +1,4 @@
+import { withRoleBonuses, companyRoles } from "../shared/company-roles";
 import { stockCatalog } from "./catalog";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
@@ -113,9 +114,11 @@ export const board = query({
             suspended: game.suspended,
             stocks: catalog.map((stock) => ({ key: stock.key, name: stock.name, display: stock.display,
                 imagePath: stock.imagePath, secondaryImagePath: stock.secondaryImagePath })),
-            insights: revealed.map((insight) => ({ _id: insight._id, playerId: insight.playerId,
+            insights: withRoleBonuses(revealed, seats, catalog).map((insight) => ({
+                _id: insight._id, playerId: insight.playerId,
                 stockKey: insight.stockKey, value: insight.value, description: insight.description,
-                resolved: insight.resolved })),
+                resolved: insight.resolved, bonusRole: insight.bonusRole,
+                removedInsightId: insight.removedInsightId })),
         } : null;
         const players = await Promise.all(seats.map(async (seat) =>
         {
@@ -125,6 +128,9 @@ export const board = query({
                 id: seat._id, name: display.name, profileRoot: display.profileRoot, kind: display.kind,
                 npcDifficulty: seat.controller?.kind === "npc" ? seat.npcDifficulty ?? game.npcDifficulty ?? "medium" : undefined,
                 tagline: display.tagline,
+                roles: stocks.flatMap((stock) => companyRoles(seats, stock.key)
+                    .filter((role) => role.playerId === seat._id)
+                    .map((role) => ({ stockKey: stock.key, role: role.role }))),
                 cash: seat.cash, holdings: seat.holdings.filter((holding) =>
                     stocks.some((stock) => stock.key === holding.stockKey)), netWorth: netWorth(seat, game),
             };
@@ -156,7 +162,8 @@ export const board = query({
             players,
             feed: feed.map((item) => ({ id: item._id, at: item._creationTime, period: item.period,
                 title: item.title, message: item.message, imageRoot: item.imageRoot, colour: item.colour,
-                stockKey: item.stockKey, quantity: item.quantity })),
+                stockKey: item.stockKey, quantity: item.quantity,
+                roleBefore: item.roleBefore, roleAfter: item.roleAfter })),
         };
     },
 });
