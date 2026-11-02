@@ -3,6 +3,18 @@
    Keep a real dark-green paint surface underneath portalled modals/drawers. */
 html, body, main:has(> #game-grid) { background-color: var(--bs-body-bg, #0f2c12); }
 
+/* The game already locks the page to the viewport. Absolute overlays keep the
+   same layout without becoming Safari's fixed-edge browser-tint candidates.
+   Scope this to the game so scrolling pages retain Bootstrap's fixed modals. */
+@media (max-width: 991.98px) {
+    body:has(#game-grid) :is(.modal, .modal-backdrop, .offcanvas-backdrop) {
+        position: absolute;
+        height: 100dvh;
+    }
+    body:has(#game-grid) .trade-dialog .modal-dialog,
+    #game-grid > .offcanvas-lg { position: absolute; }
+}
+
 @font-face {
     font-family: "Big Caslon";
     src: url("/static/fonts/BigCaslon.ttf") format("truetype");
