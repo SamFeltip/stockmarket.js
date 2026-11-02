@@ -1,4 +1,8 @@
 /* Small React/accessibility corrections; original stylesheets are preserved byte-for-byte. */
+/* Safari extends the root/fixed surface into its toolbar and safe-area tint.
+   Keep a real dark-green paint surface underneath portalled modals/drawers. */
+html, body, main:has(> #game-grid) { background-color: var(--bs-body-bg, #0f2c12); }
+
 @font-face {
     font-family: "Big Caslon";
     src: url("/static/fonts/BigCaslon.ttf") format("truetype");
