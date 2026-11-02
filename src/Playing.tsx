@@ -1,6 +1,7 @@
 import { MobileGameActions, GameMetrics } from "./GameStatus";
 import { GameHeader, Profile } from "./GameHeader";
 import { Feed } from "./Feed";
+import { PlayerDock } from "./PlayerDock";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { Link } from "react-router-dom";
@@ -135,6 +136,7 @@ export function Playing({ board }: { board: Board })
                     </div>
                 </div>
                 <Feed board={board} />
+                <PlayerDock board={board} />
                 <Modal id="passModal" title="Are you sure you want to pass?">
                     <div className="modal-footer d-flex flex-row">
                         <button type="button" className="btn btn-secondary flex-fill" data-bs-dismiss="modal" disabled={busy}>Cancel</button>

@@ -1,0 +1,360 @@
+{
+  "feed": [
+    {
+      "_creationTime": 1793619632530.0225,
+      "_id": "0000000000000000000000010149feed",
+      "colour": "grey",
+      "gameId": "000000000000000000000010103games",
+      "imageRoot": "/static/imgs/icons/Handshake.svg",
+      "message": "game started",
+      "period": 0,
+      "title": "game started"
+    }
+  ],
+  "game": {
+    "_creationTime": 1793619632524.0127,
+    "_id": "000000000000000000000010103games",
+    "code": "test",
+    "currentPeriod": 0,
+    "currentPlayerId": "0000000000000000000010104players",
+    "currentUserId": "000000000000000000000010000users",
+    "hostId": "000000000000000000000010000users",
+    "npcDifficulty": "medium",
+    "periodCount": 5,
+    "priceHistory": [
+      {
+        "period": 0,
+        "prices": [
+          {
+            "stockKey": 8,
+            "value": 2.5
+          },
+          {
+            "stockKey": 10,
+            "value": 5.5
+          },
+          {
+            "stockKey": 12,
+            "value": 9
+          },
+          {
+            "stockKey": 7,
+            "value": 2
+          },
+          {
+            "stockKey": 11,
+            "value": 7.5
+          },
+          {
+            "stockKey": 9,
+            "value": 4
+          }
+        ]
+      }
+    ],
+    "prices": [
+      {
+        "stockKey": 8,
+        "value": 2.5
+      },
+      {
+        "stockKey": 10,
+        "value": 5.5
+      },
+      {
+        "stockKey": 12,
+        "value": 9
+      },
+      {
+        "stockKey": 7,
+        "value": 2
+      },
+      {
+        "stockKey": 11,
+        "value": 7.5
+      },
+      {
+        "stockKey": 9,
+        "value": 4
+      }
+    ],
+    "spectatorControlled": false,
+    "status": "closed",
+    "suspended": [],
+    "turn": 0,
+    "tvControlled": false
+  },
+  "insights": [
+    {
+      "_creationTime": 1793619632529,
+      "_id": "00000000000000000000000000playerInsights",
+      "catalogCardId": "000000000000000000010028insights",
+      "description": "UB +0.50",
+      "gameId": "000000000000000000000010103games",
+      "period": 0,
+      "playerId": "0000000000000000000010104players",
+      "resolved": false,
+      "stockKey": 8,
+      "value": 0.5
+    },
+    {
+      "_creationTime": 1793619632529,
+      "_id": "00000000000000000000000001playerInsights",
+      "catalogCardId": "000000000000000000010028insights",
+      "description": "Thames +1.00",
+      "gameId": "000000000000000000000010103games",
+      "period": 0,
+      "playerId": "0000000000000000000010104players",
+      "resolved": false,
+      "stockKey": 10,
+      "value": 1
+    },
+    {
+      "_creationTime": 1793619632529,
+      "_id": "00000000000000000000000002playerInsights",
+      "catalogCardId": "000000000000000000010028insights",
+      "description": "Natwest -1.00",
+      "gameId": "000000000000000000000010103games",
+      "period": 0,
+      "playerId": "0000000000000000000010104players",
+      "resolved": false,
+      "stockKey": 12,
+      "value": -1
+    }
+  ],
+  "player": {
+    "_creationTime": 1793619632524.0137,
+    "_id": "0000000000000000000010104players",
+    "active": true,
+    "cash": 60000,
+    "controller": {
+      "kind": "human",
+      "userId": "000000000000000000000010000users"
+    },
+    "gameId": "000000000000000000000010103games",
+    "holdings": [
+      {
+        "quantity": 100000,
+        "stockKey": 8
+      }
+    ],
+    "periodStartRanking": 1,
+    "seatOrder": 0,
+    "userId": "000000000000000000000010000users"
+  },
+  "players": [
+    {
+      "_creationTime": 1793619632524.0137,
+      "_id": "0000000000000000000010104players",
+      "active": true,
+      "cash": 60000,
+      "controller": {
+        "kind": "human",
+        "userId": "000000000000000000000010000users"
+      },
+      "gameId": "000000000000000000000010103games",
+      "holdings": [
+        {
+          "quantity": 100000,
+          "stockKey": 8
+        }
+      ],
+      "kind": "human",
+      "name": "sam",
+      "netWorth": 310000,
+      "profileRoot": "/static/imgs/1profile.png",
+      "ranking": 2,
+      "tagline": "",
+      "userId": "000000000000000000000010000users"
+    },
+    {
+      "_creationTime": 1793619632525,
+      "_id": "0000000000000000000010105players",
+      "active": true,
+      "cash": 60000,
+      "controller": {
+        "kind": "human",
+        "userId": "000000000000000000000010001users"
+      },
+      "gameId": "000000000000000000000010103games",
+      "holdings": [
+        {
+          "quantity": 50000,
+          "stockKey": 8
+        },
+        {
+          "quantity": 50000,
+          "stockKey": 9
+        }
+      ],
+      "kind": "human",
+      "name": "bob",
+      "netWorth": 385000,
+      "profileRoot": "/static/imgs/1profile.png",
+      "ranking": 1,
+      "tagline": "",
+      "userId": "000000000000000000000010001users"
+    },
+    {
+      "_creationTime": 1793619632526,
+      "_id": "0000000000000000000010106players",
+      "active": true,
+      "cash": 60000,
+      "controller": {
+        "kind": "human",
+        "userId": "000000000000000000000010003users"
+      },
+      "gameId": "000000000000000000000010103games",
+      "holdings": [
+        {
+          "quantity": 0,
+          "stockKey": 8
+        },
+        {
+          "quantity": 0,
+          "stockKey": 10
+        },
+        {
+          "quantity": 0,
+          "stockKey": 12
+        },
+        {
+          "quantity": 0,
+          "stockKey": 7
+        },
+        {
+          "quantity": 0,
+          "stockKey": 11
+        },
+        {
+          "quantity": 0,
+          "stockKey": 9
+        }
+      ],
+      "kind": "human",
+      "name": "pat",
+      "netWorth": 60000,
+      "profileRoot": "/static/imgs/1profile.png",
+      "ranking": 3,
+      "tagline": "",
+      "userId": "000000000000000000000010003users"
+    },
+    {
+      "_creationTime": 1793619632526.001,
+      "_id": "0000000000000000000010107players",
+      "active": true,
+      "cash": 60000,
+      "controller": {
+        "kind": "human",
+        "userId": "000000000000000000000010004users"
+      },
+      "gameId": "000000000000000000000010103games",
+      "holdings": [
+        {
+          "quantity": 0,
+          "stockKey": 8
+        },
+        {
+          "quantity": 0,
+          "stockKey": 10
+        },
+        {
+          "quantity": 0,
+          "stockKey": 12
+        },
+        {
+          "quantity": 0,
+          "stockKey": 7
+        },
+        {
+          "quantity": 0,
+          "stockKey": 11
+        },
+        {
+          "quantity": 0,
+          "stockKey": 9
+        }
+      ],
+      "kind": "human",
+      "name": "lee",
+      "netWorth": 60000,
+      "profileRoot": "/static/imgs/1profile.png",
+      "ranking": 4,
+      "tagline": "",
+      "userId": "000000000000000000000010004users"
+    }
+  ],
+  "stocks": [
+    {
+      "_creationTime": 1793619632522.003,
+      "_id": "00000000000000000000010008stocks",
+      "display": true,
+      "imagePath": "/static/imgs/stocks/thf.png",
+      "key": 7,
+      "name": "Trusthouse Forte",
+      "secondaryImagePath": "/static/imgs/stocks/thf.png",
+      "startingValue": 2,
+      "variation": 1
+    },
+    {
+      "_creationTime": 1793619632522,
+      "_id": "00000000000000000000010005stocks",
+      "display": true,
+      "imagePath": "/static/imgs/stocks/ub.png",
+      "key": 8,
+      "name": "UB",
+      "secondaryImagePath": "/static/imgs/stocks/ub.png",
+      "startingValue": 2.5,
+      "variation": 2
+    },
+    {
+      "_creationTime": 1793619632523.001,
+      "_id": "00000000000000000000010010stocks",
+      "display": true,
+      "imagePath": "/static/imgs/stocks/legal_and_general.svg",
+      "key": 9,
+      "name": "Legal & General",
+      "secondaryImagePath": "/static/imgs/stocks/legal_and_general_secondary.png",
+      "startingValue": 4,
+      "variation": 3
+    },
+    {
+      "_creationTime": 1793619632522.001,
+      "_id": "00000000000000000000010006stocks",
+      "display": true,
+      "imagePath": "/static/imgs/stocks/thames.png",
+      "key": 10,
+      "name": "Thames",
+      "secondaryImagePath": "/static/imgs/stocks/thames.png",
+      "startingValue": 5.5,
+      "variation": 4
+    },
+    {
+      "_creationTime": 1793619632523,
+      "_id": "00000000000000000000010009stocks",
+      "display": true,
+      "imagePath": "/static/imgs/stocks/S_and_S.png",
+      "key": 11,
+      "name": "Saatchi & Saatchi",
+      "secondaryImagePath": "/static/imgs/stocks/S_and_S_secondary.png",
+      "startingValue": 7.5,
+      "variation": 5
+    },
+    {
+      "_creationTime": 1793619632522.002,
+      "_id": "00000000000000000000010007stocks",
+      "display": true,
+      "imagePath": "/static/imgs/stocks/natwest.png",
+      "key": 12,
+      "name": "Natwest",
+      "secondaryImagePath": "/static/imgs/stocks/natwest.png",
+      "startingValue": 9,
+      "variation": 6
+    }
+  ],
+  "user": {
+    "_id": "000000000000000000000010000users",
+    "name": "sam",
+    "profileRoot": "/static/imgs/1profile.png"
+  }
+}
