@@ -1,5 +1,7 @@
 export type CompanyRole = "chairman" | "director";
 
+export const companyRoleThresholds = { chairman: 100_000, director: 50_000 } as const;
+
 interface Seat {
     _id: string;
     holdings: { stockKey: number; quantity: number }[];
@@ -10,13 +12,13 @@ export function companyRoles(players: Seat[], stockKey: number)
 {
     const quantity = (player: Seat) => player.holdings.find((holding) => holding.stockKey === stockKey)?.quantity ?? 0;
     // Stored qualification order survives periods. Legacy holdings use stable seat order.
-    const chairman = players.filter((player) => quantity(player) >= 100_000).toSorted((a, b) =>
+    const chairman = players.filter((player) => quantity(player) >= companyRoleThresholds.chairman).toSorted((a, b) =>
         (a.chairmanSince?.find((item) => item.stockKey === stockKey)?.order ?? -1)
         - (b.chairmanSince?.find((item) => item.stockKey === stockKey)?.order ?? -1))[0];
 
     return players.flatMap<{ playerId: string; role: CompanyRole }>((player) => player._id === chairman?._id
         ? [{ playerId: player._id, role: "chairman" as const }]
-        : (quantity(player) >= 50_000 && quantity(player) <= 100_000
+        : (quantity(player) >= companyRoleThresholds.director && quantity(player) <= companyRoleThresholds.chairman
             ? [{ playerId: player._id, role: "director" as const }] : []));
 }
 
