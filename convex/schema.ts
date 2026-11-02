@@ -73,7 +73,8 @@ export default defineSchema({
     gameActions: defineTable({ gameId: v.id("games"), period: v.number(), turn: v.number(),
         actorPlayerId: v.id("players"), action: v.union(actionValidator, v.object({
             kind: v.literal("government-loan"), insightId: v.id("playerInsights"),
-        })),
+        }), v.object({ kind: v.literal("debenture"), insightId: v.id("playerInsights"), stockKey: v.number() })),
+        unitPrice: v.optional(v.number()),
     }).index("by_game_period_turn", ["gameId", "period", "turn"]),
     periodSummaries: defineTable({ gameId: v.id("games"), period: v.number(), opening: pricesValidator, settled: pricesValidator,
     }).index("by_game_period", ["gameId", "period"]),
@@ -93,7 +94,8 @@ export default defineSchema({
     feed: defineTable({
         gameId: v.id("games"), period: v.number(), title: v.string(),
         message: v.string(), imageRoot: v.string(), colour: v.string(),
-        cashBonus: v.optional(v.number()), stockKey: v.optional(v.number()), quantity: v.optional(v.number()),
+        debenturePayout: v.optional(v.number()), cashBonus: v.optional(v.number()),
+        stockKey: v.optional(v.number()), quantity: v.optional(v.number()),
         roleBefore: v.optional(companyRoleValidator), roleAfter: v.optional(companyRoleValidator),
     }).index("by_game", ["gameId"]),
 });

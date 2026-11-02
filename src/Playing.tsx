@@ -12,10 +12,13 @@ import { StockPanel } from "./StockPanel";
 import { StockPreview } from "./StockPreview";
 import { Portfolio } from "./Portfolio";
 import { NpcTurnStatus } from "./npc/NpcTurnStatus";
+import type { DebentureActivation } from "./DebentureModal";
 import type { LoanActivation } from "./GovernmentLoanModal";
 import type { Board } from "./types";
 
-export function Playing({ board, onActivateLoan }: { board: Board; onActivateLoan?: LoanActivation })
+export function Playing({ board, onActivateLoan, onRedeemDebenture }: {
+    board: Board; onActivateLoan?: LoanActivation; onRedeemDebenture?: DebentureActivation;
+})
 {
     const { game, players, insights } = board;
     const stocks = board.stocks.filter((stock) => stock.display);
@@ -139,7 +142,7 @@ export function Playing({ board, onActivateLoan }: { board: Board; onActivateLoa
                     </div>
                 </div>
                 <Feed board={board} />
-                <PlayerDock board={board} onActivateLoan={onActivateLoan} />
+                <PlayerDock board={board} onActivateLoan={onActivateLoan} onRedeemDebenture={onRedeemDebenture} />
                 <Modal id="passModal" title="Are you sure you want to pass?" portal>
                     <div className="modal-footer d-flex flex-row">
                         <button type="button" className="btn btn-secondary flex-fill" data-bs-dismiss="modal" disabled={busy}>Cancel</button>

@@ -48,16 +48,19 @@ describe("board-game special cards", () =>
         for (let period = 0; period < 2; period++)
         {
             const hands = await Promise.all(clients.map(async (client) => await client.query(api.board.get, { code: "test" })));
-            const dealt = hands.flatMap((board) => board.insights);
+            const dealt = hands.flatMap((board) => board.insights.filter((card) => card.period === period));
+            const held = hands.flatMap((board) => board.insights);
 
             expect(dealt).toHaveLength(40);
             expect(new Set(dealt.map((card) => card.catalogCardId)).size).toBe(40);
+            expect(new Set(held.map((card) => card.catalogCardId)).size).toBe(held.length);
 
             for (const board of hands)
             {
-                expect(board.insights).toHaveLength(10);
+                expect(board.insights.filter((card) => card.period === period)).toHaveLength(10);
                 expect(board.insights.every((card) => card.playerId === board.player._id
-                  && card.period === period)).toBe(true);
+                  && (card.period === period || (card.chanceKind === "debenture" && !card.used && card.period < period))))
+                    .toBe(true);
 
                 for (const card of board.insights)
                 {
@@ -78,7 +81,7 @@ describe("board-game special cards", () =>
         const next = await bob.query(api.board.get, { code: "test" });
 
         expect(next.game.currentPeriod).toBe(2);
-        expect(next.insights).toHaveLength(10);
+        expect(next.insights.filter((card) => card.period === next.game.currentPeriod)).toHaveLength(10);
         expect(next.insights.some((card) => first.insights.some((old) => old._id === card._id))).toBe(false);
     });
 

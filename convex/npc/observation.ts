@@ -59,8 +59,8 @@ export async function buildNpcObservation(
             period,
             turn,
             actorPlayerId,
-            // Loan redemption spends a turn but is not a stock signal for NPCs.
-            action: action.kind === "government-loan" ? { kind: "pass" as const } : action,
+            // Chance-card redemptions spend a turn but are not stock-price signals for NPCs.
+            action: action.kind === "government-loan" || action.kind === "debenture" ? { kind: "pass" as const } : action,
         })),
         settledPeriods: settled.map(({ period, opening, settled }) => ({
             period,

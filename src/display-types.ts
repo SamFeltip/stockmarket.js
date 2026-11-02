@@ -15,5 +15,5 @@ export interface Board {
     stocks: Stock[];
     insights: Insight[];
     players: Player[];
-    feed: Pick<PlayerBoard["feed"][number], "_id" | "_creationTime" | "period" | "title" | "message" | "colour" | "imageRoot" | "stockKey" | "quantity" | "cashBonus" | "roleBefore" | "roleAfter">[];
+    feed: Pick<PlayerBoard["feed"][number], "_id" | "_creationTime" | "period" | "title" | "message" | "colour" | "imageRoot" | "stockKey" | "quantity" | "cashBonus" | "debenturePayout" | "roleBefore" | "roleAfter">[];
 }

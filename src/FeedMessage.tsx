@@ -39,7 +39,12 @@ export function FeedMessage({ item, stocks, detailed = false }: {
                 <img src={stock.imagePath} alt="" />
                 {money(quantity)}
             </p>
-            {detailed && <p className="trade-description">{`${quantity > 0 ? "Purchased" : "Sold"} ${money(Math.abs(quantity))} ${stock.name} stocks`}</p>}
+            {detailed && (
+                <p className="trade-description">
+                    {item.debenturePayout === undefined ? `${quantity > 0 ? "Purchased" : "Sold"} ${money(Math.abs(quantity))} ${stock.name} stocks`
+                        : `Debenture sold at £${money(item.debenturePayout)}`}
+                </p>
+            )}
             {detailed && <TradeRoleChange item={item} />}
         </div>
     );

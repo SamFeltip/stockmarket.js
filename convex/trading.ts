@@ -49,3 +49,16 @@ export const activateGovernmentLoan = mutation({
         await enqueueNextNpcIfNeeded(context, game._id);
     },
 });
+
+export const redeemDebenture = mutation({
+    args: { code: v.string(), expectedTurn: v.number(), expectedPeriod: v.number(),
+        insightId: v.id("playerInsights"), stockKey: v.number() },
+    handler: async (context, { code, expectedTurn, expectedPeriod, insightId, stockKey }) =>
+    {
+        const { player, user, game } = await member(context, code);
+
+        await applyTurn(context, { playerId: player._id, expectedPeriod, expectedTurn,
+            action: { kind: "debenture", insightId, stockKey } }, { name: user.name, profileRoot: user.profileRoot });
+        await enqueueNextNpcIfNeeded(context, game._id);
+    },
+});

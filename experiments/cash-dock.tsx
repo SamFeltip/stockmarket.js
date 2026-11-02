@@ -76,6 +76,39 @@ if (roundView)
     board.game.spectatorControlled = true;
 }
 
+board.debentureOffers = [];
+
+if (parameters.get("debenture") === "1")
+{
+    board.debentureOffers = [
+        { stockKey: 8, quantity: 20_000, unitPrice: 2.5, amount: 50_000 },
+        { stockKey: 10, quantity: 2000, unitPrice: 5.5, amount: 11_000 },
+    ].map((offer) => ({ ...offer, claimUntilPeriod: board.game.currentPeriod + 1, unavailableReason: null }));
+
+    for (const offer of board.debentureOffers)
+    {
+        board.game.prices = board.game.prices.map((price) => price.stockKey === offer.stockKey
+            ? { ...price, value: 0 } : price);
+        board.game.priceHistory = board.game.priceHistory?.map((snapshot) => ({ ...snapshot,
+            prices: snapshot.prices.map((price) => price.stockKey === offer.stockKey
+                ? { ...price, value: snapshot.period < board.game.currentPeriod ? offer.unitPrice! : 0 } : price) }));
+        board.player.holdings = board.player.holdings.filter((holding) => holding.stockKey !== offer.stockKey)
+            .concat({ stockKey: offer.stockKey, quantity: offer.quantity });
+    }
+
+    board.players[0].holdings = board.player.holdings;
+    board.players[0].netWorth = board.player.cash;
+    board.insights = board.insights.map((card) => card.chanceKind === "debenture"
+        ? { ...card, period: board.game.currentPeriod - 1 } : card);
+
+    for (const player of board.players)
+    {
+        player.roles = board.stocks.flatMap((stock) => companyRoles(board.players, stock.key)
+            .filter((entry) => entry.playerId === player._id)
+            .map((entry) => ({ stockKey: stock.key, role: entry.role })));
+    }
+}
+
 const client = new ConvexReactClient("https://preview.convex.cloud");
 
 function CashDockDemo()
@@ -114,9 +147,48 @@ function CashDockDemo()
         return Promise.resolve();
     }
 
+    function redeemDebenture(insightId: Board["insights"][number]["_id"], stockKey: number)
+    {
+        const card = demoBoard.insights.find((item) => item._id === insightId);
+        const offer = demoBoard.debentureOffers.find((item) => item.stockKey === stockKey);
+        if (!card || card.used || card.chanceKind !== "debenture" || !offer || offer.unavailableReason
+          || offer.amount === null || demoBoard.game.currentPlayerId !== demoBoard.player._id)
+        {
+            return Promise.reject(new Error("This claim cannot be used"));
+        }
+
+        const amount = offer.amount;
+
+        setDemoBoard((current) =>
+        {
+            const player = { ...current.player, cash: current.player.cash + amount,
+                holdings: current.player.holdings.map((holding) => holding.stockKey === stockKey
+                    ? { ...holding, quantity: 0 } : holding) };
+            const next = current.players[(current.players.findIndex((seat) => seat._id === player._id) + 1)
+              % current.players.length];
+            const turn = current.game.turn + 1;
+
+            return { ...current, player,
+                players: current.players.map((seat) => seat._id === player._id
+                    ? { ...seat, cash: player.cash, holdings: player.holdings,
+                        netWorth: seat.netWorth + amount } : seat),
+                insights: current.insights.map((item) => item._id === insightId ? { ...item, used: true } : item),
+                debentureOffers: current.debentureOffers.filter((item) => item.stockKey !== stockKey),
+                game: { ...current.game, turn, currentPlayerId: next._id, currentUserId: next.userId,
+                    status: turn >= current.players.length * 3 ? "closed" : "playing" },
+                feed: [{ _id: `debenture-${Date.now()}` as Board["feed"][number]["_id"], _creationTime: Date.now(),
+                    gameId: current.game._id, period: current.game.currentPeriod, title: current.user.name,
+                    message: `Debenture sold at £${amount.toLocaleString("en-GB")}`, imageRoot: current.user.profileRoot,
+                    colour: "", quantity: -offer.quantity, stockKey, debenturePayout: amount }, ...current.feed],
+            };
+        });
+
+        return Promise.resolve();
+    }
+
     return (
         <main className="position-relative overflow-x-hidden d-flex flex-column justify-content-center">
-            {demoBoard.game.status === "playing" ? <Playing board={demoBoard} onActivateLoan={activateLoan} />
+            {demoBoard.game.status === "playing" ? <Playing board={demoBoard} onActivateLoan={activateLoan} onRedeemDebenture={redeemDebenture} />
                 : <RoundEnd board={demoBoard} />}
             <PlayAnimation board={demoBoard} />
         </main>

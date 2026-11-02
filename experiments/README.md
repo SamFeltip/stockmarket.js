@@ -26,9 +26,11 @@ shows £10k above its name and can be activated during your turn to receive
 £10,000. Activation consumes that dealt card and one turn, records a public bonus
 event, and triggers the usual action popup with the money SVG. Redemption checks
 membership, card ownership, period, turn, kind, and prior use in one transaction.
-It advances the round normally when used on the last turn. Other chance-card
-effects remain disabled. Cards are newly dealt each round; duplicate physical
-cards can each be redeemed on separate turns. New Share Suspended cards do not
+It advances the round normally when used on the last turn. Debenture is also
+implemented; other chance-card effects remain disabled. Ten fresh cards are
+dealt each round in addition to retained, unused debentures. Retained physical
+cards are excluded from the shuffled deck until used, so they cannot be dealt
+to another player. Duplicate physical cards can be redeemed on separate turns. New Share Suspended cards do not
 invoke the legacy hold mutation or block round settlement.
 
 Rules: EP0297870A1, Schedule of Cards, PDF pages 4–5:
@@ -55,6 +57,30 @@ branch `cash-dock-demo`, never `main`. No Convex deployment is needed.
 
 Dependencies are shared with the original checkout via a local `node_modules`
 symlink. Existing ignored PNG/font assets were copied from that checkout.
+
+## Debenture
+
+Unused debentures remain private in the owner's footer across periods. They can
+be redeemed on the owner's turn for all remaining shares in one currently
+bankrupt company, during the first two trading rounds after bankruptcy. One
+claim consumes one card and one turn. The selection dialog lists all bankrupt
+holdings; expired claims or holdings with unknown purchase cost stay visible
+but disabled. The dialog explains retention and the two-round claim deadline.
+
+Refunds use the actual purchase cost of the shares still held, never the zero
+market price, latest positive quote, or a fabricated starting price. New ordinary
+trades record their unit price. Earlier trade records can use their recorded
+period's price history. For partial sales from mixed-price purchases, the app
+uses oldest purchases first (FIFO); the printed rules do not prescribe a lot
+allocation convention. Imported holdings with insufficient purchase history
+cannot be refunded automatically. Bankrupt companies that recover are excluded;
+a subsequent bankruptcy starts a new two-round window. Claims clear only the
+selected holding and update company roles, action history, public feed and popup.
+
+Open `/?debenture=1` on the demo to try a retained card with two bankrupt
+holdings. Selecting 20,000 UB stocks at £2.50 produces a £50,000 claim. Cancel
+keeps the card and cash; Sell removes the chosen holding, consumes the card,
+adds the payout and advances the turn. Reload to reset the offline demo.
 
 ## Cash reveal preview
 

@@ -1,3 +1,5 @@
+import { DebentureModal } from "./DebentureModal";
+import type { DebentureActivation } from "./DebentureModal";
 import { GovernmentLoanModal } from "./GovernmentLoanModal";
 import type { LoanActivation } from "./GovernmentLoanModal";
 import { Modal, money } from "./shared";
@@ -5,10 +7,12 @@ import { chanceCards, chanceStockKey, privateCashPercent } from "../shared/chanc
 import type { Board } from "./types";
 import "./player-dock.css";
 
-export function PlayerDock({ board, onActivateLoan }: { board: Board; onActivateLoan?: LoanActivation })
+export function PlayerDock({ board, onActivateLoan, onRedeemDebenture }: {
+    board: Board; onActivateLoan?: LoanActivation; onRedeemDebenture?: DebentureActivation;
+})
 {
     const ownCards = board.insights.filter((card) => card.playerId === board.player._id
-      && card.period === board.game.currentPeriod);
+      && (card.period === board.game.currentPeriod || (card.chanceKind === "debenture" && card.period < board.game.currentPeriod)));
     const cards = ownCards.filter((card) => card.stockKey === chanceStockKey && card.chanceKind)
         .flatMap((card) =>
         {
@@ -69,6 +73,14 @@ export function PlayerDock({ board, onActivateLoan }: { board: Board; onActivate
                     used={card.used}
                     onActivate={onActivateLoan}
                 />
+            ) : (card.kind === "debenture" ? (
+                <DebentureModal
+                    key={card.id}
+                    board={board}
+                    insightId={card.id}
+                    used={card.used}
+                    onActivate={onRedeemDebenture}
+                />
             ) : (
                 <Modal key={card.id} id={`chance-card-${card.id}`} title={card.name} mobileDrawer>
                     <div className="modal-body dock-power-detail">
@@ -83,7 +95,7 @@ export function PlayerDock({ board, onActivateLoan }: { board: Board; onActivate
                         <button type="button" className="btn btn-primary" disabled>Activate</button>
                     </div>
                 </Modal>
-            ))}
+            )))}
         </section>
     );
 }

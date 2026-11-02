@@ -95,7 +95,7 @@ describe("Board-game rules", () =>
                 expect(opened.game.priceHistory).toHaveLength(period + 1);
                 expect(opened.game.currentUserId).toBe(seats[period % 4].userId);
                 expect(opened.game.turn).toBe(0);
-                expect(opened.insights).toHaveLength(10);
+                expect(opened.insights.filter((card) => card.period === period)).toHaveLength(10);
 
                 for (let turn = 0; turn < 12; turn++)
                 {

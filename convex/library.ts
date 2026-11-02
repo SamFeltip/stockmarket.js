@@ -91,7 +91,11 @@ export async function roundInsights(context: QueryContext, game: Document_<"game
 export async function deal(context: MutationContext, game: Document_<"games">, players: Document_<"players">[])
 {
     const snapshot = await context.db.query("gameCatalogs").withIndex("by_game", (q) => q.eq("gameId", game._id)).unique();
-    const deck = snapshot ? [...snapshot.cards] : (await context.db.query("insights").collect())
+    const retained = (await context.db.query("playerInsights")
+        .withIndex("by_game_period", (q) => q.eq("gameId", game._id)).collect())
+        .filter((card) => card.chanceKind === "debenture" && !card.used);
+    const heldIds = new Set(retained.map((card) => card.catalogCardId).filter(Boolean));
+    const deck = snapshot ? snapshot.cards.filter((card) => !heldIds.has(card.id)) : (await context.db.query("insights").collect())
         .map((card) => ({ ...card, id: String(card._id) }));
     if (deck.length < players.length * 10)
     {
@@ -120,7 +124,7 @@ export async function deal(context: MutationContext, game: Document_<"games">, p
 }
 
 export async function feedItem(context: MutationContext, game: Document_<"games">, title: string,
-    message: string, imageRoot: string, colour = "", trade: Pick<Partial<Document_<"feed">>, "stockKey" | "quantity" | "cashBonus" | "roleBefore" | "roleAfter"> = {})
+    message: string, imageRoot: string, colour = "", trade: Pick<Partial<Document_<"feed">>, "stockKey" | "quantity" | "cashBonus" | "debenturePayout" | "roleBefore" | "roleAfter"> = {})
 {
     await context.db.insert("feed", { gameId: game._id, period: game.currentPeriod, title, message, imageRoot, colour, ...trade });
 }

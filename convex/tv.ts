@@ -163,6 +163,7 @@ export const board = query({
             feed: feed.map((item) => ({ id: item._id, at: item._creationTime, period: item.period,
                 title: item.title, message: item.message, imageRoot: item.imageRoot, colour: item.colour,
                 stockKey: item.stockKey, quantity: item.quantity, cashBonus: item.cashBonus,
+                debenturePayout: item.debenturePayout,
                 roleBefore: item.roleBefore, roleAfter: item.roleAfter })),
         };
     },

@@ -1,3 +1,4 @@
+import { debentureOffers } from "./game/debenture";
 import { withRoleBonuses, companyRoles } from "../shared/company-roles";
 import { stockCatalog } from "./catalog";
 import { query } from "./_generated/server";
@@ -18,6 +19,12 @@ export const get = query({
                 variation: stockCatalog.find((item) => item.key === stock.key)?.variation ?? stock.variation }))
             .toSorted((a, b) => a.variation - b.variation);
         const allInsights = await roundInsights(context, game);
+        const retained = (await context.db.query("playerInsights")
+            .withIndex("by_player_period", (q) => q.eq("playerId", player._id)).collect())
+            .filter((card) => card.chanceKind === "debenture" && !card.used && card.period < game.currentPeriod);
+        const debentures = allInsights.some((card) => card.playerId === player._id && card.chanceKind === "debenture"
+          && !card.used) || retained.length > 0;
+        const claims = debentures ? await debentureOffers(context, game, player) : [];
         const reveal = game.status === "closed" || game.status === "special_insights" || game.status === "finished";
         const players = await Promise.all(seats.map(async (seat) =>
         {
@@ -43,13 +50,14 @@ export const get = query({
                 tvControlled: Boolean(game.tvTokenHash), spectatorControlled: Boolean(spectatorHost(game, seats)),
                 prices: game.prices, priceHistory: game.priceHistory, status: game.status, turn: game.turn,
                 suspended: game.suspended, npcDifficulty: game.npcDifficulty ?? "medium" },
+            debentureOffers: claims,
             player, user: { _id: user._id, name: user.name, profileRoot: user.profileRoot }, stocks, feed,
             players: players.map((seat) => ({
                 ...seat, ranking: ranking.findIndex((item) => item._id === seat._id) + 1,
             })),
             // Opponents' private insights never cross the wire while trading is open.
             insights: withRoleBonuses(allInsights.filter((insight) => reveal || insight.playerId === player._id),
-                seats, reveal ? stocks : []),
+                seats, reveal ? stocks : []).concat(retained),
         };
     },
 });

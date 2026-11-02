@@ -100,7 +100,10 @@ describe("Complete mixed games", () =>
                     const closed = await sam.query(api.board.get, { code: "test" });
 
                     expect(closed.game.status).toBe("closed");
-                    expect(closed.insights.filter((card) => !card.bonusRole)).toHaveLength((humans + npcs) * 10);
+                    const freshCards = closed.insights.filter((card) => !card.bonusRole
+                      && card.period === closed.game.currentPeriod);
+
+                    expect(freshCards).toHaveLength((humans + npcs) * 10);
                     await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: period });
                     const settled = await sam.query(api.board.get, { code: "test" });
                     for (const price of settled.game.prices)

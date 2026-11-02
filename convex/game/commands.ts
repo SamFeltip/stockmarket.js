@@ -6,6 +6,7 @@ import type { Id } from "../_generated/dataModel";
 import { transition, tradeError } from "../../packages/game-contracts/src";
 import { fail, feedItem, members } from "../library";
 import { isCurrent } from "./seats";
+import { debentureOffers } from "./debenture";
 import { marketFor } from "./legalActions";
 export async function applyTurn(
     context: MutationContext,
@@ -36,6 +37,8 @@ export async function applyTurn(
     let message = "passed their go";
     let roleBefore: CompanyRole | undefined;
     let roleAfter: CompanyRole | undefined;
+    let unitPrice: number | undefined;
+    let debentureSale: { stockKey: number; quantity: number; debenturePayout: number } | undefined;
     if (action.kind === "government-loan")
     {
         const card = await context.db.get(action.insightId);
@@ -49,6 +52,35 @@ export async function applyTurn(
         await context.db.patch(card._id, { used: true });
         await context.db.patch(player._id, { cash: player.cash + governmentLoanAmount });
         message = "received government bonus";
+    }
+    else if (action.kind === "debenture")
+    {
+        const card = await context.db.get(action.insightId);
+        if (!card || card.gameId !== game._id || card.playerId !== player._id || card.period > game.currentPeriod
+          || card.stockKey !== chanceStockKey || card.chanceKind !== "debenture" || card.used)
+        {
+            fail("This Debenture card cannot be used");
+        }
+
+        const offer = (await debentureOffers(context, game, player)).find((item) => item.stockKey === action.stockKey);
+        if (!offer || offer.unavailableReason || offer.amount === null)
+        {
+            fail(offer?.unavailableReason ?? "Choose a bankrupt stock you own");
+        }
+
+        const updated = { ...player, cash: player.cash + offer.amount,
+            holdings: player.holdings.map((holding) => holding.stockKey === action.stockKey
+                ? { ...holding, quantity: 0 } : holding),
+            chairmanSince: (player.chairmanSince ?? []).filter((item) => item.stockKey !== action.stockKey) };
+
+        roleBefore = companyRoles(players, action.stockKey).find((role) => role.playerId === player._id)?.role;
+        roleAfter = companyRoles(players.map((seat) => seat._id === player._id ? updated : seat), action.stockKey)
+            .find((role) => role.playerId === player._id)?.role;
+        await context.db.patch(player._id, { cash: updated.cash, holdings: updated.holdings,
+            chairmanSince: updated.chairmanSince });
+        await context.db.patch(card._id, { used: true });
+        debentureSale = { stockKey: action.stockKey, quantity: -offer.quantity, debenturePayout: offer.amount };
+        message = `Debenture sold at £${offer.amount.toLocaleString("en-GB")}`;
     }
     else if (action.kind !== "pass")
     {
@@ -68,6 +100,7 @@ export async function applyTurn(
         }
 
         roleBefore = companyRoles(players, action.stockKey).find((role) => role.playerId === player._id)?.role;
+        unitPrice = market.prices.find((price) => price.stockKey === action.stockKey)!.value;
         const updated = transition(market, action).players.find((seat) => seat.id === player._id)!;
 
         const chairmanSince = (player.chairmanSince ?? []).filter((item) =>
@@ -92,16 +125,22 @@ export async function applyTurn(
         period: game.currentPeriod,
         turn: game.turn,
         actorPlayerId: player._id,
-        action,
+        action, unitPrice,
     });
-    const trade
-        = action.kind === "government-loan"
-            ? { cashBonus: governmentLoanAmount }
-            : (action.kind === "pass" ? {} : {
-                stockKey: action.stockKey,
-                quantity: action.quantity * (action.kind === "buy" ? 1 : -1),
-                roleBefore, roleAfter,
-            });
+    const trade: Partial<Document_<"feed">> = {};
+    if (action.kind === "government-loan")
+    {
+        trade.cashBonus = governmentLoanAmount;
+    }
+    else if (action.kind === "debenture")
+    {
+        Object.assign(trade, debentureSale, { roleBefore, roleAfter });
+    }
+    else if (action.kind !== "pass")
+    {
+        Object.assign(trade, { stockKey: action.stockKey,
+            quantity: action.quantity * (action.kind === "buy" ? 1 : -1), roleBefore, roleAfter });
+    }
 
     await feedItem(context, game, display.name, message, display.profileRoot, "", trade);
     const next
