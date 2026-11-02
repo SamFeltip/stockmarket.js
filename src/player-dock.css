@@ -66,7 +66,7 @@
     #player-dock .dock-empty-cards p { font-size: 0.75rem; line-height: 1.3; }
     #player-dock .dock-empty-cards p:first-child { font-size: 0.9rem; }
     .dock-power-cards { gap: 0.5rem; padding-block: 0.2rem; }
-    .dock-power-card { flex-basis: auto; flex-direction: row; justify-content: flex-start; gap: 0.5rem; padding: 0.5rem 0.75rem; min-height: 2.75rem; text-align: left; white-space: nowrap; }
+    .dock-power-card { flex-basis: auto; flex-direction: column; justify-content: center; gap: 0.3rem; padding: 0.5rem 0.75rem; min-height: 2.75rem; text-align: center; white-space: nowrap; }
     #player-dock .dock-power-icon { font-size: 1.3rem; }
     .dock-power-copy strong { font-size: 0.85rem; }
     #player-dock .dock-power-copy > span { display: none; }
