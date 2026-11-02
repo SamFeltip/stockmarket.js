@@ -18,6 +18,7 @@ export function PlayerDock({ board }: { board: Board })
                     £
                     {money(board.player.cash)}
                 </strong>
+                <span className="dock-cash-label">cash</span>
                 <div className="dock-cash-insight card bg-white text-black text-center">
                     <div className="total-insight text-success d-flex justify-content-center align-items-center">
                         <img className="pe-2" height={16} src="/static/imgs/icons/stock_up.svg" alt="Cash rising" />

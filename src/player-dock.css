@@ -12,8 +12,10 @@
     color: white;
 }
 #player-dock > * { min-width: 0; }
-#player-dock .dock-balance { display: block; margin-bottom: 0.5rem; font-size: 1.5rem; font-weight: 500; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.dock-cash-insight { padding: 0.5rem; gap: 0.25rem; max-width: 9rem; }
+.dock-cash { display: flex; flex-direction: column; align-items: center; }
+#player-dock .dock-cash-label { font-size: 0.7rem; line-height: 1; margin: 0.2rem 0 0.5rem; }
+#player-dock .dock-balance { display: block; color: #fff284; text-align: center; margin-bottom: 0; font-size: 1.5rem; font-weight: 500; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.dock-cash-insight { width: 100%; padding: 0.5rem; gap: 0.25rem; max-width: 9rem; }
 #player-dock .dock-cash-insight .total-insight { font-size: 1.2rem; line-height: 1.2; }
 #player-dock .dock-cash-insight .total-insight span { font-size: inherit; }
 #player-dock .dock-cash-insight p { font-size: 1rem; margin: 0; }
@@ -39,7 +41,7 @@
     .dock-power-cards { gap: 0.5rem; }
     .dock-power-card { flex-direction: column; justify-content: center; gap: 0.4rem; padding: 0.5rem 0.35rem; min-height: 5rem; text-align: center; }
     #player-dock .dock-power-icon { font-size: 1.5rem; }
-    .dock-power-copy strong { font-size: 1rem; }
+    .dock-power-copy strong { font-size: 0.85rem; }
     #player-dock .dock-power-copy > span { display: none; }
 }
 @media (max-height: 500px) {
