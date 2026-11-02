@@ -8,7 +8,7 @@ horizontally. Cash now appears in the footer; the desktop header shows net worth
 
 ## Real game behavior
 
-New games pin a complete deck at launch: the recovered 92 share-price cards,
+New games pin a patent-based deck at launch: the recovered 92 share-price cards,
 eight cash cards (four +10%, four −10%), and ten chance cards (two of each type).
 Ten cards are dealt per player, without replacement, from a fresh shuffle of that
 same pinned deck each round. Cash/chance cards occupy hand slots rather than
@@ -33,10 +33,29 @@ cards are excluded from the shuffled deck until used, so they cannot be dealt
 to another player. Duplicate physical cards can be redeemed on separate turns. New Share Suspended cards do not
 invoke the legacy hold mutation or block round settlement.
 
-Rules: EP0297870A1, Schedule of Cards, PDF pages 4–5:
+Implementation source: EP0297870A1, Schedule of Cards, PDF pages 4–5:
 https://patents.google.com/patent/EP0297870A1/en#description
 The text extraction of PDF page 4 explicitly lists eight gold cards, four of each
 ±10%. Its five chance-card entries specify two copies each.
+
+## Retail-rule correction (2 November 2026)
+
+The [BGG review](https://boardgamegeek.com/thread/106869/review-of-stockmarket)
+describes different retail rules: 108 cards, with two of each of four chance-card
+types and no Option. Government Loan, Rights Issue and Debenture each consume a
+bargain; Share Suspended is played at period end before price changes. Rights
+Issue lets all holders buy one extra share per two held for £1 per extra share.
+Debenture sells bankrupt-company shares at the company’s opening price. All
+cards return to the deck each period, including unused chance cards; none carry
+over. Currency rounding is to £500.
+
+The implementation described above and below still follows the patent variant.
+Its Option cards, free-share Rights Issue description, retained purchase-cost
+Debentures and £1,000 rounding differ from that retail account. In particular,
+the purchase-cost/FIFO ledger and two-round claim window below describe existing
+software, not the review’s Debenture rule. See the [rules comparison](../BOARD_GAME_DIFFERENCES_CURRENT.md#retail-rules-described-in-the-bgg-review-2-november-2026)
+for source distinctions and unresolved details. No code was changed for this
+rules-documentation correction.
 
 ## Standalone visual preview
 

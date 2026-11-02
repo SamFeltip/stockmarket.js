@@ -1,12 +1,12 @@
 # Current stockmarket-convex versus the 1987 Stockmarket board game
 
-Researched and compared on 16 October 2026. Updated during implementation on the same date.
+Researched and compared on 16 October 2026. Retail-rule corrections from the BGG review added on 2 November 2026; this documentation update does not change code.
 
 This tracked copy records current behavior. The local-only `local-notes/BOARD_GAME_DIFFERENCES.md` remains the original research snapshot. Rows marked **Aligned** are completed changes, rather than remaining differences.
 
 ## Card-dealing implementation on `poc/player-cash-dock` (2 November 2026)
 
-This branch now deals the complete 110-card deck for newly launched games: the
+This branch currently deals the patent-based 110-card deck for newly launched games: the
 92 recovered share-price cards, four +10% and four −10% cash/gold cards, and two
 of each of the five chance cards. The cash counts are explicit in the original
 patent PDF's Schedule of Cards (page 4); the chance counts are on page 5.
@@ -16,11 +16,14 @@ deck. Existing running games keep their original pinned catalogs.
 Cash is shown as a private aggregate in the footer, including grey +0%. At period
 end, the sum of everyone's dealt cash cards affects all remaining balances; the
 adjustment is rounded to £1,000. Legacy imported `currency` cards keep their
-previous per-player treatment. Chance cards are dealt and displayed, but Activate
-is disabled pending implementation of their effects and retained-card lifecycle.
+previous per-player treatment. Government Loan and Debenture are implemented;
+Rights Issue, Share Suspended and Option activation remain disabled. Debentures
+are retained and refund purchase cost within two periods. These are patent-based
+behaviors: the retail review instead describes a 108-card deck, £500 cash rounding,
+opening-price Debenture sales and no retained cards. No code is changed here.
 See `shared/chance-cards.ts`, `shared/settlement.ts`, `convex/launch.ts`, and
-`tests/chance-cards.test.tsx`. The original comparison below records the baseline
-before this branch's changes; its missing-card rows are superseded by this section.
+`tests/chance-cards.test.tsx`. The card rows below distinguish this branch from the earlier baseline;
+other implementation notes retain their original research scope.
 
 ## Scope and sources
 
@@ -30,9 +33,28 @@ The main rules source is the **“Description” section of [EP0297870A1, Board 
 
 The application side below comes from the local **stockmarket-convex** source, including its shipped catalog. It is not an audit of the currently deployed database. Links to application files are relative to this document.
 
+## Retail rules described in the BGG review (2 November 2026)
+
+[Neil Palfreyman’s review of Stockmarket! (13 April 2006)](https://boardgamegeek.com/thread/106869/review-of-stockmarket) describes the retail game differently from the patent. Use these reviewed retail rules for the card comparisons below; retain the patent as a separate rules variant, not proof that the retail cards work the same way. The physical rules leaflet has still not been inspected.
+
+| Area | Retail rules in the review | Earlier patent-based documentation |
+| --- | --- | --- |
+| Deck | 108 cards: 92 share movements, eight currency cards (four each ±10%), eight chance cards (two each of four types). | 110 cards, including two Options. |
+| Government Loan Stock | One bargain to collect £10,000. | Same payout and turn cost. |
+| Rights Issue | One bargain selects a company; every holder may immediately buy one extra share per two held, at £1 per extra share. | Grants 50% extra shares without a purchase payment. |
+| Debenture | One bargain sells shares in a bankrupt company at that company’s opening price. | Retained insurance refunding purchase cost within two periods. |
+| Share Suspended | Choose a company at period end, just before price adjustment; keep its previous price. | Same price-freezing effect. |
+| Option | Absent from the four retail chance-card types. | Reserves a trade price for up to three periods. |
+| Card lifecycle | Return all cards, including unused chance cards; reshuffle and deal ten each period. Nothing carries over. | Allows retained Debentures and Options. |
+| Currency rounding | Apply the shared currency percentage to spare cash, rounding to £500. | Round adjustments to £1,000. |
+
+The review does not specify Rights Issue rounding, insufficient-cash handling or supply limits, nor a Debenture claim deadline beyond the card’s current-period lifetime. Do not import the patent’s details into those gaps. Its later replies include a separate digital adaptation with house rules; those are not retail rules.
+
+Other evidence: the review confirms the six company names and gives Legal & General’s opening price as £4 and NatWest’s as £8 (the app starts NatWest at £9). It describes an agreed game length; the reviewer recommends at least four periods, rather than establishing the patent’s 6–10 as a retail requirement. The full retail starting-price chart and card frequencies remain unverified.
+
 ## Differences in ordinary games
 
-Board-game entries below refer to the corresponding named sections in the [primary rules source](https://patents.google.com/patent/EP0297870A1/en#description).
+Card, currency and lifecycle entries below use the retail review above. Other entries retain the earlier [patent rules comparison](https://patents.google.com/patent/EP0297870A1/en#description); **Aligned** labels on those entries refer to the patent, not independent verification of the retail leaflet.
 
 | Area                  | Board-game rule                                                                                                | stockmarket-convex behavior and consequence                                                                                                                                                                                                                                                                          | Application evidence                                                                                                                        |
 | --------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -43,17 +65,17 @@ Board-game entries below refer to the corresponding named sections in the [prima
 | Last-trader advantage | Last trader rotates clockwise between periods.                                                                 | **Aligned:** the opening seat advances by one each period, rotating the final-trader advantage too. The seat order within each period stays fixed. | [library.ts](convex/library.ts), `members`; [trading.ts](convex/trading.ts); [rounds.ts](convex/rounds.ts), `next`                          |
 | Chairman              | At ≥100,000 shares, discard one revealed company card; earliest qualifier wins ties.                           | **Aligned (automatic):** qualification order is retained across periods and reset when holdings fall below 100,000. The chairman automatically cancels the worst revealed negative company card. In legacy games without qualification records, tied existing holdings use seat order.                                                                                                                                                                           | [schema.ts](convex/schema.ts), [trading.ts](convex/trading.ts), [rounds.ts](convex/rounds.ts)                                               |
 | Director              | At 50,000–100,000 shares, discard one own company card; chairman takes precedence. One discard/company/period. | **Aligned (automatic):** directors automatically cancel the worst negative card from their own hands, with chairman precedence and a single cancellation per company per period. Multiple directors compete for the one cancellation using the worst eligible card. Both roles have investor badges; round reveals and the final overview show the cancelled value as a role bonus.                                                                                                                                                                                  | [StockPanel.tsx](src/StockPanel.tsx), [rounds.ts](convex/rounds.ts)                                                                         |
-| Deck                  | 110 cards, including gold and chance cards.                                                                    | The shipped catalog contains **92 ordinary share-price insights** and no special-card records. Ten insights are dealt per player, without replacement within that period, from a newly shuffled catalog each period. The missing card categories change both the available actions and the information distribution. | [catalog.ts](convex/catalog.ts), [library.ts](convex/library.ts), `deal`; [README.md](README.md), “Original assets and missing source data” |
-| Gold movements        | Aggregate gold cards affect everyone; round adjustments to £1,000.                                             | With the shipped deck, unspent cash has no end-of-period percentage adjustment. Dormant `currency` handling differs too; see below.                                                                                                                                                                                  | [catalog.ts](convex/catalog.ts), [rounds.ts](convex/rounds.ts)                                                                              |
-| Share Suspended       | Freeze one company's price at period end.                                                                      | A corresponding **Hold Stock Price** operation exists, but no such card is shipped, so players cannot receive it in a default game.                                                                                                                                                                                  | [rounds.ts](convex/rounds.ts), `hold`; [catalog.ts](convex/catalog.ts)                                                                      |
-| Government Loan Stock | Spend a turn to collect £10,000.                                                                               | No corresponding card, payout action or turn-consuming special-card action exists.                                                                                                                                                                                                                                   | [trading.ts](convex/trading.ts), [catalog.ts](convex/catalog.ts)                                                                            |
-| Debenture | Retain bankruptcy insurance; claim purchase cost within two periods. | Implemented: retain unused physical cards across deals; refund the purchase cost of one bankrupt holding on your turn within the two-round window. Partial ordinary sales consume the oldest purchase lots first. | [debenture.ts](convex/game/debenture.ts), [commands.ts](convex/game/commands.ts), [DebentureModal.tsx](src/DebentureModal.tsx) |
-| Rights Issue          | Chosen company grants 50% extra shares to all holders, rounded down.                                           | No rights-issue card or operation exists. Holdings change through ordinary purchases and sales only.                                                                                                                                                                                                                 | [trading.ts](convex/trading.ts), [rounds.ts](convex/rounds.ts)                                                                              |
-| Option                | Reserve today's buy/sell price; exercise within three periods; both consume turns.                             | No saved strike price, expiry tracking or exercise action exists. Every ordinary trade uses the current period's price.                                                                                                                                                                                              | [schema.ts](convex/schema.ts), [trading.ts](convex/trading.ts)                                                                              |
+| Deck                  | Retail review: 108 cards (92 share, eight currency, eight chance); no Options.                                                                    | Current branch: 110 cards (92 share, eight cash, ten chance), including two Options. Ten cards are dealt per player. **Differs from the retail deck by two Option cards.** | [catalog.ts](convex/catalog.ts), [library.ts](convex/library.ts), `deal`; [README.md](README.md), “Original assets and missing source data” |
+| Gold movements        | Aggregate currency cards affect everyone; retail review rounds to £500 (patent: £1,000).                                             | Current branch: all dealt cash cards jointly affect remaining balances, with the adjustment rounded to £1,000. **Differs from the review’s £500 rounding.** Imported legacy currency cards retain per-player handling. | [catalog.ts](convex/catalog.ts), [rounds.ts](convex/rounds.ts)                                                                              |
+| Share Suspended       | Freeze one company's price at period end.                                                                      | Current branch: two cards are dealt and displayed, but activation remains disabled. The legacy Hold Stock Price mutation is separate and is not invoked by these cards. | [rounds.ts](convex/rounds.ts), `hold`; [catalog.ts](convex/catalog.ts)                                                                      |
+| Government Loan Stock | Spend a turn to collect £10,000.                                                                               | Implemented on this branch: consumes one card and one turn to pay £10,000.                                                                                                                                                                                                                                   | [trading.ts](convex/trading.ts), [catalog.ts](convex/catalog.ts)                                                                            |
+| Debenture | Retail review: spend a bargain to sell bankrupt-company shares at the company’s opening price; no retention. | Implemented patent variant: retain unused physical cards across deals; refund purchase cost within two rounds, using FIFO after partial sales. **Differs from retail:** payout basis, claim window and retention; requires a future code change. | [debenture.ts](convex/game/debenture.ts), [commands.ts](convex/game/commands.ts), [DebentureModal.tsx](src/DebentureModal.tsx) |
+| Rights Issue          | Spend a bargain; all holders may buy one extra share per two held in the chosen company at £1 per extra share.                                           | Current branch: two cards are dealt, but activation is disabled. Their existing description promises free extra shares; the retail review requires a £1 payment per extra share. A future code change is needed. | [trading.ts](convex/trading.ts), [rounds.ts](convex/rounds.ts)                                                                              |
+| Option                | Absent from the retail review; the three-period Option belongs to the patent variant.                             | Current branch: two cards are dealt and displayed but activation is disabled. Their presence is itself a difference from the retail review. | [schema.ts](convex/schema.ts), [trading.ts](convex/trading.ts)                                                                              |
 
-## Special mechanics present in code but absent from the shipped deck
+## Legacy imported-card mechanics
 
-These distinctions matter if additional catalog records are imported. They are **not active default-game features**.
+The following notes describe the earlier catalog’s legacy `currency` and hold-stock paths. The branch’s new cash/chance cards are described above; these legacy paths do not establish their behavior.
 
 ### Currency settlement differs even if cards are restored
 
@@ -63,7 +85,7 @@ These distinctions matter if additional catalog records are imported. They are *
 new cash = max(0, truncate(old cash × (1 + own currency-card sum)))
 ```
 
-Consequently, importing gold/currency cards alone would not implement the shared gold adjustment described in the comparison table. For example, if Alice alone held a +10% currency insight and Alice and Bob each had £65,000 left, the current code would give Alice £71,500 and leave Bob at £65,000. It also truncates to whole pounds rather than rounding an adjustment to £1,000. See [rounds.ts](convex/rounds.ts), `next`.
+Consequently, importing gold/currency cards alone would not implement the shared gold adjustment described in the comparison table. For example, if Alice alone held a +10% currency insight and Alice and Bob each had £65,000 left, the current code would give Alice £71,500 and leave Bob at £65,000. It also truncates to whole pounds rather than using the retail review’s £500 rounding (or the patent’s £1,000 adjustment rounding). See [rounds.ts](convex/rounds.ts), `next`.
 
 ### Hold-stock support needs catalog data
 
@@ -81,9 +103,9 @@ Stock details now show investor faces with share counts and missing-photo fallba
 
 ## Limits of this comparison
 
-- The shipped companies are Trusthouse Forte, UB, Legal & General, Thames, Saatchi & Saatchi and Natwest, with starting prices £2, £2.50, £4, £5.50, £7.50 and £9 respectively. The available rules text does not establish the retail edition's full company list, starting-price chart or exact share-card frequencies. **Their historical accuracy remains unverified.** See [catalog.ts](convex/catalog.ts).
-- Full-deck reshuffling between application periods is explicit in `deal`. The source does not sufficiently specify retail discard/reshuffle procedure to call that a confirmed difference.
-- All six easy items are now aligned: starting cash, share supply, game length, minimum players, period turn rotation and trade-size restrictions. Special-card mechanics and catalog records have not been changed.
+- The shipped companies are Trusthouse Forte, UB, Legal & General, Thames, Saatchi & Saatchi and Natwest, with starting prices £2, £2.50, £4, £5.50, £7.50 and £9 respectively. The review confirms those company identities but gives NatWest’s opening price as £8, so the app’s £9 differs. The full retail starting-price chart and exact share-card frequencies remain unverified. See [catalog.ts](convex/catalog.ts).
+- The retail review explicitly requires all cards to be returned and reshuffled each period. Retaining a chance card would conflict with that account.
+- The original implementation aligned six simpler items with the patent: starting cash, share supply, game length, minimum players, period turn rotation and trade sizes. The later card changes are described above; the retail-rule corrections in this update change documentation only.
 - Validation: `npm run check` passes: lint, all 27 tests, TypeScript, production build and 27 asset references.
 - Browser layout checks: sample game data at desktop, phone and short landscape dimensions, including 320 × 568; investor photos load, selected-stock history changes correctly, and the page has no horizontal overflow.
 - Evidence: `tests/board-rules.test.ts` covers starting funds, shared supply, player minimum, length validation, permitted purchases/sales, rejected transactions and full six/ten-period games with rotating seats. `tests/errors.test.ts` checks cash entry and quantity-button boundaries.
