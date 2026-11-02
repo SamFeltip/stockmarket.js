@@ -551,7 +551,7 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 .cash-reveal { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: stretch; gap: 2rem; }
 .cash-reveal-total { background: #3c5f2f; display: flex; align-items: center; justify-content: space-around; gap: 1rem; padding: 2rem; }
 .cash-reveal-identity { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
-.cash-reveal-identity img { width: clamp(5rem, 12vw, 10rem); filter: brightness(0) invert(1); }
+.cash-reveal-identity img { width: clamp(5rem, 12vw, 10rem); }
 .cash-reveal-total p, .cash-reveal-total h1, .cash-reveal-total h2 { margin: 0; }
 .cash-reveal-total h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
 .cash-reveal-delta { font-size: 1.1rem; font-weight: 600; }

@@ -24,7 +24,7 @@ export function CashReveal({ insights, index }: { insights: Insight[]; index: nu
                 </div>
             </div>
             <div key={active?._id ?? "complete"} className={`${active ? "game-insight-card " : ""}cash-reveal-card rounded bg-white text-black`}>
-                <img src={cashStock.imagePath} alt="" />
+                <img src="/static/imgs/icons/cash-outline.svg" alt="" />
                 <div className={`cash-reveal-percent text-${tone(active?.value ?? sum)}`}>
                     <svg width="32" height="24" viewBox="0 0 24 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d={(active?.value ?? sum) < 0 ? "M2 3l7 7 4-4 9 9M15 15h7V8" : ((active?.value ?? sum) > 0 ? "M2 15l7-7 4 4 9-9M15 3h7v7" : "M2 9h20m-6-6 6 6-6 6")} />
