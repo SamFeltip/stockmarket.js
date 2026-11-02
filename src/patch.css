@@ -540,3 +540,11 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 }
 
 .round-overview { overflow-y: auto; }
+
+/* iOS Safari already leaves space above its floating bottom toolbar. Avoid
+   adding a second outer gutter below the game dock. */
+@supports (-webkit-touch-callout: none) {
+    @media (max-width: 991.98px) {
+        #game-grid:has(> #player-dock) { padding-bottom: 0 !important; }
+    }
+}
