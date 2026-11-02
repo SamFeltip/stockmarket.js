@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { BrowserRouter } from "react-router-dom";
+import { companyRoles } from "../shared/company-roles";
 import { specialDeck, cashStock } from "../shared/chance-cards";
 import { Playing } from "../src/Playing";
 import raw from "./cash-dock-board.json";
@@ -19,6 +20,13 @@ for (const [index, player] of board.players.entries())
 {
     player.name = ["Sam", "Bob", "Pat", "Lee"][index];
     player.profileRoot = `/static/imgs/${index + 1}profile.png`;
+}
+
+for (const player of board.players)
+{
+    player.roles = board.stocks.flatMap((stock) => companyRoles(board.players, stock.key)
+        .filter((entry) => entry.playerId === player._id)
+        .map((entry) => ({ stockKey: stock.key, role: entry.role })));
 }
 
 board.user.name = "Sam";
