@@ -44,6 +44,14 @@
 .dock-power-detail h3 { color: inherit; margin: 0; }
 .dock-power-detail .dock-preview, .dock-power-detail .dock-caption { font-size: 1rem; }
 @media (max-width: 991.98px) {
+    #game-grid:has(> #player-dock) > :is(#profile, #now-playing, header) {
+        border-top-left-radius: 0.375rem !important;
+        border-top-right-radius: 0.375rem !important;
+    }
+    #player-dock {
+        border-bottom-left-radius: 0.375rem !important;
+        border-bottom-right-radius: 0.375rem !important;
+    }
     #game-grid:has(> #player-dock) { padding-block: 1rem !important; grid-template-areas: "profile now-playing" "content content" "dock dock"; }
     #player-dock { grid-template-columns: 6.25rem minmax(0, 1fr); gap: 0.5rem; padding: 0.35rem 0.5rem max(0.35rem, env(safe-area-inset-bottom)) !important; }
     #player-dock .dock-balance { font-size: 1.15rem; }
