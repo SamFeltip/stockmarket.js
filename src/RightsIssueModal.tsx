@@ -43,6 +43,8 @@ export function RightsIssueModal({ board, insightId, used, onActivate }: {
                         <StockChoice
                             key={stock.key}
                             stock={stock}
+                            quantity={board.player.holdings.find((holding) =>
+                                holding.stockKey === stock.key)?.quantity ?? 0}
                             name={`${id}-company`}
                             selected={selected === stock.key}
                             disabled={busy}
