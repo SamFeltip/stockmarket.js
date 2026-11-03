@@ -50,8 +50,10 @@ cards return to the deck each period, including unused chance cards; none carry
 over. Currency rounding is to £500.
 
 The implementation described above and below still follows the patent variant.
-Its Option cards, free-share Rights Issue description, retained purchase-cost
-Debentures and £1,000 rounding differ from that retail account. In particular,
+Its Option cards, retained purchase-cost Debentures and £1,000 rounding differ
+from that retail account. Rights Issue and Share Suspended content now reflects
+the retail rules; their effects remain disabled. Option content explicitly says
+it is absent from the retail board game, though its cards remain in the deck. In particular,
 the purchase-cost/FIFO ledger and two-round claim window below describe existing
 software, not the review’s Debenture rule. See the [rules comparison](../BOARD_GAME_DIFFERENCES_CURRENT.md#retail-rules-described-in-the-bgg-review-2-november-2026)
 for source distinctions and unresolved details. No code was changed for this

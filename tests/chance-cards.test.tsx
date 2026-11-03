@@ -125,8 +125,23 @@ describe("board-game special cards", () =>
 
         expect(waiting).toContain("Wait for your turn to activate.");
         expect(waiting).toContain("disabled=\"\">Activate");
-        expect(renderDock({ ...own, insights: own.insights.map((card) => ({ ...card, chanceKind: "rights" })) }))
-            .toContain("disabled=\"\">Activate");
+        const rights = renderDock({ ...own, insights: own.insights.map((card) => ({ ...card, chanceKind: "rights" })) });
+
+        expect(rights).toContain("disabled=\"\">Activate");
+        expect(rights).toContain("Buy extra shares at £1 each");
+        expect(rights).toContain("Every holder may immediately buy one extra share for every two they own, at £1 per extra share.");
+        expect(rights).toContain("Uses one turn.");
+        expect(rights).not.toContain("50% extra shares");
+        const suspended = renderDock({ ...own, insights: own.insights.map((card) => ({ ...card, chanceKind: "hold" })) });
+
+        expect(suspended).toContain("Play at period end, before prices change.");
+        expect(suspended).toContain("disabled=\"\">Activate");
+        const option = renderDock({ ...own, insights: own.insights.map((card) => ({ ...card, chanceKind: "option" })) });
+
+        expect(option).toContain("Option cards are not part of the retail board-game rules.");
+        expect(option).not.toContain("Reserve a buy or sell price");
+        expect(option).not.toContain("Activation is coming soon.");
+        expect(option).toContain("disabled=\"\">Activate");
         await sam.mutation(api.trading.activateGovernmentLoan, { code: "test", expectedTurn: own.game.turn,
             expectedPeriod: own.game.currentPeriod, insightId: own.insights[0]._id });
         const redeemed = renderDock(await sam.query(api.board.get, { code: "test" }));

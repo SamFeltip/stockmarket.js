@@ -162,11 +162,11 @@ button.nav-link { cursor: pointer; }
     .trade-dialog .modal-footer { --drawer-footer-padding: 0.5rem; padding-block: 0.5rem; gap: 0.25rem; }
     .trade-dialog .trade-feedback { font-size: 0.8rem; }
 }
-@media (max-width: 991.98px) and (display-mode: standalone) {
-    .trade-dialog .modal-footer {
+@media (max-width: 991.98px) {
+    .mobile-standalone .trade-dialog .modal-footer {
         padding-bottom: calc(var(--drawer-footer-padding, 1rem) + env(safe-area-inset-bottom, 0px) + 0.25rem);
     }
-    #game-grid > .offcanvas-lg {
+    .mobile-standalone #game-grid > .offcanvas-lg {
         padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px) + 0.25rem) !important;
     }
 }

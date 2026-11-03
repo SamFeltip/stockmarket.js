@@ -88,7 +88,7 @@ export function PlayerDock({ board, onActivateLoan, onRedeemDebenture }: {
                         <h3>{card.effect}</h3>
                         <p>{card.description}</p>
                         <p className="dock-caption">{card.timing}</p>
-                        <p className="dock-caption">Activation is coming soon.</p>
+                        {card.kind !== "option" && <p className="dock-caption">Activation is coming soon.</p>}
                     </div>
                     <div className="modal-footer trade-footer">
                         <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>

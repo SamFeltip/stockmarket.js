@@ -27,7 +27,7 @@ it("retains unused debentures privately across deals and removes their physical 
     const html = renderToStaticMarkup(<ConvexProvider client={client}><PlayerDock board={board} /></ConvexProvider>);
 
     expect(html).toContain(`data-bs-target="#chance-card-${insightId}"`);
-    expect(html).toContain("Choose one bankrupt company and sell all your stocks in it.");
+    expect(html).toContain("Choose one bankrupt company and sell all your stocks at the opening price");
     expect(html).toContain("Single use. Stays in your hand for 2 trading periods.");
     expect(html).toContain("20,000 stocks");
     expect(html).toContain("£2.50 each");
