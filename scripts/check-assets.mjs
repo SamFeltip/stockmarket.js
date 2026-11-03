@@ -26,7 +26,9 @@ for (let avatar = 1; avatar <= 5; avatar++)
     references.add(`/static/imgs/${avatar}profile.png`);
 }
 
-const missing = [...references].filter((path) => !existsSync(`public${path}`));
+references.add("/static/fonts/BigCaslon.ttf");
+
+const missing = [...references].filter((path) => !existsSync(`public${path}`) || !existsSync(`dist${path}`));
 if (missing.length > 0)
 {
     throw new Error(`Missing assets: ${missing.join(", ")}`);

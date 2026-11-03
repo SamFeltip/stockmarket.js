@@ -87,6 +87,8 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                             cash={board.player.cash + (mode === "buy" ? -1 : 1) * previewQuantity * price}
                             holding={projectedHolding}
                             buying={mode === "buy"}
+                            assignedRoles={board.players.flatMap((player) => player.roles
+                                .filter((role) => role.stockKey === stock.key).map((role) => role.role))}
                         />
                     </TradeInputs>
                 </form>

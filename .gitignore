@@ -6,7 +6,6 @@ dist/
 *.png
 reference/stockmarket-schema-2026-10-16.sql
 public/static/fonts/BigCaslon.ttf
-package-lock.json
 
 # Local drafts and planning notes
 /local-notes/
@@ -21,4 +20,11 @@ package-lock.json
 # Keep worktree-local Vite caches out of Git.
 /.vite/
 
+
+# Production images and the bundled title font must survive a fresh checkout.
+!public/static/imgs/*.png
+!public/static/imgs/stocks/*.png
+!public/static/fonts/BigCaslon.ttf
+
+# Ignore obsolete local preview output from earlier checkouts.
 /dist-demo/

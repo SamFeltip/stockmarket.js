@@ -41,8 +41,8 @@ describe("company roles", () =>
             card("d", "a", 4), card("special", "a", -0.5, 13)];
         const directors = withRoleBonuses(cards, [seat("a", 50_000), seat("b", 50_000)], stocks);
 
-        expect(directors.slice(cards.length)).toEqual([expect.objectContaining({ playerId: "b",
-            value: 1.5, bonusRole: "director", removedInsightId: "b" })]);
+        expect(directors.slice(cards.length)).toEqual([expect.objectContaining({ playerId: "a",
+            value: 1, bonusRole: "director", removedInsightId: "a" })]);
         const chairman = withRoleBonuses(cards, [seat("a", 100_000), seat("b", 50_000)], stocks);
 
         expect(chairman.slice(cards.length)).toEqual([expect.objectContaining({ playerId: "a",

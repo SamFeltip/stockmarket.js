@@ -1,3 +1,4 @@
+import "./round-desktop.css";
 import { pendingSuspensions } from "../shared/suspensions";
 import { ShareSuspended } from "./ShareSuspended";
 import { cashStockKey } from "../shared/chance-cards";
@@ -118,7 +119,7 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
 
     return (
         <>
-            <div className="round-end gap-3 p-4 d-grid">
+            <div className="round-end player-round-end gap-3 p-4 d-grid">
                 <div className="d-flex flex-column align-items-center justify-content-center">
                     <h1>End of round</h1>
                     {special && <h2>Additional insights</h2>}

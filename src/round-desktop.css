@@ -1,0 +1,63 @@
+/* Fit player reveals to laptop browser height. Touch-first tablet layouts keep
+   their existing sizing; very short windows retain the scrollable fallback. */
+@media (min-width: 992px) and (min-height: 500px) and (hover: hover) and (pointer: fine) {
+    .round-end.player-round-end:not(.suspension-round) {
+        height: 100dvh;
+        min-height: 0;
+        grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+        align-content: stretch;
+        gap: clamp(0.375rem, 1dvh, 0.75rem) !important;
+        padding: clamp(0.5rem, 1.5dvh, 1rem) !important;
+    }
+    .player-round-end > *, .player-round-end .round-reveal > * { min-width: 0; min-height: 0; }
+    .player-round-end > div:first-child h1 { font-size: clamp(1.25rem, 3dvh, 1.8rem); margin: 0; }
+    .player-round-end :is(p, span) { font-size: clamp(0.8rem, 1.9dvh, 1rem); line-height: 1.3; }
+    .player-round-end h2 { font-size: clamp(1rem, 2.5dvh, 1.35rem); margin: 0; }
+    .player-round-end #insight-view { padding: clamp(0.4rem, 1dvh, 0.75rem) !important; border-width: 2px !important; overflow: auto; }
+    .player-round-end .round-reveal { grid-template-rows: minmax(0, 1fr) minmax(5rem, 0.55fr); gap: 0.5rem !important; }
+    .player-round-end .round-reveal > :not(.round-reveal-chart) { padding: clamp(0.4rem, 1dvh, 0.75rem) !important; }
+    .player-round-end .game-stock-view img { max-height: clamp(3rem, 10dvh, 6rem) !important; padding: 0.25rem !important; }
+    .player-round-end .game-stock-view + div h1 { font-size: clamp(1.5rem, 4dvh, 2.25rem); margin: 0; }
+    .player-round-end .game-insight-card > img { height: clamp(2rem, 7dvh, 4rem); object-fit: contain; }
+    .player-round-end .game-insight-card .investor-photo { width: clamp(2rem, 7dvh, 4rem); height: clamp(2rem, 7dvh, 4rem); }
+    .player-round-end .total-insight { font-size: clamp(1.1rem, 3dvh, 1.6rem); }
+    .player-round-end .total-insight span { font-size: inherit; }
+    .player-round-end .stock-result { padding: 0.25rem !important; }
+    .player-round-end .stock-result h2 { font-size: clamp(1.25rem, 3dvh, 1.75rem); }
+    .player-round-end .stock-result-change { font-size: clamp(1rem, 2.5dvh, 1.4rem); margin-block: 0.25rem; }
+    .player-round-end .round-reveal-chart { position: relative; overflow: hidden; display: grid; grid-template-rows: minmax(0, 1fr) auto; padding: 0.25rem !important; }
+    .player-round-end .round-reveal-chart > .visually-hidden { top: 0; left: 0; }
+    .player-round-end .round-reveal-chart .stock-price-chart { height: 100%; min-height: 0; position: relative; }
+    .player-round-end .round-reveal-chart .recharts-responsive-container { position: absolute; inset: 0; }
+    .player-round-end #stock-view { padding: 0.25rem 0.75rem !important; gap: 0.75rem; }
+    .player-round-end #stock-view h2 { font-size: 1rem; white-space: nowrap; }
+    .player-round-end #stock-view .game-stock { min-width: 0; flex: 1; }
+    .player-round-end #stock-view img { height: clamp(2rem, 6dvh, 3rem); padding: 0.25rem !important; }
+    .player-round-end #player-view { padding: 0.4rem 0.75rem !important; }
+    .player-round-end #player-view h2 { font-size: 1rem; margin-bottom: 0.25rem; }
+    .player-round-end .round-wealth-players { gap: 0.5rem; }
+    .player-round-end .round-wealth-players > div { min-width: 0; }
+    .player-round-end .round-wealth-players img { width: clamp(1.5rem, 4dvh, 2.25rem); }
+    .player-round-end .round-player-holdings { text-align: center; }
+    .player-round-end #next-step-wrapper { position: static !important; padding: 0 !important; }
+    .player-round-end .round-navigation .btn { font-size: 0.95rem; padding: 0.375rem 0.75rem; min-height: 2.5rem; }
+    .player-round-end:has(.round-overview) { grid-template-rows: auto minmax(0, 1fr) auto; }
+    .player-round-end .round-overview { grid-template-rows: auto minmax(min-content, 1fr) auto; gap: 0.5rem !important; }
+    .player-round-end .round-overview-stocks { gap: 0.5rem; grid-template-rows: repeat(2, minmax(min-content, 1fr)); }
+    .player-round-end .round-overview .stock-role-footer { gap: 0.25rem; padding-top: 0.3rem; margin-top: 0.3rem; flex-shrink: 0; }
+    .player-round-end .round-overview .stock-role-entry { gap: 0.4rem; }
+    .player-round-end .round-overview .stock-role-entry p { font-size: 0.75rem; line-height: 1.25; }
+    .player-round-end .round-overview .stock-role-footer .investor-photo { width: 1.75rem; height: 1.75rem; }
+    .player-round-end .round-overview .stock-role-footer .company-role-badge { width: 0.8rem; height: 0.8rem; top: -0.2rem; left: -0.2rem; }
+    .player-round-end .round-overview-stocks article { padding: 0.4rem !important; }
+    .player-round-end .round-overview-stocks article > img { height: clamp(1.5rem, 4dvh, 2.25rem); }
+    .player-round-end .round-overview-stocks h3 { font-size: 1rem; margin-block: 0.2rem; }
+    .player-round-end .round-overview-players { gap: 0.5rem; }
+    .player-round-end .round-overview-players h3, .player-round-end .round-overview-players h4 { font-size: 0.95rem; margin-block: 0.2rem; }
+    .player-round-end .cash-reveal { height: 100%; min-height: 0; gap: 0.5rem; }
+    .player-round-end .cash-reveal-total { padding: 0.75rem; }
+    .player-round-end .cash-reveal-card { min-height: 0; padding: 0.75rem; }
+    .player-round-end .cash-reveal-total h1 { font-size: clamp(2rem, 5dvh, 3rem); }
+    .player-round-end .cash-reveal-identity img { width: clamp(4rem, 12dvh, 7rem); }
+    .player-round-end .cash-reveal-percent span { font-size: inherit; }
+}

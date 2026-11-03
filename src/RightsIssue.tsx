@@ -168,7 +168,13 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
                 increase={(value) => Math.min(limit, Math.floor(value / 1000 + 1) * 1000)}
                 decrease={(value) => Math.max(0, Math.ceil(value / 1000 - 1) * 1000)}
             >
-                <TradePosition cash={player.cash - projected} holding={offer.held + projected} buying />
+                <TradePosition
+                    cash={player.cash - projected}
+                    holding={offer.held + projected}
+                    buying
+                    assignedRoles={board.players.flatMap((seat) => (seat.roles ?? [])
+                        .filter((role) => role.stockKey === stock.key).map((role) => role.role))}
+                />
             </TradeInputs>
             <p id="rights-purchase-feedback" className={`trade-feedback ${error || reason ? "is-error" : ""}`} role="status">
                 {error || reason}

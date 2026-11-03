@@ -10,7 +10,7 @@ import { finishTurn } from "./game/commands";
 import { enqueueNextNpcIfNeeded } from "./npc/scheduling";
 import { publicIdentity } from "./npc/identity";
 import { rightsEntitlement, rightsIssueOrder, rightsIssuePrice, rightsPurchaseError, rightsAvailable } from "../shared/rights-issue";
-import { companyRoles, companyRoleThresholds } from "../shared/company-roles";
+import { companyRoles, roleQualification } from "../shared/company-roles";
 import { chanceStockKey } from "../shared/chance-cards";
 
 export const activate = mutation({
@@ -145,20 +145,17 @@ async function purchase(context: MutationContext, game: Document_<"games">, quan
     if (quantity > 0)
     {
         const roleBefore = companyRoles(seats, issue.stockKey).find((role) => role.playerId === player._id)?.role;
-        const chairmanSince = [...(player.chairmanSince ?? [])];
-        if (held < companyRoleThresholds.chairman && held + quantity >= companyRoleThresholds.chairman)
-        {
-            chairmanSince.push({ stockKey: issue.stockKey, order: game.currentPeriod * 100 + game.turn });
-        }
+        const qualification = roleQualification(player, issue.stockKey, held + quantity,
+            game.currentPeriod * 100 + game.turn + (issue.index + 1) / 100, roleBefore);
 
         const holdings = player.holdings.map((holding) => holding.stockKey === issue.stockKey
             ? { ...holding, quantity: held + quantity } : holding);
-        const updated = { ...player, holdings, chairmanSince, cash: player.cash - quantity * rightsIssuePrice };
+        const updated = { ...player, holdings, ...qualification, cash: player.cash - quantity * rightsIssuePrice };
         const roleAfter = companyRoles(seats.map((seat) => seat._id === player._id ? updated : seat), issue.stockKey)
             .find((role) => role.playerId === player._id)?.role;
 
-        await context.db.patch(player._id, { holdings, chairmanSince, cash: updated.cash });
-        // Record actual £1 purchase cost for subsequent Debenture accounting, without creating another bargain.
+        await context.db.patch(player._id, { holdings, ...qualification, cash: updated.cash });
+        // Record the actual £1 purchase price without creating another bargain.
         await context.db.insert("gameActions", { gameId: game._id, period: game.currentPeriod, turn: game.turn,
             actorPlayerId: player._id, action: { kind: "buy", stockKey: issue.stockKey, quantity },
             unitPrice: rightsIssuePrice, rightsIssueId: issue.insightId });

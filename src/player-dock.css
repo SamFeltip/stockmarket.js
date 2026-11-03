@@ -7,13 +7,7 @@
 #game-grid:has(> #player-dock) > #now-playing { padding: 0 !important; }
 #game-grid:has(> #player-dock) .now-playing-content,
 #game-grid:has(> #player-dock) > #player-dock { padding: var(--game-panel-padding) !important; }
-#game-grid:has(> #player-dock) > :is(#profile, #now-playing, header) {
-    border-top-left-radius: 0 !important;
-    border-top-right-radius: 0 !important;
-}
 #player-dock {
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
     grid-area: dock;
     display: grid;
     grid-template-columns: 10rem minmax(0, 1fr);

@@ -79,14 +79,14 @@ chance cards. All cash cards are revealed at period end and jointly affect every
 player's remaining cash, with the adjustment rounded to £1,000. Government Loan
 and Debenture activation are implemented, as is period-end Share Suspended.
 Rights Issue activation pauses play while each shareholder may buy one extra share per two held at £1 each.
-Only the initiating bargain uses a turn; decisions follow cyclic play order and then normal play resumes. Debentures currently carry over and refund purchase cost.
+Only the initiating bargain uses a turn; decisions follow cyclic play order and then normal play resumes. Debentures carry over and sell the current player's entire bankrupt holding at the game's original opening price.
 
 Some other mechanics still follow the patent variant. The [BGG retail review](https://boardgamegeek.com/thread/106869/review-of-stockmarket)
 also describes Rights Issues bought at £1 per extra share (one per two held), Debenture sales at
 the bankrupt company’s opening price, no cards retained between periods, and
 £500 currency rounding. See the [rules comparison](BOARD_GAME_DIFFERENCES_CURRENT.md#retail-rules-described-in-the-bgg-review-2-november-2026)
 for the source differences and unresolved details. Those remaining implementation differences are documented explicitly.
-See [implementation and preview notes](experiments/README.md).
+See [merge and release verification](MERGE_READINESS.md) for the coordinated web/backend and TV release checks.
 
 ## Original assets and missing source data
 
@@ -94,7 +94,7 @@ Original images were recovered from the iCloud copy at `Documents/Code/Decent Pr
 
 The original `BigCaslonRom.otf` file was missing from both source copies. Big Caslon was recovered from the Mac's installed fonts and bundled as `public/static/fonts/BigCaslon.ttf`. The authored stylesheet overrides the missing font source, so the title renders in Big Caslon on every device while the original stylesheets remain unchanged.
 
-The original PostgreSQL database was inspected through Portainer on 16 October 2026. It contains six ordinary stocks and 92 insights, and no hidden/special stock records. A canonical checksum over every insight ID, stock ID, description and value matched this migration exactly (`c5048da3c6a51ab02da732905f5743c4`). The database container was temporarily started for read-only queries and stopped again afterward. Both copies of `database/setup.sql` contain only the six ordinary stocks and their insights. There are no currency or hold-stock seed records, although the Go code supports them. Those mechanics are implemented and tested with fixtures, but the recovered base catalog uses the exact supplied SQL. This branch now supplements it at game launch with the 18 special cards from the patent Schedule of Cards, as described above. To restore special cards from your original database, load their original records through the internal `catalogAdmin:importCatalog` function before creating new games. Input shape:
+The original PostgreSQL database was inspected through Portainer on 16 October 2026. It contains six ordinary stocks and 92 insights, and no hidden/special stock records. A canonical checksum over every insight ID, stock ID, description and value matched this migration exactly (`c5048da3c6a51ab02da732905f5743c4`). The database container was temporarily started for read-only queries and stopped again afterward. Both copies of `database/setup.sql` contain only the six ordinary stocks and their insights. There are no currency or hold-stock seed records, although the Go code supports them. Those mechanics are implemented and tested with fixtures, but the recovered base catalog uses the exact supplied SQL. New games supplement it at launch with 16 retail special cards (eight cash and eight chance cards), as described above. To restore special cards from your original database, load their original records through the internal `catalogAdmin:importCatalog` function before creating new games. Input shape:
 
 ```json
 {

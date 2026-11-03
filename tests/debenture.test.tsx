@@ -40,7 +40,7 @@ it("retains unused debentures privately across deals and removes their physical 
             claimUntilPeriod: 2, unavailableReason: null });
 });
 
-it("sells only the chosen bankrupt holding at its purchase cost, consumes the card and one turn, and broadcasts the payout", async () =>
+it("sells only the chosen bankrupt holding at the game opening price, consumes the card and one turn, and broadcasts the payout", async () =>
 {
     const { t, sam, board, insightId, command } = await bankruptGame();
 
@@ -69,7 +69,7 @@ it("sells only the chosen bankrupt holding at its purchase cost, consumes the ca
     expect((await sam.query(api.board.get, { code: "test" })).player.cash).toBe(after.player.cash);
 });
 
-it("allows the second claim round, rejects expired or recovered stocks, and refuses to invent missing purchase costs", async () =>
+it("allows the second claim round, rejects expired or recovered stocks, and works without purchase history", async () =>
 {
     const { t, sam, board, command } = await bankruptGame();
 
@@ -92,14 +92,9 @@ it("allows the second claim round, rejects expired or recovered stocks, and refu
             await context.db.delete(action._id);
         }
     });
-    await expect(sam.mutation(api.trading.redeemDebenture, { ...command, expectedPeriod: 2 }))
-        .rejects.toThrow("purchase cost");
-    const unknown = await sam.query(api.board.get, { code: "test" });
+    const offer = (await sam.query(api.board.get, { code: "test" })).debentureOffers[0];
 
-    expect(unknown.debentureOffers.find((offer) => offer.stockKey === 8)?.amount).toBeNull();
-    // A known purchase price can be recovered from the original period's chart for older actions.
-    await t.run(async (context) => await context.db.insert("gameActions", { gameId: board.game._id,
-        actorPlayerId: board.player._id, period: 0, turn: 0, action: { kind: "buy", stockKey: 8, quantity: 20_000 } }));
+    expect(offer).toMatchObject({ unitPrice: 2.5, amount: 50_000, unavailableReason: null });
     await sam.mutation(api.trading.redeemDebenture, { ...command, expectedPeriod: 2 });
     expect((await sam.query(api.board.get, { code: "test" })).player.cash).toBe(board.player.cash + 50_000);
 });

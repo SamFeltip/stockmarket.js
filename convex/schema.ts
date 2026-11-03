@@ -63,6 +63,7 @@ export default defineSchema({
         npcDifficulty: v.optional(difficultyValidator),
         seatOrder: v.optional(v.number()), periodStartRanking: v.optional(v.number()), cash: v.number(),
         active: v.boolean(),
+        directorSince: v.optional(v.array(v.object({ stockKey: v.number(), order: v.number() }))),
         chairmanSince: v.optional(v.array(v.object({ stockKey: v.number(), order: v.number() }))),
         holdings: v.array(v.object({ stockKey: v.number(), quantity: v.number() })),
     }).index("by_game", ["gameId"]).index("by_user", ["userId"])

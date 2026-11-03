@@ -1,0 +1,5 @@
+/* Compact rem-based text and spacing on mouse/trackpad desktops. Viewport
+   dimensions stay unchanged, and touch-first phones/tablets keep their scale. */
+@media (min-width: 992px) and (hover: hover) and (pointer: fine) {
+    html { font-size: 80%; }
+}

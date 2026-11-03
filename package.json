@@ -18,8 +18,7 @@
         "assets:check": "node scripts/check-assets.mjs",
         "lint": "eslint . --max-warnings 0",
         "lint:fix": "eslint . --fix",
-        "check": "npm run lint && npm test && npm run build && npm run assets:check",
-        "build:demo": "tsc --noEmit && vite build --config vite.demo.config.ts"
+        "check": "npm run lint && npm test && npm run build && npm run assets:check"
     },
     "dependencies": {
         "@auth/core": "^0.41.3",

@@ -1,22 +1,5 @@
 import { expect, it } from "vitest";
-import { bankruptcyPeriod, purchaseCost } from "../shared/debenture";
-
-it("refunds actual remaining purchases, consuming oldest lots on ordinary sales", () =>
-{
-    const events = [
-        { kind: "buy", stockKey: 8, quantity: 2000, unitPrice: 2 },
-        { kind: "buy", stockKey: 8, quantity: 3000, unitPrice: 3 },
-        { kind: "sell", stockKey: 8, quantity: 3000 },
-        { kind: "buy", stockKey: 9, quantity: 1000, unitPrice: 9 },
-    ];
-
-    expect(purchaseCost(8, 2000, events)).toBe(6000);
-    expect(purchaseCost(8, 3000, events)).toBeNull();
-    expect(purchaseCost(8, 0, events)).toBeNull();
-    expect(purchaseCost(8, 1000, [{ kind: "buy", stockKey: 8, quantity: 1000 }])).toBeNull();
-    expect(purchaseCost(8, 1000, [...events, { kind: "debenture", stockKey: 8 },
-        { kind: "buy", stockKey: 8, quantity: 1000, unitPrice: 4 }])).toBe(4000);
-});
+import { bankruptcyPeriod } from "../shared/debenture";
 
 it("dates bankruptcy from the fall to zero and restarts the window only after recovery and another bankruptcy", () =>
 {

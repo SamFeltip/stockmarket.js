@@ -1,8 +1,10 @@
 import "./company-roles.css";
-import { companyRoleThresholds } from "../shared/company-roles";
+import { companyRoleThresholds, type CompanyRole } from "../shared/company-roles";
 import { money } from "./shared";
 
-export function TradePosition({ cash, holding, buying }: { cash: number; holding: number; buying: boolean })
+export function TradePosition({ cash, holding, buying, assignedRoles = [] }: {
+    cash: number; holding: number; buying: boolean; assignedRoles?: CompanyRole[];
+})
 {
     return (
         <div className="transaction-body">
@@ -15,9 +17,9 @@ export function TradePosition({ cash, holding, buying }: { cash: number; holding
                 {" "}
                 {money(holding)}
             </p>
-            {buying && (
+            {(buying || assignedRoles.length > 0) && (
                 <div className="trade-role-progress">
-                    {(["chairman", "director"] as const).map((role) =>
+                    {(["chairman", "director"] as const).filter((role) => buying || assignedRoles.includes(role)).map((role) =>
                     {
                         const remaining = Math.max(0, companyRoleThresholds[role] - holding);
 
@@ -25,8 +27,9 @@ export function TradePosition({ cash, holding, buying }: { cash: number; holding
                             <div key={role}>
                                 <img src={`/static/imgs/icons/${role}.svg`} alt="" />
                                 <span>
-                                    {remaining > 0 ? `${money(remaining)} stocks until ${role}`
-                                        : `${role === "chairman" ? "Chairman" : "Director"} threshold reached`}
+                                    {assignedRoles.includes(role) ? `${role === "chairman" ? "Chairman" : "Director"} role assigned`
+                                        : (remaining > 0 ? `${money(remaining)} stocks until ${role}`
+                                            : `${role === "chairman" ? "Chairman" : "Director"} threshold reached`)}
                                 </span>
                             </div>
                         );

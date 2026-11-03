@@ -5,6 +5,7 @@ import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import "./patch.css";
+import "./desktop-scale.css";
 import { setupStandaloneSafeArea } from "./standalone-safe-area";
 
 const cleanupSafeArea = setupStandaloneSafeArea();

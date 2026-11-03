@@ -1,3 +1,4 @@
+import { restoreDirectorPriority } from "./game/roleHistory";
 import { cashStock } from "../shared/chance-cards";
 import { portfolioWorth } from "../shared/settlement";
 import { getAuthUserId } from "@convex-dev/auth/server";
@@ -42,7 +43,8 @@ export async function members(context: QueryContext, gameId: Id<"games">)
 
     const order = new Map(seats.map((seat, index) => [seat._id, seat.seatOrder ?? index]));
 
-    return seats.toSorted((a, b) => order.get(a._id)! - order.get(b._id)!);
+    return await restoreDirectorPriority(context, gameId,
+        seats.toSorted((a, b) => order.get(a._id)! - order.get(b._id)!));
 }
 
 export async function member(context: QueryContext, code: string)
@@ -56,7 +58,10 @@ export async function member(context: QueryContext, code: string)
         fail("Join this game first");
     }
 
-    return { user, game, player };
+    const prepared = player.directorSince === undefined
+        ? (await members(context, game._id)).find((seat) => seat._id === player._id)! : player;
+
+    return { user, game, player: prepared };
 }
 
 export async function seedCatalog(context: MutationContext)

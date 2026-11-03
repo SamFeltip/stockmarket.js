@@ -1,4 +1,4 @@
-import { companyRoles, type CompanyRole } from "../../shared/company-roles";
+import { companyRoles, roleQualification, type CompanyRole } from "../../shared/company-roles";
 import type { MutationCtx as MutationContext } from "../_generated/server";
 import { chanceStockKey, governmentLoanAmount } from "../../shared/chance-cards";
 import type { Doc as Document_ } from "../_generated/dataModel";
@@ -19,7 +19,7 @@ export async function applyTurn(
     display: { name: string; profileRoot: string },
 ): Promise<void>
 {
-    const player = (await context.db.get(command.playerId)) ?? fail("Unknown player");
+    let player = (await context.db.get(command.playerId)) ?? fail("Unknown player");
     const game = (await context.db.get(player.gameId)) ?? fail("No game found!");
     if (game.rightsIssue)
     {
@@ -37,6 +37,8 @@ export async function applyTurn(
     }
 
     const players = await members(context, game._id);
+
+    player = players.find((seat) => seat._id === player._id)!;
     const action = command.action;
     const market = marketFor(game, player, players);
     let message = "passed their go";
@@ -76,13 +78,14 @@ export async function applyTurn(
         const updated = { ...player, cash: player.cash + offer.amount,
             holdings: player.holdings.map((holding) => holding.stockKey === action.stockKey
                 ? { ...holding, quantity: 0 } : holding),
-            chairmanSince: (player.chairmanSince ?? []).filter((item) => item.stockKey !== action.stockKey) };
+            chairmanSince: (player.chairmanSince ?? []).filter((item) => item.stockKey !== action.stockKey),
+            directorSince: (player.directorSince ?? []).filter((item) => item.stockKey !== action.stockKey) };
 
         roleBefore = companyRoles(players, action.stockKey).find((role) => role.playerId === player._id)?.role;
         roleAfter = companyRoles(players.map((seat) => seat._id === player._id ? updated : seat), action.stockKey)
             .find((role) => role.playerId === player._id)?.role;
         await context.db.patch(player._id, { cash: updated.cash, holdings: updated.holdings,
-            chairmanSince: updated.chairmanSince });
+            chairmanSince: updated.chairmanSince, directorSince: updated.directorSince });
         await context.db.patch(card._id, { used: true });
         debentureSale = { stockKey: action.stockKey, quantity: -offer.quantity, debenturePayout: offer.amount };
         message = `Debenture sold at £${offer.amount.toLocaleString("en-GB")}`;
@@ -108,20 +111,15 @@ export async function applyTurn(
         unitPrice = market.prices.find((price) => price.stockKey === action.stockKey)!.value;
         const updated = transition(market, action).players.find((seat) => seat.id === player._id)!;
 
-        const chairmanSince = (player.chairmanSince ?? []).filter((item) =>
-            (updated.holdings.find((holding) => holding.stockKey === item.stockKey)?.quantity ?? 0) >= 100_000);
-        const before = player.holdings.find((holding) => holding.stockKey === action.stockKey)?.quantity ?? 0;
         const after = updated.holdings.find((holding) => holding.stockKey === action.stockKey)?.quantity ?? 0;
-        if (before < 100_000 && after >= 100_000)
-        {
-            chairmanSince.push({ stockKey: action.stockKey, order: game.currentPeriod * 100 + game.turn });
-        }
+        const qualification = roleQualification(player, action.stockKey, after,
+            game.currentPeriod * 100 + game.turn, roleBefore);
 
-        const updatedPlayer = { ...player, cash: updated.cash, holdings: [...updated.holdings], chairmanSince };
+        const updatedPlayer = { ...player, cash: updated.cash, holdings: [...updated.holdings], ...qualification };
 
         roleAfter = companyRoles(players.map((seat) => seat._id === player._id ? updatedPlayer : seat), action.stockKey)
             .find((role) => role.playerId === player._id)?.role;
-        await context.db.patch(player._id, { cash: updated.cash, holdings: [...updated.holdings], chairmanSince });
+        await context.db.patch(player._id, { cash: updated.cash, holdings: [...updated.holdings], ...qualification });
         message = `${action.kind === "buy" ? "bought" : "sold"} ${action.quantity} shares in ${stock.name}`;
     }
 

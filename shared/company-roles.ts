@@ -6,6 +6,7 @@ interface Seat {
     _id: string;
     holdings: { stockKey: number; quantity: number }[];
     chairmanSince?: { stockKey: number; order: number }[];
+    directorSince?: { stockKey: number; order: number }[];
 }
 
 export function companyRoles(players: Seat[], stockKey: number)
@@ -16,10 +17,44 @@ export function companyRoles(players: Seat[], stockKey: number)
         (a.chairmanSince?.find((item) => item.stockKey === stockKey)?.order ?? -1)
         - (b.chairmanSince?.find((item) => item.stockKey === stockKey)?.order ?? -1))[0];
 
+    const director = players.filter((player) => player._id !== chairman?._id
+      && quantity(player) >= companyRoleThresholds.director).toSorted((a, b) =>
+        (a.directorSince?.find((item) => item.stockKey === stockKey)?.order ?? -1)
+        - (b.directorSince?.find((item) => item.stockKey === stockKey)?.order ?? -1))[0];
+
     return players.flatMap<{ playerId: string; role: CompanyRole }>((player) => player._id === chairman?._id
-        ? [{ playerId: player._id, role: "chairman" as const }]
-        : (quantity(player) >= companyRoleThresholds.director && quantity(player) <= companyRoleThresholds.chairman
-            ? [{ playerId: player._id, role: "director" as const }] : []));
+        ? [{ playerId: player._id, role: "chairman" }]
+        : (player._id === director?._id ? [{ playerId: player._id, role: "director" }] : []));
+}
+
+/** Preserve qualification priority; a retiring chairman cannot displace an incumbent director. */
+export function roleQualification(player: Seat, stockKey: number, quantity: number, order: number,
+    roleBefore?: CompanyRole)
+{
+    const before = player.holdings.find((holding) => holding.stockKey === stockKey)?.quantity ?? 0;
+    const chairmanSince = (player.chairmanSince ?? []).filter((item) =>
+        item.stockKey !== stockKey || quantity >= companyRoleThresholds.chairman);
+    const directorSince = (player.directorSince ?? []).filter((item) => item.stockKey !== stockKey);
+    if (before < companyRoleThresholds.chairman && quantity >= companyRoleThresholds.chairman)
+    {
+        chairmanSince.push({ stockKey, order });
+    }
+
+    if (quantity >= companyRoleThresholds.director)
+    {
+        const previous = player.directorSince?.find((item) => item.stockKey === stockKey);
+        if (before < companyRoleThresholds.director
+          || (roleBefore === "chairman" && quantity < companyRoleThresholds.chairman))
+        {
+            directorSince.push({ stockKey, order });
+        }
+        else if (previous)
+        {
+            directorSince.push(previous);
+        }
+    }
+
+    return { chairmanSince, directorSince };
 }
 
 interface Card {

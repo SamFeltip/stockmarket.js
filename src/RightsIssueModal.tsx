@@ -1,3 +1,4 @@
+import "./rights-issue-drawer.css";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
@@ -34,10 +35,10 @@ export function RightsIssueModal({ board, insightId, used, onActivate }: {
 
     return (
         <Modal id={id} title="Rights Issue" mobileDrawer>
-            <div className="modal-body loan-detail debenture-detail d-grid gap-3">
+            <div className="modal-body loan-detail debenture-detail rights-issue-detail d-grid gap-3">
                 <h2 className="text-black mb-0">Rights Issue</h2>
-                <p>Choose a company. Every holder may buy one extra share for every two they own, at £1 each.</p>
-                <p>Single use. Activating takes one turn. Trading pauses while shareholders choose.</p>
+                <p>buy one extra share for every two you own at £1</p>
+                <p>trading pauses while stakeholders purchase stock</p>
                 <div className="debenture-stock-list" role="radiogroup" aria-label="Rights Issue company">
                     {stocks.map((stock) => (
                         <StockChoice
