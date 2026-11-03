@@ -167,6 +167,7 @@ it("renders purchase, waiting and spectator variants using the shared trade cont
     const spectator = renderToStaticMarkup(<RightsIssue board={board} spectator />);
 
     expect(own).toContain("trade-inputs");
+    expect(own).toContain("Rights Issue shareholders");
     expect(own).not.toContain("You may only buy one extra share");
     expect(own).not.toContain("You may buy one extra share");
     expect(own).toContain("Maximum: 3,000 shares");

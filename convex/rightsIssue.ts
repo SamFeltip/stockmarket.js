@@ -63,6 +63,8 @@ export const activate = mutation({
             actorPlayerId: player._id, action: { kind: "pass" }, rightsIssueId: card._id });
         await context.db.patch(card._id, { used: true, resolved: true });
 
+        await feedItem(context, game, user.name, `opened a Rights Issue for ${stock.name}`, user.profileRoot, "");
+
         if (offers.length === 0)
         {
             await finishTurn(context, game, player, seats);
@@ -72,7 +74,6 @@ export const activate = mutation({
         }
 
         await context.db.patch(game._id, { rightsIssue });
-        await feedItem(context, game, user.name, `opened a Rights Issue for ${stock.name}`, user.profileRoot, "");
         await advanceNpcs(context, { ...game, rightsIssue });
         await enqueueNextNpcIfNeeded(context, game._id);
     },
@@ -225,6 +226,8 @@ export const finish = internalMutation({
         const seats = await members(context, game._id);
         const actor = seats.find((seat) => seat._id === issue.actorPlayerId)!;
 
+        await feedItem(context, game, "Rights Issue", "Rights Issue complete. Trading resumes.",
+            "/static/imgs/icons/Stock.svg", "grey");
         await context.db.patch(game._id, { rightsIssue: undefined });
         await finishTurn(context, game, actor, seats);
         await enqueueNextNpcIfNeeded(context, game._id);

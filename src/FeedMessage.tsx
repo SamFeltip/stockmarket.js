@@ -39,6 +39,9 @@ export function FeedMessage({ item, stocks, detailed = false }: {
                 <img src={stock.imagePath} alt="" />
                 {money(quantity)}
             </p>
+            {item.message.includes("shares in the Rights Issue") && (
+                <p className="trade-description">Rights Issue · £1 per share</p>
+            )}
             {detailed && (
                 <p className="trade-description">
                     {item.debenturePayout === undefined ? `${quantity > 0 ? "Purchased" : "Sold"} ${money(Math.abs(quantity))} ${stock.name} stocks`

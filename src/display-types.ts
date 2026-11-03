@@ -1,7 +1,7 @@
 import type { CompanyRole } from "../shared/company-roles";
 import type { Board as PlayerBoard } from "./types";
 
-export type Stock = Pick<PlayerBoard["stocks"][number], "key" | "name" | "display" | "imagePath" | "secondaryImagePath"> & { variation?: number };
+export type Stock = Pick<PlayerBoard["stocks"][number], "key" | "name" | "display" | "imagePath" | "secondaryImagePath"> & { variation?: number; startingValue?: number };
 
 export type Insight = Pick<PlayerBoard["insights"][number], "_id" | "playerId" | "stockKey" | "value" | "description" | "resolved" | "chanceKind" | "used" | "period" | "bonusRole" | "removedInsightId">;
 

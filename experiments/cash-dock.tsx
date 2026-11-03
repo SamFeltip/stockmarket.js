@@ -1,5 +1,5 @@
 import { configureRightsDemo, rightsDemoHandlers, rightsMode } from "./rights-demo";
-import { RightsIssue } from "../src/RightsIssue";
+import { NormalSpectatorDemo, RightsSpectatorDemo } from "./normal-spectator";
 import { configureSuspensionDemo } from "./suspension-demo";
 import { ShareSuspended } from "../src/ShareSuspended";
 import { RoundOverview } from "../src/RoundOverview";
@@ -252,9 +252,9 @@ function CashDockDemo()
         );
     }
 
-    if (rightsMode === "spectator" && demoBoard.game.rightsIssue)
+    if (rightsMode === "spectator")
     {
-        return <RightsIssue board={demoBoard} spectator onDecision={decideRights} />;
+        return <RightsSpectatorDemo board={demoBoard} onDecision={decideRights} />;
     }
 
     return (
@@ -280,8 +280,10 @@ function CashDockDemo()
     );
 }
 
+const DemoView = parameters.get("view") === "spectator" ? NormalSpectatorDemo : CashDockDemo;
+
 createRoot(document.querySelector("#root")!).render(
     <ConvexProvider client={client}>
-        <BrowserRouter><CashDockDemo /></BrowserRouter>
+        <BrowserRouter><DemoView board={board} /></BrowserRouter>
     </ConvexProvider>,
 );

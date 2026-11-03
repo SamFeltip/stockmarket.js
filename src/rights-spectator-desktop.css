@@ -1,0 +1,27 @@
+.rights-desktop-spectator { display: none; }
+@media (min-width: 1000px) {
+    .rights-spectator-mobile { display: none !important; }
+    .rights-desktop-spectator { display: block; }
+    .rights-desktop-spectator .rights-portfolio-notice { display: flex; align-items: center; gap: 1rem; padding-bottom: 0.75rem; margin-bottom: 0.75rem; border-bottom: 1px solid #e0e5dd; }
+    .rights-portfolio-notice > img { width: 3rem; height: 3rem; border-radius: 0.3rem; object-fit: cover; }
+    .rights-portfolio-notice > div { flex: 1; }
+    .rights-portfolio-notice h2 { margin-bottom: 0.25rem; }
+    .rights-portfolio-notice p { font-size: 0.85rem; }
+    .rights-portfolio-notice .rights-notice-stock { object-fit: contain; }
+    .rights-desktop-spectator .rights-skip { width: 100%; flex-wrap: wrap; }
+    .rights-desktop-spectator .rights-skip > button:only-child { width: 100%; }
+}
+@media (min-width: 1000px) {
+    .rights-desktop-spectator .portfolios { overflow: auto; }
+    .rights-desktop-spectator .portfolio-table .player-avatar { width: 1.2rem; height: 1.2rem; }
+    .rights-desktop-spectator .portfolio-table :is(th, td) { padding-block: 0.15rem; }
+    .rights-desktop-spectator .rights-portfolio-notice { padding-bottom: 0.5rem; margin-bottom: 0.5rem; }
+    .rights-desktop-spectator .rights-portfolio-notice > img { width: 2rem; height: 2rem; }
+    .rights-desktop-spectator .rights-portfolio-notice h2 { font-size: 1.1rem; }
+    .rights-desktop-spectator .rights-portfolio-notice p { font-size: 0.75rem; }
+}
+@media (min-width: 1000px) {
+    .rights-desktop-spectator .portfolio-table.portfolio-table .player-avatar { width: 1.2rem; height: 1.2rem; }
+    .rights-desktop-spectator .rights-portfolio-notice h2 { display: inline; margin-right: 0.75rem; }
+    .rights-desktop-spectator .rights-portfolio-notice p { display: inline; }
+}

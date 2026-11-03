@@ -3,8 +3,8 @@ import { useState } from "react";
 import { money } from "./shared";
 import type { Player, Stock } from "./display-types";
 
-export function NetWorthNumber({ value, shares = false, initialValue = value }: {
-    value: number; shares?: boolean; initialValue?: number;
+export function NetWorthNumber({ value, shares = false, initialValue = value, compact = false }: {
+    value: number; shares?: boolean; initialValue?: number; compact?: boolean;
 })
 {
     const [change, setChange] = useState({ value: initialValue, delta: 0, sequence: 0 });
@@ -15,7 +15,7 @@ export function NetWorthNumber({ value, shares = false, initialValue = value }: 
 
     return (
         <span className="net-worth-number" aria-live="polite">
-            {`${shares ? "" : "£"}${money(value)}`}
+            {`${shares ? "" : "£"}${compact ? new Intl.NumberFormat("en-GB", { notation: "compact", maximumFractionDigits: 1 }).format(value) : money(value)}`}
             {change.delta !== 0 && (
                 <span
                     key={change.sequence}

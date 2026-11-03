@@ -1,121 +1,184 @@
-.rights-screen { height: 100dvh; width: 100%; display: grid; place-items: center; padding: 1rem; overflow: hidden; background: var(--bs-body-bg, #102d12); }
-.rights-panel { display: flex; flex-direction: column; gap: 1rem; width: min(100%, 48rem); max-height: 100%; min-height: 0; padding: 1.25rem; border-radius: 0.75rem; background: white; color: #111; }
-.rights-summary { display: contents; }
+.rights-screen { height: 100dvh; width: 100%; display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); overflow: hidden; background: var(--bs-body-bg, #102d12); }
+.rights-panel { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; width: min(100%, 32rem); max-height: 100%; min-height: 0; color: white; }
+.rights-summary { width: 100%; padding: 1.5rem; border-radius: 0.75rem; background: white; color: #111; display: flex; flex-direction: column; gap: 1.5rem; }
 .rights-panel p { margin: 0; }
 .rights-panel :is(h1, h2, h3, h6) { color: #111; }
-.rights-purchase { width: min(100%, 32rem); align-self: center; display: flex; flex-direction: column; gap: 0.75rem; min-height: 0; }
-.rights-purchase .purchase-form { flex: 0 0 auto !important; }
+.rights-purchase { width: 100%; display: flex; flex-direction: column; gap: 0.75rem; min-height: 0; }
+.rights-purchase :is(.purchase-form, .trade-stock-summary) { flex: 0 0 auto !important; }
 .rights-purchase .transaction-body { padding-top: 0.75rem; }
 .rights-purchase .transaction-body p { color: #111; }
 .rights-purchase .trade-footer { flex-shrink: 0; }
-.rights-purchase .trade-feedback { font-size: 0.875rem; min-height: 2.5em; color: #636b66; }
+.rights-purchase .trade-feedback { font-size: 0.875rem; color: #636b66; }
+.rights-purchase .trade-feedback:empty { display: none; }
 .rights-purchase .trade-feedback.is-error { color: #a52834; }
-.rights-progress { display: flex; flex-direction: column; gap: 0.3rem; background: var(--bs-card-bg, #204712); color: #fff284; border-radius: 0.4rem; padding: 0.75rem; width: min(100%, 32rem); align-self: center; }
-.rights-progress small { font-size: 0.7rem; }
+.rights-progress { display: flex; flex-direction: column; gap: 0.75rem; background: var(--bs-card-bg, #204712); color: #fff284; border-radius: 0.4rem; padding: 0.75rem 1rem; width: max-content; max-width: 100%; align-self: center; }
+.rights-progress .game-metrics { width: max-content; max-width: 100%; grid-template-columns: repeat(2, minmax(5rem, max-content)); gap: 2rem; }
+.rights-progress small { width: 100%; text-align: center; font-size: 0.7rem; }
+.rights-screen:not(.rights-spectator) .rights-progress { width: 100%; }
+.rights-screen:not(.rights-spectator) .game-metrics { width: 100%; grid-template-columns: repeat(2, 1fr); }
 .rights-waiting { display: flex; flex-direction: column; align-items: center; gap: 1rem; text-align: center; padding: 1rem; }
 .rights-company { width: 7rem; height: 7rem; object-fit: contain; }
 .rights-waiting p { max-width: 28rem; }
-.rights-holders { display: flex; justify-content: space-evenly; gap: 0.3rem; padding: 0.75rem; border-radius: 0.5rem; background: var(--bs-body-bg, #102d12); color: white; }
-.rights-holders > div { display: flex; flex-direction: column; align-items: center; min-width: 0; flex: 1; font-size: 0.8rem; }
-.rights-holders img { width: clamp(1.8rem, 8vw, 3rem); height: clamp(1.8rem, 8vw, 3rem); object-fit: cover; margin: 0.3rem; }
-.rights-holders .is-current img { outline: 2px solid white; outline-offset: 3px; }
-.rights-spectator .rights-panel { width: min(100%, 80rem); background: transparent; color: white; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-.rights-spectator .rights-summary { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 0.65rem; padding: 1rem; border-radius: 0.75rem; background: white; color: #111; }
-.rights-spectator .rights-stock-prices { grid-column: 1 / -1; }
-.rights-spectator .rights-stock-prices article { background: white; color: #111; }
-.rights-spectator .rights-progress { grid-column: 1; grid-row: 3; justify-self: start; width: 100%; }
-.rights-spectator .rights-skip { grid-column: 2; grid-row: 3; align-self: end; }
-.rights-spectator .rights-waiting { flex-direction: row; justify-content: center; }
-.rights-spectator .rights-current { width: 5rem; height: 5rem; object-fit: cover; }
-.rights-spectator .rights-company { width: 5rem; height: 5rem; order: 1; }
-.rights-panel .is-muted { opacity: 0.4; }
-.rights-stock-prices { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.75rem; }
-.rights-stock-prices article { display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid #d4d9d2; border-radius: 0.5rem; padding: 0.75rem; gap: 0.25rem; }
-.rights-stock-prices img { width: 2.5rem; height: 2.5rem; object-fit: contain; }
+.rights-holders { width: 100%; display: flex; justify-content: space-evenly; gap: 0.5rem; padding: 0.25rem; color: white; overflow-x: auto; }
+.rights-holders > div { display: flex; flex-direction: column; align-items: center; min-width: 5rem; max-width: 7rem; flex: 1; padding: 0.5rem; border-radius: 0.5rem; font-size: 0.9rem; }
+.rights-holders img { width: clamp(3rem, 16vw, 4.5rem); height: clamp(3rem, 16vw, 4.5rem); object-fit: cover; margin-bottom: 0.4rem; }
+.rights-holders .is-current { background: white; color: #111; }
+.rights-holders .net-worth-number { font-size: 1rem; }
+.rights-holders strong { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rights-screen:not(.rights-spectator) .rights-panel { height: 100%; position: relative; justify-content: center; padding-top: 6.5rem; padding-bottom: 6.5rem; }
+.rights-screen:not(.rights-spectator) .rights-progress { position: absolute; top: 0; }
+.rights-spectator .rights-progress { padding-inline: 1.5rem; }
+.rights-spectator .rights-progress .game-metrics { grid-template-columns: repeat(2, minmax(8.5rem, max-content)); gap: 3rem; }
+.rights-spectator .rights-panel { width: min(100%, 80rem); }
+.rights-spectator .rights-summary { gap: 0.65rem; padding: 1rem; }
+.rights-spectator .suspension-heading h1 { font-size: 1.6rem; margin-block: 0.15rem; }
+.rights-spectator .rights-waiting { flex-direction: row; justify-content: center; padding: 0.25rem; }
+.rights-spectator .rights-current, .rights-spectator .rights-company { width: 4rem; height: 4rem; object-fit: contain; }
+.rights-spectator .rights-company { order: 1; }
+.rights-spectator .suspension-portfolios { padding: 0.5rem; min-width: 0; max-width: 100%; }
+.rights-spectator .suspension-portfolios h2 { font-size: 1rem; margin-bottom: 0.4rem; }
+.rights-spectator .suspension-portfolios :is(th, td) { padding: 0.2rem; font-size: 0.75rem; }
+.rights-stock-prices { width: 100%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.75rem; }
+.rights-stock-prices article { display: flex; flex-direction: column; align-items: center; text-align: center; background: white; color: #111; border-radius: 0.5rem; padding: 0.75rem; gap: 0.25rem; }
+.rights-stock-prices img { width: 2rem; height: 2rem; object-fit: contain; }
 .rights-stock-prices strong { font-weight: 500; font-size: 0.9rem; }
-.rights-stock-prices span { font-size: 0.8rem; color: #636b66; margin-top: 0.5rem; }
-.rights-skip { display: flex; justify-content: flex-end; gap: 0.5rem; align-items: center; }
+.rights-stock-prices span { font-size: 0.8rem; color: #636b66; margin-top: 0.25rem; }
+.rights-skip { align-self: flex-end; display: flex; justify-content: flex-end; gap: 0.5rem; align-items: center; }
+@media (max-width: 991.98px) {
+    .rights-spectator { overflow: auto; height: auto; min-height: 100dvh; }
+    .rights-stock-prices { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 9rem; overflow-x: auto; padding-bottom: 0.5rem; }
+    .rights-spectator .rights-progress .game-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; gap: 2rem; }
+}
 @media (max-width: 575.98px), (max-height: 750px) {
-    .rights-panel { padding: 0.75rem; gap: 0.5rem; }
+    .rights-panel { gap: 1rem; }
+    .rights-summary { padding: 0.75rem; gap: 0.75rem; }
     .rights-panel .suspension-heading h1 { font-size: 1.35rem; margin-block: 0.15rem; }
     .rights-panel .suspension-heading p { font-size: 0.75rem; }
     .rights-purchase { gap: 0.4rem; }
     .rights-purchase .transaction-body { padding-top: 0.3rem; }
-    .rights-progress { padding: 0.5rem; }
-    .rights-progress .game-metric-label { font-size: 0.65rem; }
-    .rights-progress .game-metric-value strong { font-size: 1.2rem; }
+    .rights-progress { padding: 0.5rem 0.75rem; }
     .rights-waiting { padding: 0.5rem; gap: 0.5rem; }
     .rights-company { width: 5rem; height: 5rem; }
 }
-@media (max-width: 991.98px) {
-    .mobile-standalone .rights-screen { padding-top: max(1rem, env(safe-area-inset-top)); padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
-    .rights-spectator .rights-panel { display: flex; }
-    .rights-spectator { overflow: auto; height: auto; min-height: 100dvh; }
-    .rights-stock-prices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (max-height: 575px) and (min-width: 576px) {
-    .rights-panel:not(.rights-spectator .rights-panel) { flex-direction: row; flex-wrap: wrap; gap: 0.5rem 1rem; }
-    .rights-panel > .suspension-heading { width: 30%; align-self: center; }
-    .rights-panel > .rights-purchase { width: calc(70% - 1rem); }
-    .rights-panel > .rights-progress { width: 100%; }
-}
-
-@media (max-height: 650px) {
-    .rights-screen { padding: 0.5rem; }
-    .rights-panel { padding: 0.6rem; gap: 0.35rem; }
-    .rights-purchase { gap: 0.25rem; }
+@media (max-height: 700px) {
+    .rights-own .rights-panel { padding-top: 6rem; padding-bottom: 0; }
     .rights-purchase .trade-role-progress { display: none; }
     .rights-purchase .btn { min-height: 2rem; padding-block: 0.15rem; }
-    .rights-purchase .trade-feedback { font-size: 0.7rem; }
-    .rights-progress { padding: 0.35rem; }
 }
 @media (max-height: 575px) and (min-width: 576px) {
-    .rights-panel:has(.rights-purchase) { display: grid; grid-template-columns: 1fr 2fr; grid-template-areas: "heading purchase" "progress purchase"; }
-    .rights-panel:has(.rights-purchase) .rights-summary > .suspension-heading { grid-area: heading; width: 100%; }
-    .rights-panel:has(.rights-purchase) .rights-summary > .rights-purchase { grid-area: purchase; width: 100%; }
-    .rights-panel:has(.rights-purchase) > .rights-progress { grid-area: progress; width: 100%; }
-}
-
-.rights-holders strong { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* Keep the six-player TV overview within the screen at the TV's larger type scale. */
-.rights-spectator .rights-panel { gap: 0.65rem; padding: 1rem; }
-.rights-spectator .suspension-heading h1 { font-size: 1.6rem; margin-block: 0.15rem; }
-.rights-spectator .rights-waiting { padding: 0.25rem; }
-.rights-spectator .rights-current, .rights-spectator .rights-company { width: 4rem; height: 4rem; }
-.rights-spectator .suspension-portfolios { padding: 0.5rem; }
-.rights-spectator .suspension-portfolios h2 { font-size: 1rem; margin-bottom: 0.4rem; }
-.rights-spectator .suspension-portfolios :is(th, td) { padding: 0.2rem; font-size: 0.75rem; }
-.rights-spectator .suspension-portfolios th img { height: 1.25rem; }
-.rights-spectator .rights-stock-prices article { padding: 0.5rem; }
-.rights-spectator .rights-stock-prices img { width: 2rem; height: 2rem; }
-.rights-spectator .rights-stock-prices span { margin-top: 0.25rem; }
-.rights-spectator .rights-progress { padding: 0.5rem; }
-
-.rights-purchase .trade-stock-summary { flex: 0 0 auto !important; }
-@media (min-width: 992px) {
-    .rights-purchase { padding: 1rem; border: 1px solid #dee2e6; border-radius: 0.5rem; }
-}
-
-.rights-own .rights-panel { background: transparent; padding: 0; }
-.rights-own .rights-summary { display: flex; flex-direction: column; gap: 1rem; padding: 1rem; border-radius: 0.75rem; background: white; color: #111; }
-.rights-purchase .trade-feedback:empty { display: none; }
-@media (max-width: 575.98px), (max-height: 750px) {
-    .rights-own .rights-summary { padding: 0.75rem; gap: 0.5rem; }
-}
-@media (max-height: 575px) and (min-width: 576px) {
-    .rights-own .rights-panel { display: flex; flex-direction: column; flex-wrap: nowrap; }
-    .rights-own .rights-summary { display: grid; grid-template-columns: 1fr 2fr; grid-template-areas: "heading purchase"; gap: 1rem; }
-    .rights-own .rights-progress { display: flex; flex-direction: row; align-items: center; gap: 1rem; }
-    .rights-own .rights-progress small { max-width: 10rem; }
-    .rights-own .rights-summary .rights-purchase { gap: 0.15rem; }
-    .rights-own .rights-summary .trade-inputs { row-gap: 0.2rem; }
-}
-
-@media (max-height: 575px) and (min-width: 576px) {
-    .rights-own .rights-purchase h6 { font-size: 1rem; }
-    .rights-own .rights-purchase .btn { font-size: 1rem; }
+    .rights-screen { padding: 0.5rem; }
+    .rights-own .rights-panel { width: min(100%, 48rem); }
+    .rights-own .rights-summary { display: grid; grid-template-columns: 1fr 2fr; gap: 0.75rem; padding: 0.5rem; }
+    .rights-own .rights-purchase { gap: 0.15rem; }
+    .rights-own .trade-inputs { row-gap: 0.2rem; }
+    .rights-own .rights-purchase :is(h6, .btn) { font-size: 1rem; }
     .rights-own .rights-purchase :is(.form-control, .input-group-text) { padding-block: 0.15rem; }
+    .rights-progress { gap: 0.4rem; }
+}
+
+@media (max-width: 575.98px) {
+    .rights-own .rights-progress { width: 100%; }
+    .rights-own .rights-progress .game-metrics { width: 100%; grid-template-columns: repeat(2, 1fr); }
+}
+
+/* A portrait card when there is room for the progress and shareholder strip too. */
+@media (min-height: 760px) {
+    .rights-screen:not(.rights-own, .rights-spectator) .rights-panel {
+        width: min(100%, 24rem, calc((100dvh - 27rem) * 0.714286));
+        padding-top: 8rem;
+        padding-bottom: 5rem;
+    }
+    .rights-screen:not(.rights-own, .rights-spectator) .rights-summary {
+        aspect-ratio: 5 / 7;
+        flex-shrink: 0;
+    }
+    .rights-screen:not(.rights-own, .rights-spectator) .rights-waiting { flex: 1; justify-content: center; }
+}
+
+/* Three stable regions keep shareholders above the bottom safe area. */
+.rights-screen:not(.rights-spectator) .rights-panel {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    justify-items: center;
+    align-items: center;
+    padding-block: 0;
+}
+.rights-screen:not(.rights-spectator) .rights-progress { position: static; }
+.rights-screen:not(.rights-spectator) .rights-summary { align-self: center; }
+.rights-screen:not(.rights-spectator) .rights-holders { align-self: end; }
+.rights-own .rights-summary { gap: 1rem; }
+@media (max-width: 991.98px) {
+    .rights-spectator { padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); }
+    .rights-spectator .rights-progress { width: 100%; }
+    .rights-spectator .rights-skip { margin-bottom: 0.5rem; }
+}
+@media (max-height: 900px) {
+    .rights-own .rights-panel { gap: 0.75rem; }
+    .rights-own .rights-summary { gap: 0.5rem; }
+    .rights-own .trade-role-progress { display: none; }
+    .rights-own .trade-inputs { row-gap: 0.4rem; }
+}
+@media (max-height: 650px) {
+    .rights-screen:not(.rights-spectator) .rights-holders > div {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 0.4rem;
+        padding: 0.25rem;
+        font-size: 0.7rem;
+    }
+    .rights-screen:not(.rights-spectator) .rights-holders img {
+        grid-row: span 3;
+        width: 2rem;
+        height: 2rem;
+        margin: 0;
+    }
+    .rights-screen:not(.rights-spectator) .rights-holders .net-worth-number { font-size: 0.75rem; }
+    .rights-screen:not(.rights-spectator) .rights-holders > div { max-width: 9rem; }
 }
 @media (max-height: 575px) and (min-width: 576px) {
-    .rights-own .rights-summary { padding: 0.5rem; gap: 0.5rem; }
+    .rights-own .rights-panel { gap: 0.4rem; }
+    .rights-own .rights-progress { padding: 0.25rem 0.5rem; gap: 0.25rem; }
+    .rights-own .rights-summary { gap: 0.5rem; }
+    .rights-own .rights-purchase .btn { min-height: 1.5rem; padding-block: 0.1rem; line-height: 1.2; font-size: 0.85rem; }
+    .rights-own .rights-purchase h6 { font-size: 0.85rem; }
+    .rights-own .trade-inputs { row-gap: 0.15rem; }
+    .rights-own .rights-holders > div > span:last-child { font-size: 0.7rem; }
+}
+@media (max-height: 575px) and (min-width: 576px) {
+    .rights-own .rights-progress .game-metric-value { line-height: 1; }
+    .rights-own .rights-progress .game-metric-value strong { font-size: 1rem; }
+    .rights-own .rights-progress small { font-size: 0.6rem; }
+    .rights-own .rights-holders > div > span:last-child { display: none; }
+    .rights-own .rights-holders img { grid-row: span 2; }
+}
+@media (max-height: 575px) and (min-width: 576px) {
+    .rights-own .rights-holders > div { line-height: 1.1; }
+    .rights-own .rights-holders .net-worth-number { line-height: 1.1; }
+}
+.rights-screen:not(.rights-spectator) .rights-holders { grid-row: 3; }
+@media (max-width: 575.98px) {
+    .rights-screen:not(.rights-own, .rights-spectator) .rights-panel { width: 100%; }
+    .rights-screen:not(.rights-own, .rights-spectator) .rights-summary { max-height: 100%; }
+}
+
+@media (min-width: 1000px) {
+    .rights-spectator { padding: 2.5vh 2.5vw; }
+    .rights-spectator .rights-panel {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto auto;
+        gap: 1rem;
+        width: 100%;
+        height: 100%;
+    }
+    .rights-spectator .rights-progress { display: none; }
+    .rights-spectator .rights-summary { height: 100%; min-height: 0; }
+    .rights-spectator .rights-waiting { flex: 0 0 auto; }
+    .rights-spectator .rights-summary > .suspension-heading { flex-shrink: 0; }
+    .rights-spectator .suspension-portfolios {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    .rights-spectator .suspension-table-scroll { flex: 1; min-height: 0; overflow: auto; }
 }

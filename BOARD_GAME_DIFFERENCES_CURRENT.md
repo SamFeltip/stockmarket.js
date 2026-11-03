@@ -131,3 +131,15 @@ restrictions do not apply to this special purchase.
 These rounding, cash, and inventory details are implementation choices where the retail review is silent,
 not rules imported from the patent. NPC holders accept profitable offers within cash and otherwise skip.
 An authoritative short completion delay preserves the final purchase animation before normal play resumes.
+
+### Rights Issue rules audit (3 November 2026)
+
+Checked the implementation against the retail review summarized above, rather than the patent:
+£1 per additional share, at most one new share per two originally held, optional choices for every
+existing holder, one initiating bargain, and no other turn or period advancement during choices.
+The two Rights Issue cards are part of the 108-card deck; activation spends the dealt card and
+unused cards do not carry into the next period. Existing tests cover ownership, stale/replayed requests,
+cash and bank limits, NPC holders, public feed events, and resuming/closing after the final choice.
+The offline preview now also closes a period when the initiating bargain was its final turn, records
+completion in its feed, and returns spectators to their dashboard after the issue ends.
+The rules-source limitations and rounding/supply implementation choices above still apply.

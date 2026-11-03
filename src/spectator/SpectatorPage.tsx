@@ -1,3 +1,4 @@
+import { SpectatorHeader } from "../SpectatorHeader";
 import { RightsIssue } from "../RightsIssue";
 import { useConvexAuth, useConvexConnectionState, useMutation, useQuery } from "convex/react";
 import { Link, useParams } from "react-router-dom";
@@ -95,7 +96,8 @@ export function SpectatorScreen({ board }: { board: Board })
     return (
         <>
             <main className="game-screen">
-                <header className="game-header">
+                <SpectatorHeader board={display} />
+                <header className="game-header legacy-spectator-header">
                     <div className="card card-green spectator-heading">
                         <img src="/static/imgs/icons/Stock.svg" alt="" />
                         <div>

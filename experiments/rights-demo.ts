@@ -1,10 +1,11 @@
+import { finishRightsDemo } from "./rights-demo-finish";
 import { companyRoles } from "../shared/company-roles";
 import type { Dispatch, SetStateAction } from "react";
 import type { Board } from "../src/types";
 import { rightsEntitlement, rightsIssueOrder, rightsPurchaseError } from "../shared/rights-issue";
 import { actionAnimationMs } from "../shared/presentation";
 
-export const rightsMode = new URLSearchParams(location.search).get("rights");
+export const rightsMode = new URLSearchParams(globalThis.location?.search ?? "").get("rights");
 
 function synchronize(board: Board): Board
 {
@@ -34,11 +35,18 @@ function begin(board: Board, insightId: Board["insights"][number]["_id"], stockK
     const next = board.players[(board.players.findIndex((player) => player._id === issue.actorPlayerId) + 1)
       % board.players.length];
 
-    return synchronize({ ...board, game: { ...board.game, rightsIssue: empty ? undefined : issue,
-        ...(empty ? { turn: issue.turn + 1, currentPlayerId: next._id,
-            status: issue.turn + 1 >= board.players.length * 3 ? "closed" : "playing" } : {}) },
-    insights: board.insights.map((card) => card._id === insightId
-        ? { ...card, used: true, resolved: true } : card) });
+    const actor = board.players.find((player) => player._id === issue.actorPlayerId)!;
+    const stock = board.stocks.find((item) => item.key === stockKey)!;
+    const opening = { ...board.feed[0], _id: `rights-open-${insightId}` as Board["feed"][number]["_id"],
+        _creationTime: Date.now(), title: actor.name, imageRoot: actor.profileRoot, colour: "",
+        message: `opened a Rights Issue for ${stock.name}`, quantity: undefined, stockKey: undefined };
+
+    return synchronize({ ...board, feed: [opening, ...board.feed],
+        game: { ...board.game, rightsIssue: empty ? undefined : issue,
+            ...(empty ? { turn: issue.turn + 1, currentPlayerId: next._id,
+                status: issue.turn + 1 >= board.players.length * 3 ? "closed" : "playing" } : {}) },
+        insights: board.insights.map((card) => card._id === insightId
+            ? { ...card, used: true, resolved: true } : card) });
 }
 
 export function configureRightsDemo(board: Board)
@@ -95,7 +103,14 @@ export function rightsDemoHandlers(board: Board, setBoard: Dispatch<SetStateActi
             updated.netWorth = updated.cash + holdings.reduce((sum, holding) => sum + holding.quantity
             * (board.game.prices.find((price) => price.stockKey === holding.stockKey)?.value ?? 0), 0);
 
-            setBoard((current) => synchronize({ ...current,
+            const stock = board.stocks.find((item) => item.key === issue.stockKey)!;
+            const event = { ...board.feed[0], _id: `rights-choice-${issue.index}-${issue.insightId}` as Board["feed"][number]["_id"],
+                _creationTime: Date.now(), title: player.name, imageRoot: player.profileRoot,
+                message: quantity ? `bought ${quantity} ${stock.name} shares in the Rights Issue`
+                    : `skipped the ${stock.name} Rights Issue`, colour: quantity ? "" : "grey",
+                stockKey: quantity ? issue.stockKey : undefined, quantity: quantity || undefined };
+
+            setBoard((current) => synchronize({ ...current, feed: [event, ...current.feed],
                 game: { ...current.game, rightsIssue: { ...issue, completed,
                     index: completed ? issue.index : issue.index + 1,
                     offers: issue.offers.map((item, index) => index === issue.index
@@ -105,9 +120,7 @@ export function rightsDemoHandlers(board: Board, setBoard: Dispatch<SetStateActi
 
             if (completed)
             {
-                setTimeout(() => setBoard((current) => ({ ...current, game: { ...current.game, rightsIssue: undefined,
-                    turn: issue.turn + 1, currentPlayerId: current.players[(current.players.findIndex((item) =>
-                        item._id === issue.actorPlayerId) + 1) % current.players.length]._id } })), actionAnimationMs);
+                setTimeout(() => setBoard((current) => finishRightsDemo(current, issue.insightId)), actionAnimationMs);
             }
 
             return Promise.resolve();

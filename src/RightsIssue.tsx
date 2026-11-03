@@ -1,3 +1,6 @@
+import { RightsIssueSpectatorDesktop } from "./RightsIssueSpectatorDesktop";
+import { SpectatorSkip } from "./RightsIssueSkip";
+import { SpectatorHeader } from "./SpectatorHeader";
 import { TradeStockSummary } from "./TradeStockSummary";
 import { useState } from "react";
 import type { Board } from "./display-types";
@@ -24,77 +27,83 @@ export function RightsIssue({ board, playerId, spectator = false, onDecision }: 
     const ordered = rightsIssueOrder(board.players, issue.actorPlayerId);
 
     return (
-        <main className={`rights-screen ${spectator ? "rights-spectator" : ""} ${own ? "rights-own" : ""}`}>
-            <section className="rights-panel" aria-label="Rights Issue">
-                <div className="rights-summary">
-                    <header className="suspension-heading">
-                        <p>Chance Card</p>
-                        <h1>Rights Issue</h1>
-                        {own && <p>{`Optionally buy more ${stock.name} shares at £1 per extra share.`}</p>}
-                    </header>
-                    {own ? (
-                        <RightsPurchase key={`${issue.insightId}-${issue.index}`} board={board} onDecision={onDecision} />
-                    ) : (
-                        <div className="rights-waiting">
-                            {spectator && <img className="rights-current rounded" src={current.profileRoot} alt={current.name} />}
-                            <img className="rights-company" src={stock.imagePath} alt={stock.name} />
-                            <p>
-                                {issue.completed ? "Rights Issue complete. Resuming trading…" : (spectator ? `${current.name} is deciding how much ${stock.name} stock to purchase during the Rights Issue.`
-                                    : `Gameplay is paused while ${stock.name} conducts a Rights Issue.`)}
-                            </p>
-                        </div>
-                    )}
+        <>
+            {spectator && <RightsIssueSpectatorDesktop board={board} onDecision={onDecision} />}
+            <main className={`rights-screen ${spectator ? "rights-spectator rights-spectator-mobile" : ""} ${own ? "rights-own" : ""}`}>
+                <section className="rights-panel" aria-label="Rights Issue">
                     {spectator && (
-                        <DecisionPortfolios
-                            board={board}
-                            activePlayerId={current._id}
-                            order={ordered.map((player) => player._id)}
-                            mutedStockKey={stock.key}
-                            animateStockKey={stock.key}
-                        />
+                        <SpectatorHeader board={{ ...board, game: { ...board.game, turn: issue.turn } }} paused />
                     )}
-                </div>
-                {spectator ? (
-                    <>
-                        <div className="rights-stock-prices">
-                            {board.stocks.filter((item) => item.display).map((item) => (
-                                <article key={item.key}>
-                                    <img src={item.imagePath} alt="" />
-                                    <strong>{item.name}</strong>
-                                    <span>worth</span>
-                                    <strong>
-                                        {`£${(board.game.prices.find((value) => value.stockKey === item.key)?.value ?? 0).toFixed(2)}`}
-                                    </strong>
-                                </article>
-                            ))}
-                        </div>
-                        {!issue.completed && <SpectatorSkip key={`${issue.insightId}-${issue.index}`} onDecision={onDecision} />}
-                    </>
-                ) : !own && (
-                    <div className="rights-holders" aria-label="Rights Issue shareholders">
-                        {issue.offers.map((item) =>
-                        {
-                            const player = board.players.find((seat) => seat._id === item.playerId)!;
-                            const held = player.holdings.find((holding) =>
-                                holding.stockKey === stock.key)?.quantity ?? 0;
-
-                            return (
-                                <div key={item.playerId} className={item.playerId === current._id ? "is-current" : ""}>
-                                    <img src={player.profileRoot} alt="" className="rounded" />
-                                    <strong>{item.playerId === playerId ? "You" : player.name}</strong>
-                                    <NetWorthNumber value={held} shares initialValue={item.held} />
-                                    <span>stocks</span>
-                                </div>
-                            );
-                        })}
+                    <footer className="rights-progress">
+                        <GameMetrics board={{ ...board, game: { ...board.game, turn: issue.turn } }} />
+                        <small>Trading paused during Rights Issue</small>
+                    </footer>
+                    <div className="rights-summary">
+                        <header className="suspension-heading">
+                            <p>Chance Card</p>
+                            <h1>Rights Issue</h1>
+                            {own && <p>{`Optionally buy more ${stock.name} shares at £1 per extra share.`}</p>}
+                        </header>
+                        {own ? (
+                            <RightsPurchase key={`${issue.insightId}-${issue.index}`} board={board} onDecision={onDecision} />
+                        ) : (
+                            <div className="rights-waiting">
+                                {spectator && <img className="rights-current rounded" src={current.profileRoot} alt={current.name} />}
+                                <img className="rights-company" src={stock.imagePath} alt={stock.name} />
+                                <p>
+                                    {issue.completed ? "Rights Issue complete. Resuming trading…" : (spectator ? `${current.name} is deciding how much ${stock.name} stock to purchase during the Rights Issue.`
+                                        : `Gameplay is paused while ${stock.name} conducts a Rights Issue.`)}
+                                </p>
+                            </div>
+                        )}
+                        {spectator && (
+                            <DecisionPortfolios
+                                board={board}
+                                activePlayerId={current._id}
+                                order={ordered.map((player) => player._id)}
+                                mutedStockKey={stock.key}
+                                animateStockKey={stock.key}
+                            />
+                        )}
                     </div>
-                )}
-                <footer className="rights-progress">
-                    <GameMetrics board={{ ...board, game: { ...board.game, turn: issue.turn } }} />
-                    <small>Trading paused during Rights Issue</small>
-                </footer>
-            </section>
-        </main>
+                    {spectator ? (
+                        <>
+                            <div className="rights-stock-prices">
+                                {board.stocks.filter((item) => item.display).map((item) => (
+                                    <article key={item.key}>
+                                        <img src={item.imagePath} alt="" />
+                                        <strong>{item.name}</strong>
+                                        <span>price</span>
+                                        <strong>
+                                            {`£${(board.game.prices.find((value) => value.stockKey === item.key)?.value ?? 0).toFixed(2)}`}
+                                        </strong>
+                                    </article>
+                                ))}
+                            </div>
+                            {!issue.completed && <SpectatorSkip key={`${issue.insightId}-${issue.index}`} onDecision={onDecision} />}
+                        </>
+                    ) : (
+                        <div className="rights-holders" aria-label="Rights Issue shareholders">
+                            {issue.offers.map((item) =>
+                            {
+                                const player = board.players.find((seat) => seat._id === item.playerId)!;
+                                const held = player.holdings.find((holding) =>
+                                    holding.stockKey === stock.key)?.quantity ?? 0;
+
+                                return (
+                                    <div key={item.playerId} className={item.playerId === current._id ? "is-current" : ""}>
+                                        <img src={player.profileRoot} alt="" className="rounded" />
+                                        <strong>{item.playerId === playerId ? "You" : player.name}</strong>
+                                        <NetWorthNumber value={held} shares initialValue={item.held} />
+                                        <span>stocks</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </section>
+            </main>
+        </>
     );
 }
 
@@ -182,36 +191,5 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
                 <button className="btn btn-success" type="submit" disabled={busy || !valid}>Buy</button>
             </div>
         </form>
-    );
-}
-
-function SpectatorSkip({ onDecision }: { onDecision?: (quantity: number) => Promise<unknown> })
-{
-    const [confirming, setConfirming] = useState(false);
-    const { run, busy, error } = useAction();
-
-    return (
-        <div className="rights-skip">
-            {error && <p role="alert">{error}</p>}
-            {confirming ? (
-                <>
-                    <span>Skip this shareholder’s choice?</span>
-                    <button className="btn btn-secondary" disabled={busy} onClick={() => setConfirming(false)}>Cancel</button>
-                    <button
-                        className="btn btn-primary"
-                        disabled={busy}
-                        onClick={() =>
-                        {
-                            void run(async () =>
-                            {
-                                await onDecision?.(0);
-                            });
-                        }}
-                    >
-                        Confirm skip
-                    </button>
-                </>
-            ) : <button className="btn btn-secondary" onClick={() => setConfirming(true)}>Skip</button>}
-        </div>
     );
 }
