@@ -1,3 +1,4 @@
+import { skipDealtSuspensions } from "./game-setup";
 import { expect, it } from "vitest";
 import { api } from "../convex/_generated/api";
 import { previewRound, roundProgress } from "../src/round-preview";
@@ -41,6 +42,7 @@ it("updates revealed wealth and charts before advancing, matching settled stock 
     expect(complete.players[0].cash).toBe(1100);
     expect(complete.players[0].netWorth).toBe(5100);
     expect(complete.game.prices.find((price) => price.stockKey === 9)?.value).toBe(4);
+    await skipDealtSuspensions(sam, "test");
     await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
     const settled = await sam.query(api.board.get, { code: "test" });
 

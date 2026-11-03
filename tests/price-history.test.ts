@@ -1,3 +1,4 @@
+import { skipDealtSuspensions } from "./game-setup";
 import { describe, expect, it } from "vitest";
 import { api } from "../convex/_generated/api";
 import { priceSeries } from "../src/price-history";
@@ -35,6 +36,7 @@ describe("Stock history and investors", () =>
         const closed = await sam.query(api.board.get, { code: "test" });
 
         expect(closed.game.priceHistory).toEqual(initial.game.priceHistory);
+        await skipDealtSuspensions(sam, "test");
         await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
         const settled = await bob.query(api.board.get, { code: "test" });
 
@@ -53,7 +55,7 @@ describe("Stock history and investors", () =>
 
         await expect(sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 })).rejects.toThrow();
         expect((await sam.query(api.board.get, { code: "test" })).game.priceHistory).toEqual(settled.game.priceHistory);
-        expect(settled.insights).toHaveLength(10);
+        expect(settled.insights.filter((card) => card.period === settled.game.currentPeriod)).toHaveLength(10);
     });
     it("begins history at the current price for older games without inventing past prices", async () =>
     {
@@ -64,6 +66,7 @@ describe("Stock history and investors", () =>
         {
             await context.db.patch(board.game._id, { priceHistory: undefined, currentPeriod: 2, status: "closed" });
         });
+        await skipDealtSuspensions(sam, "test");
         await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 2 });
         const next = await sam.query(api.board.get, { code: "test" });
 

@@ -16,6 +16,8 @@ export function SpectatorScreen({ board }: { board: Board })
 {
     const start = useMutation(api.games.start);
     const nextSpectator = useMutation(api.rounds.nextSpectator);
+    const beginSuspensions = useMutation(api.rounds.beginSuspensions);
+    const skipSuspension = useMutation(api.rounds.skipSuspension);
     const { run, busy, error } = useAction();
     const { game } = board;
     const phoneUrl = globalThis.location.origin;
@@ -43,6 +45,8 @@ export function SpectatorScreen({ board }: { board: Board })
                 <RoundPresentation
                     key={`${game.code}-${game.currentPeriod}`}
                     snapshot={board}
+                    onBeginSuspensions={beginSuspensions}
+                    onSkipSuspension={skipSuspension}
                     busy={busy}
                     error={error}
                     onBack={back}

@@ -1,6 +1,10 @@
+import type { MutationCtx as MutationContext } from "./_generated/server";
+import type { Doc as Document_, Id } from "./_generated/dataModel";
+import { pendingSuspensions } from "../shared/suspensions";
+import { checkSuspensionPhase, resolveNpcSuspensions, spendSuspension } from "./suspensions";
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { currentUser, gameByCode, fail, member, members } from "./library";
+import { currentUser, gameByCode, fail, member, members, roundInsights } from "./library";
 
 import { spectatorHost } from "./game/hosting";
 import { advancePeriod } from "./advancePeriod";
@@ -93,3 +97,69 @@ export const nextSpectator = mutation({
         await advancePeriod(context, game, expectedPeriod);
     },
 });
+
+// Reveal navigation is per browser; any display reaching the cash summary can open this shared phase.
+export const beginSuspensions = mutation({
+    args: { code: v.string(), expectedPeriod: v.number() },
+    handler: async (context, { code, expectedPeriod }) =>
+    {
+        const game = await gameByCode(context, code);
+
+        checkSuspensionPhase(game, expectedPeriod);
+        await context.db.patch(game._id, { suspensionPeriod: game.currentPeriod });
+        await resolveNpcSuspensions(context, game);
+    },
+});
+
+export const suspendShare = mutation({
+    args: { code: v.string(), expectedPeriod: v.number(),
+        insightId: v.id("playerInsights"), stockKey: v.optional(v.number()) },
+    handler: async (context, { code, expectedPeriod, insightId, stockKey }) =>
+    {
+        const { game, player } = await member(context, code);
+
+        checkSuspensionPhase(game, expectedPeriod);
+        const card = await currentSuspension(context, game, insightId);
+        if (card.playerId !== player._id)
+        {
+            fail("Wait for your Share Suspended card");
+        }
+
+        const updated = await spendSuspension(context, game, card, stockKey);
+
+        await resolveNpcSuspensions(context, updated);
+    },
+});
+
+// Like nextSpectator, the public display acts on behalf of a player who cannot continue.
+export const skipSuspension = mutation({
+    args: { code: v.string(), expectedPeriod: v.number(), insightId: v.id("playerInsights") },
+    handler: async (context, { code, expectedPeriod, insightId }) =>
+    {
+        const game = await gameByCode(context, code);
+
+        checkSuspensionPhase(game, expectedPeriod);
+        const card = await currentSuspension(context, game, insightId);
+        const updated = await spendSuspension(context, game, card);
+
+        await resolveNpcSuspensions(context, updated);
+    },
+});
+
+async function currentSuspension(context: MutationContext, game: Document_<"games">, insightId: Id<"playerInsights">)
+{
+    if (game.suspensionPeriod !== game.currentPeriod)
+    {
+        fail("Wait until the stock and cash reveals are complete");
+    }
+
+    const players = await members(context, game._id);
+    const insights = await roundInsights(context, game);
+    const queue = pendingSuspensions(game.currentPeriod, players, insights);
+    if (queue[0]?._id !== insightId)
+    {
+        fail("This Share Suspended decision has already changed");
+    }
+
+    return queue[0];
+}

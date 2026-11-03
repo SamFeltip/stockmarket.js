@@ -112,12 +112,15 @@ export const board = query({
             period: game.currentPeriod,
             prices: game.prices.map((price) => ({ stockKey: price.stockKey, value: price.value })),
             suspended: game.suspended,
+            suspensionPeriod: game.suspensionPeriod,
             stocks: catalog.map((stock) => ({ key: stock.key, name: stock.name, display: stock.display,
-                imagePath: stock.imagePath, secondaryImagePath: stock.secondaryImagePath })),
+                imagePath: stock.imagePath,
+                secondaryImagePath: stock.secondaryImagePath, variation: stock.variation })),
             insights: withRoleBonuses(revealed, seats, catalog).map((insight) => ({
                 _id: insight._id, playerId: insight.playerId,
                 stockKey: insight.stockKey, value: insight.value, description: insight.description,
-                resolved: insight.resolved, bonusRole: insight.bonusRole,
+                resolved: insight.resolved, chanceKind: insight.chanceKind, used: insight.used,
+                period: insight.period, bonusRole: insight.bonusRole,
                 removedInsightId: insight.removedInsightId })),
         } : null;
         const players = await Promise.all(seats.map(async (seat) =>

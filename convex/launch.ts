@@ -43,7 +43,7 @@ export async function launchGame(context: MutationContext, game: Document_<"game
         fail("NPC games require an ordinary-only insight catalog");
     }
 
-    const catalogVersion = `boardgame-110-v1:${game._id}`;
+    const catalogVersion = `boardgame-108-v2:${game._id}`;
 
     await context.db.insert("gameCatalogs", { gameId: game._id, version: catalogVersion,
         cards: cards.map((card) => ({ id: String(card._id), stockKey: card.stockKey, value: card.value,

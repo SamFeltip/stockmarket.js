@@ -1,3 +1,4 @@
+import { skipDealtSuspensions } from "./game-setup";
 import { describe, expect, it } from "vitest";
 import { api } from "../convex/_generated/api";
 import { setup } from "./game-setup";
@@ -107,6 +108,7 @@ describe("Board-game rules", () =>
                 }
 
                 expect((await sam.query(api.board.get, { code: "test" })).game.status).toBe("closed");
+                await skipDealtSuspensions(sam, "test");
                 await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: period });
                 const settled = await sam.query(api.board.get, { code: "test" });
 

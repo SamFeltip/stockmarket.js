@@ -48,6 +48,7 @@ export default defineSchema({
             period: v.number(), prices: v.array(v.object({ stockKey: v.number(), value: v.number() })),
         }))),
         suspended: v.array(v.number()),
+        suspensionPeriod: v.optional(v.number()),
     }).index("by_code", ["code"]),
     players: defineTable({
         gameId: v.id("games"), userId: v.optional(v.id("users")),

@@ -1,3 +1,4 @@
+import { skipDealtSuspensions } from "./game-setup";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { api } from "../convex/_generated/api";
 import { setup } from "./game-setup";
@@ -32,6 +33,7 @@ describe("Web spectator host", () =>
             expect((await display.query(api.tv.board, { code: "test" }))?.canControl).toBe(false);
             await expect(outsider.mutation(api.rounds.next, { code: "test", expectedPeriod: period }))
                 .rejects.toThrow("Only the lobby host");
+            await skipDealtSuspensions(display, "test");
             await display.mutation(api.rounds.nextSpectator, { code: "test", expectedPeriod: period });
             await expect(sam.mutation(api.rounds.next, { code: "test", expectedPeriod: period }))
                 .rejects.toThrow("already changed");
@@ -102,6 +104,7 @@ describe("Web spectator host", () =>
             await expect(t.mutation(api.rounds.next, { code: "display", expectedPeriod: period })).rejects.toThrow();
             const display = [sam, bob, t][period % 3];
 
+            await skipDealtSuspensions(display, "display");
             await display.mutation(api.rounds.nextSpectator, { code: "display", expectedPeriod: period });
             await expect(sam.mutation(api.rounds.nextSpectator, { code: "display", expectedPeriod: period }))
                 .rejects.toThrow("already changed");

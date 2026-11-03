@@ -115,14 +115,18 @@ describe("TV spectator display parity", () =>
 
         const closed = (await sam.query(api.tv.board, { code: "test" }))!;
         const summary = (snapshot: Board) => renderToStaticMarkup(
-            <RoundPresentation
-                snapshot={snapshot}
-                onNext={() => undefined}
-                busy={false}
-                error=""
-                onBack={() => undefined}
-                overview
-            />,
+            <ConvexProvider client={client}>
+                <RoundPresentation
+                    snapshot={{ ...snapshot, reveal: snapshot.reveal ? { ...snapshot.reveal,
+                        insights: snapshot.reveal.insights.map((card) => card.chanceKind === "hold"
+                            ? { ...card, used: true } : card) } : null }}
+                    onNext={() => undefined}
+                    busy={false}
+                    error=""
+                    onBack={() => undefined}
+                    overview
+                />
+            </ConvexProvider>,
         );
         const waiting = render(closed);
 
@@ -139,7 +143,7 @@ describe("TV spectator display parity", () =>
         expect(summary({ ...closed, canControl: false })).toContain("Next Period");
         const publicReveal = closed.reveal!;
         const pending = { ...closed, reveal: { ...publicReveal,
-            stocks: [...publicReveal.stocks, { key: 999, name: "Hold Stock Price", display: false,
+            stocks: [...publicReveal.stocks, { key: 999, name: "Hold Stock Price", display: false, variation: 0,
                 imagePath: "", secondaryImagePath: "" }],
             insights: [...publicReveal.insights, { ...publicReveal.insights[0], stockKey: 999, resolved: false }],
         } };

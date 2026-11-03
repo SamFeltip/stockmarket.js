@@ -1,9 +1,9 @@
 import type { CompanyRole } from "../shared/company-roles";
 import type { Board as PlayerBoard } from "./types";
 
-export type Stock = Pick<PlayerBoard["stocks"][number], "key" | "name" | "display" | "imagePath" | "secondaryImagePath">;
+export type Stock = Pick<PlayerBoard["stocks"][number], "key" | "name" | "display" | "imagePath" | "secondaryImagePath"> & { variation?: number };
 
-export type Insight = Pick<PlayerBoard["insights"][number], "_id" | "playerId" | "stockKey" | "value" | "description" | "resolved" | "bonusRole" | "removedInsightId">;
+export type Insight = Pick<PlayerBoard["insights"][number], "_id" | "playerId" | "stockKey" | "value" | "description" | "resolved" | "chanceKind" | "used" | "period" | "bonusRole" | "removedInsightId">;
 
 export type Player = Pick<PlayerBoard["players"][number],
     "_id" | "name" | "profileRoot" | "cash" | "holdings" | "netWorth" | "ranking"> & {
@@ -11,7 +11,7 @@ export type Player = Pick<PlayerBoard["players"][number],
     };
 
 export interface Board {
-    game: Pick<PlayerBoard["game"], "code" | "status" | "currentPeriod" | "periodCount" | "prices" | "priceHistory" | "suspended">;
+    game: Pick<PlayerBoard["game"], "code" | "status" | "currentPeriod" | "periodCount" | "prices" | "priceHistory" | "suspended" | "suspensionPeriod">;
     stocks: Stock[];
     insights: Insight[];
     players: Player[];

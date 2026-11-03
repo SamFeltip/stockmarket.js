@@ -1,3 +1,5 @@
+import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { skipDealtSuspensions } from "./game-setup";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { companyRoles, withRoleBonuses } from "../shared/company-roles";
@@ -91,7 +93,7 @@ describe("company roles", () =>
             const insights = await context.db.query("playerInsights").collect();
             for (const insight of insights)
             {
-                await context.db.patch(insight._id, { value: 0 });
+                await context.db.patch(insight._id, { value: 0, used: insight.chanceKind === "hold" });
             }
 
             await context.db.patch(insights[0]._id, { stockKey: 8, value: -1.5 });
@@ -133,14 +135,16 @@ describe("company roles", () =>
         expect(footer.match(/influence/g)).toHaveLength(1);
         expect(footer).not.toContain("director bonus");
         const spectator = renderToStaticMarkup(
-            <RoundPresentation
-                snapshot={{ ...tv!, feed: [] }}
-                overview
-                onNext={vi.fn()}
-                onBack={vi.fn()}
-                busy={false}
-                error=""
-            />,
+            <ConvexProvider client={new ConvexReactClient("https://roles-test.invalid")}>
+                <RoundPresentation
+                    snapshot={{ ...tv!, feed: [] }}
+                    overview
+                    onNext={vi.fn()}
+                    onBack={vi.fn()}
+                    busy={false}
+                    error=""
+                />
+            </ConvexProvider>,
         );
         const spectatorFooter = renderToStaticMarkup(
             <StockRoleFooter
@@ -171,6 +175,7 @@ describe("company roles", () =>
         expect(cards).toContain("£-1.50");
         expect(cards).toContain("text-danger");
         expect(cards).toContain("£0.00");
+        await skipDealtSuspensions(sam, "test");
         await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
         const settled = await sam.query(api.board.get, { code: "test" });
 

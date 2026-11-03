@@ -1,3 +1,4 @@
+import { skipDealtSuspensions } from "./game-setup";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import type { Board } from "../src/types";
 import { describe, expect, it } from "vitest";
@@ -17,19 +18,19 @@ const renderDock = (board: Board) => renderToStaticMarkup(
 
 describe("board-game special cards", () =>
 {
-    it("builds the exact 110-card multiset, with four ±10% cash cards and two of each chance", () =>
+    it("builds the exact 108-card multiset, with four ±10% cash cards and two of each chance", () =>
     {
         const special = specialDeck();
 
         expect(insightCatalog).toHaveLength(92);
-        expect(insightCatalog.length + special.length).toBe(110);
-        expect(new Set(special.map((card) => card.id)).size).toBe(18);
+        expect(insightCatalog.length + special.length).toBe(108);
+        expect(new Set(special.map((card) => card.id)).size).toBe(16);
         expect(special.filter((card) => card.stockKey === cashStockKey).map((card) => card.value).toSorted())
             .toEqual([-0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, 0.1]);
 
         for (const card of chanceCards)
         {
-            expect(special.filter((item) => item.chanceKind === card.kind)).toHaveLength(2);
+            expect(special.filter((item) => item.chanceKind === card.kind)).toHaveLength(card.kind === "option" ? 0 : 2);
         }
     });
 
@@ -41,8 +42,8 @@ describe("board-game special cards", () =>
         const first = await sam.query(api.board.get, { code: "test" });
         const catalog = await t.run(async (context) => await context.db.query("gameCatalogs").first());
 
-        expect(catalog?.cards).toHaveLength(110);
-        expect(catalog?.cards.filter((card) => card.chanceKind)).toHaveLength(10);
+        expect(catalog?.cards).toHaveLength(108);
+        expect(catalog?.cards.filter((card) => card.chanceKind)).toHaveLength(8);
         expect(catalog?.cards.filter((card) => card.stockKey === cashStockKey)).toHaveLength(8);
         const deck = new Map(catalog!.cards.map((card) => [card.id, card]));
         for (let period = 0; period < 2; period++)
@@ -75,6 +76,7 @@ describe("board-game special cards", () =>
                 await clients[(period + turn) % clients.length].mutation(api.trading.play, { code: "test", expectedPeriod: period, expectedTurn: turn });
             }
 
+            await skipDealtSuspensions(sam, "test");
             await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: period });
         }
 
@@ -135,7 +137,8 @@ describe("board-game special cards", () =>
         const suspended = renderDock({ ...own, insights: own.insights.map((card) => ({ ...card, chanceKind: "hold" })) });
 
         expect(suspended).toContain("Play at period end, before prices change.");
-        expect(suspended).toContain("disabled=\"\">Activate");
+        expect(suspended).toContain("Available at period end");
+        expect(suspended).not.toContain("Activation is coming soon.");
         const option = renderDock({ ...own, insights: own.insights.map((card) => ({ ...card, chanceKind: "option" })) });
 
         expect(option).toContain("Option cards are not part of the retail board-game rules.");
@@ -200,6 +203,7 @@ describe("board-game special cards", () =>
         await expect(sam.mutation(api.rounds.hold, { code: "test", insightId: hold._id, stockKey: 8 }))
             .rejects.toThrow("not a hold-stock insight");
 
+        await skipDealtSuspensions(sam, "test");
         await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
         const next = await sam.query(api.board.get, { code: "test" });
 

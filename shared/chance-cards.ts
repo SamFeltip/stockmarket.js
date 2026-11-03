@@ -28,7 +28,7 @@ export interface DeckCard {
     chanceKind?: ChanceKind;
 }
 
-/** EP0297870A1 schedule: 8 gold cards (4 each ±10%) and 10 chance cards. */
+/** Retail deck: 8 currency cards (4 each ±10%) and 8 chance cards; no Options. */
 export function specialDeck(): DeckCard[]
 {
     return [
@@ -36,7 +36,7 @@ export function specialDeck(): DeckCard[]
             id: `boardgame:cash:${percent}:${copy}`, stockKey: cashStockKey,
             value: percent / 100, description: `Cash ${percent > 0 ? "+" : ""}${percent}%`,
         }))),
-        ...chanceCards.flatMap((card) => Array.from({ length: 2 }, (_, copy) => ({
+        ...chanceCards.filter((card) => card.kind !== "option").flatMap((card) => Array.from({ length: 2 }, (_, copy) => ({
             id: `boardgame:chance:${card.kind}:${copy}`, stockKey: chanceStockKey,
             value: 0, description: card.name, chanceKind: card.kind,
         }))),

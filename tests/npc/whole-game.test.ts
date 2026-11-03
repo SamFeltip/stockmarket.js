@@ -1,3 +1,4 @@
+import { skipDealtSuspensions } from "../game-setup";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api, internal } from "../../convex/_generated/api";
 import { setup } from "../game-setup";
@@ -104,6 +105,8 @@ describe("Complete mixed games", () =>
                       && card.period === closed.game.currentPeriod);
 
                     expect(freshCards).toHaveLength((humans + npcs) * 10);
+                    const prepared = await skipDealtSuspensions(sam, "test");
+
                     await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: period });
                     const settled = await sam.query(api.board.get, { code: "test" });
                     for (const price of settled.game.prices)
@@ -116,7 +119,8 @@ describe("Complete mixed games", () =>
                             .reduce((sum, card) => sum + card.value, 0);
 
                         expect(price.value).toBe(
-                            Math.max(0, Math.round((previous + delta) * 100) / 100),
+                            prepared?.reveal?.suspended.includes(price.stockKey) ? previous
+                                : Math.max(0, Math.round((previous + delta) * 100) / 100),
                         );
                     }
                 }

@@ -1,3 +1,4 @@
+import { skipDealtSuspensions } from "./game-setup";
 import { describe, expect, it } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "../convex/schema";
@@ -129,6 +130,7 @@ describe("TV spectator integration", () =>
 
         expect(closed?.game.status).toBe("closed");
         expect(closed?.reveal?.insights.length).toBeGreaterThan(0);
+        await skipDealtSuspensions(sam, "test");
         await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
         const next = await t.query(api.tv.board, { code: "test" });
 
@@ -167,6 +169,7 @@ describe("TV spectator integration", () =>
             await expect(t.mutation(api.tv.next, { code: "test", token: "b".repeat(64), expectedPeriod: period }))
                 .rejects.toThrow("controlling TV");
 
+            await skipDealtSuspensions(sam, "test");
             await (period % 2
                 ? t.mutation(api.rounds.nextSpectator, { code: "test", expectedPeriod: period })
                 : t.mutation(api.tv.next, { code: "test", token, expectedPeriod: period }));

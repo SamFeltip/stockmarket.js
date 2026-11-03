@@ -1,3 +1,4 @@
+import { skipDealtSuspensions } from "../game-setup";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api, internal } from "../../convex/_generated/api";
 import { setup } from "../game-setup";
@@ -61,6 +62,7 @@ describe("NPC scheduler and privacy", () =>
         expect(await t.run(async (context) => context.db.query("npcTurns").collect())).toHaveLength(
             0,
         );
+        await skipDealtSuspensions(sam, "test");
         await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
         await t.finishAllScheduledFunctions(vi.runAllTimers);
         const rotated = await sam.query(api.board.get, { code: "test" });

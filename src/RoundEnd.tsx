@@ -1,3 +1,5 @@
+import { pendingSuspensions } from "../shared/suspensions";
+import { ShareSuspended } from "./ShareSuspended";
 import { cashStockKey } from "../shared/chance-cards";
 import { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
@@ -13,10 +15,15 @@ import { useRevealReady } from "./use-reveal-ready";
 import { HoldStock } from "./HoldStock";
 import type { Board } from "./types";
 
-export function RoundEnd({ board }: { board: Board })
+export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
+    board: Board; onBeginSuspensions?: () => Promise<void>;
+    onSuspensionDecision?: (insightId: Board["insights"][number]["_id"], stockKey?: number) => Promise<void>;
+})
 {
     const { game, stocks, insights } = board;
     const next = useMutation(api.rounds.next);
+    const beginSuspensions = useMutation(api.rounds.beginSuspensions);
+    const suspendShare = useMutation(api.rounds.suspendShare);
     const { run, busy, error } = useAction();
     const [step, setStep] = useState(0);
     const [index, setIndex] = useState(0);
@@ -29,16 +36,26 @@ export function RoundEnd({ board }: { board: Board })
     const unresolved = holds.find((insight) => insight.playerId === board.player._id) ?? holds[0];
     const pendingHolds = insights.some((insight) => !insight.resolved
       && stocks.find((stock) => stock.key === insight.stockKey)?.name === "Hold Stock Price");
-    const reviewed = step >= groups.length;
+    const suspensions = pendingSuspensions(game.currentPeriod, board.players, insights);
+    const reviewed = step >= groups.length || game.suspensionPeriod === game.currentPeriod;
     const host = game.hostId === board.user._id && !game.tvControlled && !game.spectatorControlled;
     const lastPlay = board.feed.find((item) => item.period === game.currentPeriod
       && item.colour !== "grey" && (item.quantity || item.cashBonus || item.message === "passed their go"));
     const ready = useRevealReady(lastPlay?._creationTime);
-    const { preview, wealth } = roundProgress(board, step, index);
+    const { preview, wealth } = roundProgress(board, reviewed ? groups.length : step, index);
+
+    const afterCash = suspensions.length > 0 ? "Next: Share Suspended" : "View round summary";
+    const continuation = step < groups.length - 1 ? `Next: ${groups[step + 1].name}` : afterCash;
+
+    function beginSuspensionPhase()
+    {
+        return onBeginSuspensions ? onBeginSuspensions()
+            : beginSuspensions({ code: game.code, expectedPeriod: game.currentPeriod });
+    }
 
     useEffect(() =>
     {
-        if (!ready || unresolved || index >= visible.length)
+        if (!ready || reviewed || unresolved || index >= visible.length)
         {
             return;
         }
@@ -52,7 +69,7 @@ export function RoundEnd({ board }: { board: Board })
         {
             clearTimeout(timer);
         };
-    }, [index, visible.length, unresolved, step, ready]);
+    }, [index, visible.length, unresolved, step, ready, reviewed]);
 
     if (game.status === "finished")
     {
@@ -65,6 +82,36 @@ export function RoundEnd({ board }: { board: Board })
             <div className="round-transition text-center">
                 <h1>End of round</h1>
                 <p>Revealing insights shortly…</p>
+            </div>
+        );
+    }
+
+    if (reviewed && suspensions[0])
+    {
+        const card = suspensions[0];
+
+        return (
+            <div className="round-end suspension-round p-4">
+                <ShareSuspended
+                    key={card._id}
+                    board={board}
+                    card={card}
+                    own={card.playerId === board.player._id}
+                    busy={busy}
+                    error={error}
+                    onDecision={(stockKey) => run(async () =>
+                    {
+                        if (game.suspensionPeriod !== game.currentPeriod)
+                        {
+                            await beginSuspensionPhase();
+                        }
+
+                        await (onSuspensionDecision
+                            ? onSuspensionDecision(card._id, stockKey)
+                            : suspendShare({ code: game.code, expectedPeriod: game.currentPeriod,
+                                insightId: card._id, stockKey }));
+                    })}
+                />
             </div>
         );
     }
@@ -134,7 +181,7 @@ export function RoundEnd({ board }: { board: Board })
                     )) : (
                         <button
                             className="btn btn-primary d-flex flex-row gap-2 align-items-center"
-                            disabled={Boolean(unresolved)}
+                            disabled={Boolean(unresolved) || busy}
                             onClick={() =>
                             {
                                 if (index < visible.length)
@@ -143,13 +190,25 @@ export function RoundEnd({ board }: { board: Board })
                                 }
                                 else
                                 {
-                                    setStep((current) => current + 1);
-                                    setIndex(0);
+                                    if (step === groups.length - 1 && suspensions.length > 0)
+                                    {
+                                        void run(async () =>
+                                        {
+                                            await beginSuspensionPhase();
+                                            setStep((current) => current + 1);
+                                            setIndex(0);
+                                        });
+                                    }
+                                    else
+                                    {
+                                        setStep((current) => current + 1);
+                                        setIndex(0);
+                                    }
                                 }
                             }}
                         >
                             {index < visible.length ? (cash ? "Skip to cash summary" : "Skip to stock summary")
-                                : (step < groups.length - 1 ? `Next: ${groups[step + 1].name}` : "View round summary")}
+                                : continuation}
                             {" →"}
                         </button>
                     )}

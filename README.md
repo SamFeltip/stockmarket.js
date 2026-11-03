@@ -69,24 +69,22 @@ The six simpler board-game rule changes are implemented and tested. See [the cur
 
 ## Chance cards and cash insights
 
-New games on this branch use the patent-based 110-card deck: 92 stock insights,
-four +10% and four −10% cash insights, and two copies of each of the five chance
-cards. The shared deck is shuffled and ten cards are dealt per player without
+New games on this branch use the retail 108-card deck: 92 stock insights,
+four +10% and four −10% cash insights, and two copies of each of the four retail
+chance cards. Options are excluded from new decks. The shared deck is shuffled and ten cards are dealt per player without
 replacement each round. Existing running games keep their pinned decks.
 
 The footer shows only the current player's aggregate cash signal and granted
 chance cards. All cash cards are revealed at period end and jointly affect every
 player's remaining cash, with the adjustment rounded to £1,000. Government Loan
-and Debenture activation are implemented; the other chance-card effects remain
-disabled. Debentures currently carry over and refund purchase cost.
+and Debenture activation are implemented, as is period-end Share Suspended.
+Rights Issue activation remains disabled. Debentures currently carry over and refund purchase cost.
 
-These are patent-variant rules. The [BGG retail review](https://boardgamegeek.com/thread/106869/review-of-stockmarket)
-instead describes a 108-card deck with four chance-card types and no Option,
-Rights Issues bought at £1 per extra share (one per two held), Debenture sales at
+Some other mechanics still follow the patent variant. The [BGG retail review](https://boardgamegeek.com/thread/106869/review-of-stockmarket)
+also describes Rights Issues bought at £1 per extra share (one per two held), Debenture sales at
 the bankrupt company’s opening price, no cards retained between periods, and
 £500 currency rounding. See the [rules comparison](BOARD_GAME_DIFFERENCES_CURRENT.md#retail-rules-described-in-the-bgg-review-2-november-2026)
-for the source differences and unresolved details. This is a documentation
-correction; those implementation differences remain.
+for the source differences and unresolved details. Those remaining implementation differences are documented explicitly.
 See [implementation and preview notes](experiments/README.md).
 
 ## Original assets and missing source data

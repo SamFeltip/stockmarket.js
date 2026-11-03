@@ -5,6 +5,7 @@ import { roundCash, roundPrices } from "../shared/settlement";
 import { deal, fail, feedItem, members, roundInsights } from "./library";
 import { enqueueNextNpcIfNeeded } from "./npc/scheduling";
 import { publicSeats } from "./game/legalActions";
+import { pendingSuspensions } from "../shared/suspensions";
 
 export async function advancePeriod(context: MutationContext, game: Document_<"games">, expectedPeriod: number)
 {
@@ -22,6 +23,11 @@ export async function advancePeriod(context: MutationContext, game: Document_<"g
     }
 
     const players = await members(context, game._id);
+    if (pendingSuspensions(game.currentPeriod, players, insights).length > 0)
+    {
+        fail("Wait for Share Suspended decisions");
+    }
+
     const effectiveInsights = withRoleBonuses(insights, players, stocks);
     const prices = roundPrices(game.prices, effectiveInsights, stocks, game.suspended);
     for (const seat of players)
@@ -46,7 +52,8 @@ export async function advancePeriod(context: MutationContext, game: Document_<"g
     ];
 
     await context.db.patch(game._id, { prices, priceHistory, status: finished ? "finished" : "playing", currentPeriod,
-        turn: 0, suspended: [], currentUserId: players[currentPeriod % players.length].userId,
+        turn: 0, suspended: [], suspensionPeriod: undefined,
+        currentUserId: players[currentPeriod % players.length].userId,
         currentPlayerId: players[currentPeriod % players.length]._id });
 
     if (!finished)

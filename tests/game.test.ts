@@ -1,3 +1,4 @@
+import { skipDealtSuspensions } from "./game-setup";
 import { describe, expect, it } from "vitest";
 import { cashStockKey } from "../shared/chance-cards";
 import { setup } from "./game-setup";
@@ -67,6 +68,7 @@ describe("Stockmarket transactions", () =>
         expect((await bob.query(api.board.get, { code: "test" })).game.status).toBe("closed");
         await expect(bob.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 }))
             .rejects.toThrow("Only the lobby host");
+        await skipDealtSuspensions(sam, "test");
         await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
         const next = await sam.query(api.board.get, { code: "test" });
 
@@ -97,6 +99,7 @@ describe("Stockmarket transactions", () =>
                 await client.mutation(api.trading.play, { code: "test", expectedTurn: turn, expectedPeriod: period });
             }
 
+            await skipDealtSuspensions(sam, "test");
             await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: period });
         }
 
@@ -156,6 +159,7 @@ describe("Stockmarket transactions", () =>
         await expect(sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 })).rejects.toThrow("resolve");
         await expect(t.mutation(api.rounds.nextSpectator, { code: "test", expectedPeriod: 0 })).rejects.toThrow("resolve");
         await sam.mutation(api.rounds.hold, { code: "test", insightId, stockKey: 8 });
+        await skipDealtSuspensions(sam, "test");
         await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
         const finished = await sam.query(api.board.get, { code: "test" });
 

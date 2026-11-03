@@ -1,3 +1,4 @@
+import { SelectionTick } from "./SelectionTick";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
@@ -113,7 +114,7 @@ export function DebentureStockChoice({ offer, selected, busy, name, onSelect }: 
             </span>
             {selected && (
                 <span className="debenture-stock-check" aria-hidden="true">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m5 12 4 4 10-10" /></svg>
+                    <SelectionTick />
                 </span>
             )}
             <span>{`${money(offer.quantity)} stocks`}</span>

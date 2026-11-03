@@ -1,3 +1,4 @@
+import { skipDealtSuspensions } from "./game-setup";
 import { expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CashReveal } from "../src/CashReveal";
@@ -68,6 +69,7 @@ it("applies all players' cash cards only at the cash stage and carries the settl
     expect(beforeCash.wealth.players.map((player) => player.cash)).toEqual(board.players.map((player) => player.cash));
     expect(revealed.wealth.players[0].cash).toBeLessThan(board.players[0].cash);
     expect(overview.preview.players).toEqual(revealed.wealth.players);
+    await skipDealtSuspensions(sam, "test");
     await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
     const settled = await sam.query(api.board.get, { code: "test" });
 

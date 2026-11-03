@@ -1,3 +1,8 @@
+import { configureSuspensionDemo } from "./suspension-demo";
+import { ShareSuspended } from "../src/ShareSuspended";
+import { RoundOverview } from "../src/RoundOverview";
+import { previewRound } from "../src/round-preview";
+import { pendingSuspensions } from "../shared/suspensions";
 import { useState } from "react";
 import { PlayAnimation } from "../src/PlayAnimation";
 import { createRoot } from "react-dom/client";
@@ -17,7 +22,7 @@ const cleanupSafeArea = setupStandaloneSafeArea();
 import.meta.hot?.dispose(cleanupSafeArea);
 
 // An offline fixture: no authentication, backend writes or real game required.
-const board = raw as unknown as Board;
+const board = structuredClone(raw) as unknown as Board;
 
 board.game.status = "playing";
 board.game.code = "DEMO";
@@ -114,6 +119,10 @@ if (parameters.get("debenture") === "1")
     }
 }
 
+const suspensionDemo = new URLSearchParams(location.search).get("suspend");
+
+configureSuspensionDemo(board, suspensionDemo);
+
 const client = new ConvexReactClient("https://preview.convex.cloud");
 
 function CashDockDemo()
@@ -191,10 +200,69 @@ function CashDockDemo()
         return Promise.resolve();
     }
 
+    function beginSuspensions()
+    {
+        setDemoBoard((current) => ({ ...current, game: { ...current.game,
+            suspensionPeriod: current.game.currentPeriod } }));
+
+        return Promise.resolve();
+    }
+
+    function suspendShare(insightId: Board["insights"][number]["_id"], stockKey?: number)
+    {
+        setDemoBoard((current) => ({ ...current,
+            insights: current.insights.map((card) => card._id === insightId ? { ...card, used: true,
+                resolved: true } : card),
+            game: { ...current.game, suspended: stockKey === undefined ? current.game.suspended
+                : [...new Set([...current.game.suspended, stockKey])] },
+        }));
+
+        return Promise.resolve();
+    }
+
+    if (suspensionDemo === "spectator")
+    {
+        const active = pendingSuspensions(demoBoard.game.currentPeriod, demoBoard.players, demoBoard.insights)[0];
+
+        return (
+            <main className="website-presentation">
+                <div className="round-end suspension-round p-4">
+                    {active ? (
+                        <ShareSuspended
+                            key={active._id}
+                            board={demoBoard}
+                            card={active}
+                            spectator
+                            onDecision={async () =>
+                            {
+                                await suspendShare(active._id);
+
+                                return true;
+                            }}
+                        />
+                    )
+                        : (
+                            <RoundOverview
+                                before={demoBoard}
+                                after={previewRound(demoBoard, demoBoard.insights,
+                                    demoBoard.stocks.map((stock) => stock.key))}
+                            />
+                        )}
+                </div>
+            </main>
+        );
+    }
+
     return (
         <main className="position-relative overflow-x-hidden d-flex flex-column justify-content-center">
             {demoBoard.game.status === "playing" ? <Playing board={demoBoard} onActivateLoan={activateLoan} onRedeemDebenture={redeemDebenture} />
-                : <RoundEnd board={demoBoard} />}
+                : (
+                    <RoundEnd
+                        board={demoBoard}
+                        onBeginSuspensions={beginSuspensions}
+                        onSuspensionDecision={suspendShare}
+                    />
+                )}
             <PlayAnimation board={demoBoard} />
         </main>
     );
