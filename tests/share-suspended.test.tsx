@@ -147,6 +147,11 @@ it("shows the actor's holdings and both valuations, waiting portraits, and spect
     expect(waiting).not.toContain("role=\"radiogroup\"");
     expect(waiting).not.toContain(">Suspend</button>");
     expect(spectator).toContain("Player portfolios");
+    expect(spectator).not.toContain("suspension-quantity");
+    expect(spectator).not.toContain("2,000 shares");
+    expect(spectator).not.toContain("suspension-valuations");
+    expect(spectator.indexOf(">worth</span>")).toBeLessThan(spectator.indexOf("suspension-change"));
+    expect(spectator.indexOf("suspension-change")).toBeLessThan(spectator.indexOf(">new valuation</span>"));
     expect(spectator).toContain(">Skip</button>");
     expect(spectator).not.toContain("type=\"radio\"");
     const before = renderToStaticMarkup(<ConvexProvider client={client}><RoundEnd board={board} /></ConvexProvider>);

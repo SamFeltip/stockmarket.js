@@ -9,8 +9,8 @@ const quantityHeld = (player: Player | undefined, stockKey: number) =>
     player?.holdings.find((holding) => holding.stockKey === stockKey)?.quantity ?? 0;
 
 export function SuspensionStock({ stock, quantity, before, after, selected = false, disabled = false,
-    unavailable = false, onSelect }: {
-    stock: Stock; quantity: number;
+    unavailable = false, spectator = false, onSelect }: {
+    stock: Stock; quantity: number; spectator?: boolean;
     before: number; after: number; selected?: boolean; disabled?: boolean; unavailable?: boolean; onSelect?: () => void;
 })
 {
@@ -20,7 +20,13 @@ export function SuspensionStock({ stock, quantity, before, after, selected = fal
         <>
             <img src={stock.imagePath} alt="" />
             <strong>{stock.name}</strong>
-            <span className="suspension-quantity">{`${count(quantity)} shares`}</span>
+            {!spectator && <span className="suspension-quantity">{`${count(quantity)} shares`}</span>}
+            {spectator && (
+                <div className="suspension-spectator-price">
+                    <span>worth</span>
+                    <strong>{`£${before.toFixed(2)}`}</strong>
+                </div>
+            )}
             <div
                 className={`suspension-change total-insight text-${tone}`}
                 aria-label={`Price change: ${change >= 0 ? "+" : "−"}£${Math.abs(change).toFixed(2)}`}
@@ -28,16 +34,23 @@ export function SuspensionStock({ stock, quantity, before, after, selected = fal
                 {change !== 0 && <img src={`/static/imgs/icons/stock_${change > 0 ? "up" : "down"}.svg`} alt="" />}
                 <span>{`${change === 0 ? "+" : ""}£${Math.abs(change).toFixed(2)}`}</span>
             </div>
-            <div className="suspension-valuations">
-                <div>
-                    <span>worth</span>
-                    <strong>{`£${before.toFixed(2)}`}</strong>
-                </div>
-                <div>
+            {spectator ? (
+                <div className="suspension-spectator-price">
                     <span>new valuation</span>
                     <strong>{`£${after.toFixed(2)}`}</strong>
                 </div>
-            </div>
+            ) : (
+                <div className="suspension-valuations">
+                    <div>
+                        <span>worth</span>
+                        <strong>{`£${before.toFixed(2)}`}</strong>
+                    </div>
+                    <div>
+                        <span>new valuation</span>
+                        <strong>{`£${after.toFixed(2)}`}</strong>
+                    </div>
+                </div>
+            )}
         </>
     );
 
@@ -167,6 +180,7 @@ export function ShareSuspended({ board, card, own = false, spectator = false, bu
                         <SuspensionStock
                             key={stock.key}
                             stock={stock}
+                            spectator={spectator}
                             quantity={quantityHeld(owner, stock.key)}
                             before={board.game.prices.find((price) => price.stockKey === stock.key)?.value ?? 0}
                             after={preview.game.prices.find((price) => price.stockKey === stock.key)?.value ?? 0}

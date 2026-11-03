@@ -47,8 +47,9 @@ label.suspension-stock { cursor: pointer; }
 .suspension-spectator .suspension-stocks { max-width: none; }
 .suspension-spectator .suspension-stock { padding: 0.75rem; gap: 0.2rem; }
 .suspension-spectator .suspension-stock > img { width: 2.5rem; height: 2.5rem; }
-.suspension-spectator .suspension-quantity { margin: 0.35rem 0; font-size: 0.9rem; }
-.suspension-spectator .suspension-valuations { margin-top: 0.35rem; }
+.suspension-spectator-price { display: flex; flex-direction: column; gap: 0.15rem; margin-block: 0.6rem; }
+.suspension-spectator-price span { font-size: 0.8rem; color: #636b66; }
+.suspension-spectator-price strong { font-size: 1.2rem; font-weight: 500; }
 .suspension-panel .alert { color: #842029; }
 .suspension-confirm { width: min(90vw, 30rem); margin: auto; padding: 1.5rem; border: 0; border-radius: 0.75rem; background: white; color: #111; }
 .suspension-confirm::backdrop { background: rgb(0 0 0 / 50%); }
@@ -62,9 +63,6 @@ label.suspension-stock { cursor: pointer; }
 @media (min-width: 992px) {
     .suspension-stocks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .suspension-spectator .suspension-stocks { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.75rem; }
-    .suspension-spectator .suspension-valuations { gap: 0.35rem; }
-    .suspension-spectator .suspension-valuations strong { font-size: 1.1rem; }
-    .suspension-spectator .suspension-valuations span { min-height: 2.4em; display: flex; justify-content: center; align-items: flex-end; }
 }
 @media (max-width: 991.98px) {
     .round-end.suspension-round { padding: 1rem !important; }
