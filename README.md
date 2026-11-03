@@ -78,7 +78,8 @@ The footer shows only the current player's aggregate cash signal and granted
 chance cards. All cash cards are revealed at period end and jointly affect every
 player's remaining cash, with the adjustment rounded to £1,000. Government Loan
 and Debenture activation are implemented, as is period-end Share Suspended.
-Rights Issue activation remains disabled. Debentures currently carry over and refund purchase cost.
+Rights Issue activation pauses play while each shareholder may buy one extra share per two held at £1 each.
+Only the initiating bargain uses a turn; decisions follow cyclic play order and then normal play resumes. Debentures currently carry over and refund purchase cost.
 
 Some other mechanics still follow the patent variant. The [BGG retail review](https://boardgamegeek.com/thread/106869/review-of-stockmarket)
 also describes Rights Issues bought at £1 per extra share (one per two held), Debenture sales at

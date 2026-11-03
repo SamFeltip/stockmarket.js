@@ -11,7 +11,7 @@ export type Player = Pick<PlayerBoard["players"][number],
     };
 
 export interface Board {
-    game: Pick<PlayerBoard["game"], "code" | "status" | "currentPeriod" | "periodCount" | "prices" | "priceHistory" | "suspended" | "suspensionPeriod">;
+    game: Pick<PlayerBoard["game"], "code" | "status" | "currentPeriod" | "periodCount" | "prices" | "priceHistory" | "suspended" | "suspensionPeriod" | "rightsIssue"> & { turn?: number; currentPlayerId?: string };
     stocks: Stock[];
     insights: Insight[];
     players: Player[];

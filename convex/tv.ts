@@ -152,7 +152,7 @@ export const board = query({
             latestPurchase: purchase ? { title: purchase.title, message: purchase.message } : null,
             game: { code: game.code, status: game.status, currentPeriod: game.currentPeriod,
                 tvControlled: Boolean(game.tvTokenHash), spectatorControlled: Boolean(displayHost),
-                periodCount: game.periodCount, turn: game.turn,
+                periodCount: game.periodCount, turn: game.turn, rightsIssue: game.rightsIssue,
                 currentPlayerId: game.currentPlayerId
                   ?? seats.find((seat) => seat.userId === game.currentUserId)?._id },
             stocks: stocks.map((stock) => ({ key: stock.key, name: stock.name, imagePath: stock.imagePath,

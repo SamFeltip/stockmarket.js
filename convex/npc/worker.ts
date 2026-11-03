@@ -23,7 +23,7 @@ export const run = internalMutation({
         const seat = await context.db.get(pending.playerId);
         if (
             !game
-            || game.status !== "playing"
+            || (game.status !== "playing" || game.rightsIssue)
             || game.currentPeriod !== pending.period
             || game.turn !== pending.turn
             || !seat

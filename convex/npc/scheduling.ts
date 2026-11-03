@@ -15,7 +15,7 @@ export async function enqueueNextNpcIfNeeded(
         .query("npcTurns")
         .withIndex("by_game", (q) => q.eq("gameId", gameId))
         .unique();
-    const seats = game?.status === "playing" ? await members(context, gameId) : [];
+    const seats = game?.status === "playing" && !game.rightsIssue ? await members(context, gameId) : [];
     const current = game && seats.find((seat) => isCurrent(game, seat));
     if (
         pending

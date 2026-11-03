@@ -1,3 +1,4 @@
+import { RightsIssue } from "../RightsIssue";
 import { useConvexAuth, useConvexConnectionState, useMutation, useQuery } from "convex/react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
@@ -14,6 +15,7 @@ import "./tv-display.css";
 
 export function SpectatorScreen({ board }: { board: Board })
 {
+    const skipRights = useMutation(api.rightsIssue.skip);
     const start = useMutation(api.games.start);
     const nextSpectator = useMutation(api.rounds.nextSpectator);
     const beginSuspensions = useMutation(api.rounds.beginSuspensions);
@@ -33,6 +35,20 @@ export function SpectatorScreen({ board }: { board: Board })
     const status = game.status === "playing"
         ? `${current?.name ?? "Next investor"}’s turn · ${Math.min(game.turn + 1, totalTurns)} / ${totalTurns}`
         : "Market closed · host continues on their display";
+    if (game.rightsIssue)
+    {
+        const issue = game.rightsIssue;
+
+        return (
+            <RightsIssue
+                board={display}
+                spectator
+                onDecision={() => skipRights({ code: game.code,
+                    insightId: issue.insightId, expectedIndex: issue.index })}
+            />
+        );
+    }
+
     if (game.status === "finished")
     {
         return <main className="tv-results"><GameResults board={display} onBack={back} /></main>;

@@ -1,3 +1,4 @@
+import { RightsIssueModal, type RightsActivation } from "./RightsIssueModal";
 import { DebentureModal } from "./DebentureModal";
 import type { DebentureActivation } from "./DebentureModal";
 import { GovernmentLoanModal } from "./GovernmentLoanModal";
@@ -7,8 +8,9 @@ import { chanceCards, chanceStockKey, privateCashPercent } from "../shared/chanc
 import type { Board } from "./types";
 import "./player-dock.css";
 
-export function PlayerDock({ board, onActivateLoan, onRedeemDebenture }: {
+export function PlayerDock({ board, onActivateLoan, onRedeemDebenture, onActivateRights }: {
     board: Board; onActivateLoan?: LoanActivation; onRedeemDebenture?: DebentureActivation;
+    onActivateRights?: RightsActivation;
 })
 {
     const ownCards = board.insights.filter((card) => card.playerId === board.player._id
@@ -65,39 +67,64 @@ export function PlayerDock({ board, onActivateLoan, onRedeemDebenture }: {
                     <p>Chance cards may appear here each round</p>
                 </div>
             )}
-            {cards.map((card) => card.kind === "loan" ? (
-                <GovernmentLoanModal
-                    key={card.id}
-                    board={board}
-                    insightId={card.id}
-                    used={card.used}
-                    onActivate={onActivateLoan}
-                />
-            ) : (card.kind === "debenture" ? (
-                <DebentureModal
-                    key={card.id}
-                    board={board}
-                    insightId={card.id}
-                    used={card.used}
-                    onActivate={onRedeemDebenture}
-                />
-            ) : (
-                <Modal key={card.id} id={`chance-card-${card.id}`} title={card.name} mobileDrawer>
-                    <div className="modal-body dock-power-detail">
-                        <h2 className="text-black">{card.name}</h2>
-                        <h3>{card.effect}</h3>
-                        <p>{card.description}</p>
-                        <p className="dock-caption">{card.timing}</p>
-                        {card.kind === "rights" && <p className="dock-caption">Activation is coming soon.</p>}
-                    </div>
-                    <div className="modal-footer trade-footer">
-                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" className="btn btn-primary" disabled>
-                            {card.kind === "hold" ? "Available at period end" : "Activate"}
-                        </button>
-                    </div>
-                </Modal>
-            )))}
+            {cards.map((card) =>
+            {
+                if (card.kind === "loan")
+                {
+                    return (
+                        <GovernmentLoanModal
+                            key={card.id}
+                            board={board}
+                            insightId={card.id}
+                            used={card.used}
+                            onActivate={onActivateLoan}
+                        />
+                    );
+                }
+
+                if (card.kind === "rights")
+                {
+                    return (
+                        <RightsIssueModal
+                            key={card.id}
+                            board={board}
+                            insightId={card.id}
+                            used={card.used}
+                            onActivate={onActivateRights}
+                        />
+                    );
+                }
+
+                if (card.kind === "debenture")
+                {
+                    return (
+                        <DebentureModal
+                            key={card.id}
+                            board={board}
+                            insightId={card.id}
+                            used={card.used}
+                            onActivate={onRedeemDebenture}
+                        />
+                    );
+                }
+
+                return (
+                    <Modal key={card.id} id={`chance-card-${card.id}`} title={card.name} mobileDrawer>
+                        <div className="modal-body dock-power-detail">
+                            <h2 className="text-black">{card.name}</h2>
+                            <h3>{card.effect}</h3>
+                            <p>{card.description}</p>
+                            <p className="dock-caption">{card.timing}</p>
+                        </div>
+                        <div className="modal-footer trade-footer">
+                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" className="btn btn-primary" disabled>
+                                {card.kind === "hold" ? "Available at period end" : "Activate"}
+                            </button>
+                        </div>
+                    </Modal>
+                );
+            })}
         </section>
     );
 }

@@ -21,6 +21,11 @@ export async function applyTurn(
 {
     const player = (await context.db.get(command.playerId)) ?? fail("Unknown player");
     const game = (await context.db.get(player.gameId)) ?? fail("No game found!");
+    if (game.rightsIssue)
+    {
+        fail("Trading is paused during the Rights Issue");
+    }
+
     if (game.status !== "playing" || !isCurrent(game, player))
     {
         fail("It is not your turn");
@@ -143,6 +148,13 @@ export async function applyTurn(
     }
 
     await feedItem(context, game, display.name, message, display.profileRoot, "", trade);
+    await finishTurn(context, game, player, players);
+}
+
+/** Consume the initiating bargain only; Rights Issue responses never advance trading. */
+export async function finishTurn(context: MutationContext, game: Document_<"games">,
+    player: Document_<"players">, players: Document_<"players">[])
+{
     const next
         = players[(players.findIndex((seat) => seat._id === player._id) + 1) % players.length];
     const turn = game.turn + 1;

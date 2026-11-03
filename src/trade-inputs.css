@@ -1,0 +1,9 @@
+.rights-purchase .trade-inputs { display: grid; grid-template-columns: minmax(0, 1fr) 1rem minmax(0, 1fr); grid-template-rows: auto auto auto auto; grid-template-areas: "header-amount . header-value" "input-stock equals input-cash" "stock-btns . cash-btns" "transaction-body transaction-body transaction-body"; gap: 0.75rem; }
+.rights-purchase .trade-inputs .header-amount-of-stocks { grid-area: header-amount; }
+.rights-purchase .trade-inputs .header-value { grid-area: header-value; }
+.rights-purchase .trade-inputs .input-stock-group { grid-area: input-stock; }
+.rights-purchase .trade-inputs .input-cash-group { grid-area: input-cash; }
+.rights-purchase .trade-inputs .equals { grid-area: equals; margin: 0; }
+.rights-purchase .trade-inputs .stock-btns { grid-area: stock-btns; }
+.rights-purchase .trade-inputs .cash-btns { grid-area: cash-btns; }
+.rights-purchase .trade-inputs .transaction-body { grid-area: transaction-body; }

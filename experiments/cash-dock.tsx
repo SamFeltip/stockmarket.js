@@ -1,3 +1,5 @@
+import { configureRightsDemo, rightsDemoHandlers, rightsMode } from "./rights-demo";
+import { RightsIssue } from "../src/RightsIssue";
 import { configureSuspensionDemo } from "./suspension-demo";
 import { ShareSuspended } from "../src/ShareSuspended";
 import { RoundOverview } from "../src/RoundOverview";
@@ -17,17 +19,12 @@ import "../src/patch.css";
 import type { Board } from "../src/types";
 import { setupStandaloneSafeArea } from "../src/standalone-safe-area";
 
-const cleanupSafeArea = setupStandaloneSafeArea();
-
-import.meta.hot?.dispose(cleanupSafeArea);
+import.meta.hot?.dispose(setupStandaloneSafeArea());
 
 // An offline fixture: no authentication, backend writes or real game required.
 const board = structuredClone(raw) as unknown as Board;
 
-board.game.status = "playing";
-board.game.code = "DEMO";
-board.game.currentPeriod = 2;
-board.game.turn = 8;
+Object.assign(board.game, { status: "playing", code: "DEMO", currentPeriod: 2, turn: 8 });
 
 for (const [index, player] of board.players.entries())
 {
@@ -122,12 +119,14 @@ if (parameters.get("debenture") === "1")
 const suspensionDemo = new URLSearchParams(location.search).get("suspend");
 
 configureSuspensionDemo(board, suspensionDemo);
+configureRightsDemo(board);
 
 const client = new ConvexReactClient("https://preview.convex.cloud");
 
 function CashDockDemo()
 {
     const [demoBoard, setDemoBoard] = useState(board);
+    const { activateRights, decideRights } = rightsDemoHandlers(demoBoard, setDemoBoard);
 
     function activateLoan(insightId: Board["insights"][number]["_id"])
     {
@@ -253,9 +252,22 @@ function CashDockDemo()
         );
     }
 
+    if (rightsMode === "spectator" && demoBoard.game.rightsIssue)
+    {
+        return <RightsIssue board={demoBoard} spectator onDecision={decideRights} />;
+    }
+
     return (
         <main className="position-relative overflow-x-hidden d-flex flex-column justify-content-center">
-            {demoBoard.game.status === "playing" ? <Playing board={demoBoard} onActivateLoan={activateLoan} onRedeemDebenture={redeemDebenture} />
+            {demoBoard.game.status === "playing" ? (
+                <Playing
+                    board={demoBoard}
+                    onActivateLoan={activateLoan}
+                    onRedeemDebenture={redeemDebenture}
+                    onActivateRights={activateRights}
+                    onRightsDecision={decideRights}
+                />
+            )
                 : (
                     <RoundEnd
                         board={demoBoard}
@@ -263,7 +275,7 @@ function CashDockDemo()
                         onSuspensionDecision={suspendShare}
                     />
                 )}
-            <PlayAnimation board={demoBoard} />
+            {!demoBoard.game.rightsIssue && <PlayAnimation board={demoBoard} />}
         </main>
     );
 }

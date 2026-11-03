@@ -55,7 +55,7 @@ export async function buildNpcObservation(
             value: card.value,
         })),
         catalog: catalog.cards.map(({ id, stockKey, value }) => ({ id, stockKey, value })),
-        events: events.map(({ period, turn, actorPlayerId, action }) => ({
+        events: events.filter((event) => !event.rightsIssueId).map(({ period, turn, actorPlayerId, action }) => ({
             period,
             turn,
             actorPlayerId,

@@ -3,9 +3,11 @@ import { useState } from "react";
 import { money } from "./shared";
 import type { Player, Stock } from "./display-types";
 
-export function NetWorthNumber({ value }: { value: number })
+export function NetWorthNumber({ value, shares = false, initialValue = value }: {
+    value: number; shares?: boolean; initialValue?: number;
+})
 {
-    const [change, setChange] = useState({ value, delta: 0, sequence: 0 });
+    const [change, setChange] = useState({ value: initialValue, delta: 0, sequence: 0 });
     if (value !== change.value)
     {
         setChange({ value, delta: value - change.value, sequence: change.sequence + 1 });
@@ -13,14 +15,14 @@ export function NetWorthNumber({ value }: { value: number })
 
     return (
         <span className="net-worth-number" aria-live="polite">
-            {`£${money(value)}`}
+            {`${shares ? "" : "£"}${money(value)}`}
             {change.delta !== 0 && (
                 <span
                     key={change.sequence}
                     aria-hidden="true"
                     className={`wealth-delta ${change.delta > 0 ? "wealth-gain" : "wealth-loss"}`}
                 >
-                    {`${change.delta > 0 ? "+" : "−"}£${money(Math.abs(change.delta))}`}
+                    {`${change.delta > 0 ? "+" : "−"}${shares ? "" : "£"}${money(Math.abs(change.delta))}`}
                 </span>
             )}
         </span>

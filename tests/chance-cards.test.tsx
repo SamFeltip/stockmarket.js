@@ -131,8 +131,8 @@ describe("board-game special cards", () =>
 
         expect(rights).toContain("disabled=\"\">Activate");
         expect(rights).toContain("Buy extra shares at £1 each");
-        expect(rights).toContain("Every holder may immediately buy one extra share for every two they own, at £1 per extra share.");
-        expect(rights).toContain("Uses one turn.");
+        expect(rights).toContain("Every holder may buy one extra share for every two they own, at £1 each.");
+        expect(rights).toContain("Activating takes one turn.");
         expect(rights).not.toContain("50% extra shares");
         const suspended = renderDock({ ...own, insights: own.insights.map((card) => ({ ...card, chanceKind: "hold" })) });
 

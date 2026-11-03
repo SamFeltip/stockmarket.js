@@ -49,7 +49,7 @@ export const get = query({
                 currentUserId: game.currentUserId, currentPeriod: game.currentPeriod, periodCount: game.periodCount,
                 tvControlled: Boolean(game.tvTokenHash), spectatorControlled: Boolean(spectatorHost(game, seats)),
                 prices: game.prices, priceHistory: game.priceHistory, status: game.status, turn: game.turn,
-                suspended: game.suspended, suspensionPeriod: game.suspensionPeriod, npcDifficulty: game.npcDifficulty ?? "medium" },
+                suspended: game.suspended, suspensionPeriod: game.suspensionPeriod, rightsIssue: game.rightsIssue, npcDifficulty: game.npcDifficulty ?? "medium" },
             debentureOffers: claims,
             player, user: { _id: user._id, name: user.name, profileRoot: user.profileRoot }, stocks, feed,
             players: players.map((seat) => ({

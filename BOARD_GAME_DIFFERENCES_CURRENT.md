@@ -18,7 +18,8 @@ end, the sum of everyone's dealt cash cards affects all remaining balances; the
 adjustment is rounded to £1,000. Legacy imported `currency` cards keep their
 previous per-player treatment. Government Loan and Debenture are implemented;
 Share Suspended is implemented after stock and cash reveals, before the summary.
-Rights Issue and legacy Option activation remain disabled. Debentures
+Rights Issue is implemented as one initiating bargain with a paused shareholder purchase sequence.
+Legacy Option activation remains disabled. Debentures
 are retained and refund purchase cost within two periods. These are patent-based
 behaviors: the retail review instead describes a 108-card deck, £500 cash rounding,
 opening-price Debenture sales and no retained cards.
@@ -71,7 +72,7 @@ Card, currency and lifecycle entries below use the retail review above. Other en
 | Share Suspended       | Freeze one company's price at period end.                                                                      | Implemented: choose after stock and cash reveals, in the period’s rotated play order, before summary and settlement. Use or confirmed skip spends one physical card; spectator displays can override with a confirmed skip. The old Hold Stock Price path is separate. | [rounds.ts](convex/rounds.ts), `hold`; [catalog.ts](convex/catalog.ts)                                                                      |
 | Government Loan Stock | Spend a turn to collect £10,000.                                                                               | Implemented on this branch: consumes one card and one turn to pay £10,000.                                                                                                                                                                                                                                   | [trading.ts](convex/trading.ts), [catalog.ts](convex/catalog.ts)                                                                            |
 | Debenture | Retail review: spend a bargain to sell bankrupt-company shares at the company’s opening price; no retention. | Implemented patent variant: retain unused physical cards across deals; refund purchase cost within two rounds, using FIFO after partial sales. **Differs from retail:** payout basis, claim window and retention; requires a future code change. | [debenture.ts](convex/game/debenture.ts), [commands.ts](convex/game/commands.ts), [DebentureModal.tsx](src/DebentureModal.tsx) |
-| Rights Issue          | Spend a bargain; all holders may buy one extra share per two held in the chosen company at £1 per extra share.                                           | Current branch: two cards are dealt, but activation is disabled. The footer and dialog now describe the retail purchase of one extra share per two held, at £1 per extra share, using one turn. The purchase flow is not implemented. | [trading.ts](convex/trading.ts), [rounds.ts](convex/rounds.ts)                                                                              |
+| Rights Issue          | Spend a bargain; all holders may buy one extra share per two held in the chosen company at £1 per extra share.                                           | Implemented: two cards are dealt per deck. The activating player chooses a company and uses one bargain; eligible holders respond in cyclic play order from that player. The purchase flow pauses trading, offers each holder up to half their opening holding at £1 each, and resumes after all choices. | [trading.ts](convex/trading.ts), [rounds.ts](convex/rounds.ts)                                                                              |
 | Option                | Absent from the retail review; the three-period Option belongs to the patent variant.                             | Excluded from new retail decks. Existing pinned games may still have Options, displayed as unavailable; activation is disabled. | [schema.ts](convex/schema.ts), [trading.ts](convex/trading.ts)                                                                              |
 
 ## Legacy imported-card mechanics
@@ -116,3 +117,16 @@ Stock details now show investor faces with share counts and missing-photo fallba
 Role bonuses are price corrections, not cash payments. Every original company card is revealed, then one positive correction cancels the selected negative card at the end of that company's reveal. Each company card in the overview has a footer listing its chairman and directors, with player portraits and role badges. Only the player whose power cancelled a card receives a bonus amount and description, including when animations were skipped. The same roles and bonuses appear in web spectator and standalone TV views. Settlement uses the same selection as player and spectator previews, before the zero-price floor is applied. Positive and zero cards are never discarded. A held price remains held. Role qualification comes from current holdings, applies immediately to human and NPC trades, and survives period changes.
 
 Trade events retain the actor's company role before and after the trade. The trade pop-up announces new roles and resignations. Feed entries show only the badge and small grey role label below the player's name, based on that historical event rather than current holdings. Feed avatar wrappers reserve space around the top-left badge so the scrolling feed does not clip it. This covers player, web spectator and standalone TV displays. Trades in unrelated companies and passes do not inherit a role badge.
+
+## Rights Issue implementation choices (3 November 2026)
+
+The retail review establishes the £1 price, one new share per two held, and one initiating bargain.
+Shareholder choices do not consume bargains or advance the period. The initiating bargain is recorded
+and consumed once the issue completes; its original turn stays on screen during all choices.
+Allowances are fixed from holdings when the card is activated. An eligible holder can buy any whole
+number from zero (skip) to that allowance, within cash; an odd holding rounds down. No debt is created.
+A company must be trading and have shareholders. The existing bank inventory limit is retained and shared across the queue; ordinary trading lot
+restrictions do not apply to this special purchase.
+These rounding, cash, and inventory details are implementation choices where the retail review is silent,
+not rules imported from the patent. NPC holders accept profitable offers within cash and otherwise skip.
+An authoritative short completion delay preserves the final purchase animation before normal play resumes.

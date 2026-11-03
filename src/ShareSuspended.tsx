@@ -1,3 +1,4 @@
+import { DecisionPortfolios } from "./DecisionPortfolios";
 import { SelectionTick } from "./SelectionTick";
 import { useEffect, useRef, useState } from "react";
 import { previewRound } from "./round-preview";
@@ -136,42 +137,7 @@ export function ShareSuspended({ board, card, own = false, spectator = false, bu
                     </div>
                 )}
                 {spectator && (
-                    <div className="suspension-portfolios">
-                        <h2>Player portfolios</h2>
-                        <div className="suspension-table-scroll">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Player</th>
-                                        <th>Cash</th>
-                                        {stocks.map((stock) => (
-                                            <th key={stock.key}><img src={stock.imagePath} alt={stock.name} /></th>
-                                        ))}
-                                        <th>Net worth</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {preview.players.toSorted((a, b) => b.netWorth - a.netWorth).map((player) => (
-                                        <tr key={player._id} className={player._id === card.playerId ? "is-active" : ""}>
-                                            <th>
-                                                <img className="rounded" src={player.profileRoot} alt="" />
-                                                {player.name}
-                                            </th>
-                                            <td>{`£${count(player.cash)}`}</td>
-                                            {stocks.map((stock) => (
-                                                <td key={stock.key}>
-                                                    {
-                                                        count(quantityHeld(player, stock.key))
-                                                    }
-                                                </td>
-                                            ))}
-                                            <td>{`£${count(player.netWorth)}`}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    <DecisionPortfolios board={{ ...board, players: preview.players }} activePlayerId={card.playerId} />
                 )}
             </div>
             {(own || spectator) && (

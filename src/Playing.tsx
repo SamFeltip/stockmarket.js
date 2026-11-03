@@ -1,3 +1,5 @@
+import { ConnectedRightsIssue } from "./ConnectedRightsIssue";
+import type { RightsActivation } from "./RightsIssueModal";
 import { cashStockKey } from "../shared/chance-cards";
 import { MobileGameActions, GameMetrics } from "./GameStatus";
 import { GameHeader, Profile } from "./GameHeader";
@@ -16,8 +18,9 @@ import type { DebentureActivation } from "./DebentureModal";
 import type { LoanActivation } from "./GovernmentLoanModal";
 import type { Board } from "./types";
 
-export function Playing({ board, onActivateLoan, onRedeemDebenture }: {
+export function Playing({ board, onActivateLoan, onRedeemDebenture, onActivateRights, onRightsDecision }: {
     board: Board; onActivateLoan?: LoanActivation; onRedeemDebenture?: DebentureActivation;
+    onActivateRights?: RightsActivation; onRightsDecision?: (quantity: number) => Promise<unknown>;
 })
 {
     const { game, players, insights } = board;
@@ -33,6 +36,10 @@ export function Playing({ board, onActivateLoan, onRedeemDebenture }: {
     const myTurn = game.currentPlayerId === board.player._id;
     const special = insights.filter((insight) => !insight.chanceKind && insight.stockKey !== cashStockKey
       && board.stocks.some((stock) => stock.key === insight.stockKey && !stock.display));
+    if (game.rightsIssue)
+    {
+        return <ConnectedRightsIssue board={board} onDecision={onRightsDecision} />;
+    }
 
     return (
         <>
@@ -142,7 +149,12 @@ export function Playing({ board, onActivateLoan, onRedeemDebenture }: {
                     </div>
                 </div>
                 <Feed board={board} />
-                <PlayerDock board={board} onActivateLoan={onActivateLoan} onRedeemDebenture={onRedeemDebenture} />
+                <PlayerDock
+                    board={board}
+                    onActivateLoan={onActivateLoan}
+                    onRedeemDebenture={onRedeemDebenture}
+                    onActivateRights={onActivateRights}
+                />
                 <Modal id="passModal" title="Are you sure you want to pass?" portal>
                     <div className="modal-footer d-flex flex-row">
                         <button type="button" className="btn btn-secondary flex-fill" data-bs-dismiss="modal" disabled={busy}>Cancel</button>

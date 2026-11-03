@@ -160,3 +160,13 @@ through real Convex handlers in `tests/share-suspended.test.tsx`. The companion 
 client is on `poc/share-suspended` in `stockmarket-tv-share-suspended`; its
 `?demo=1&view=suspend` preview also works offline. No production backend is deployed
 by the Pages demo command.
+
+### Rights Issue preview
+
+`/experiments/cash-dock.html?rights=1` shows the shareholder purchase screen;
+`?rights=waiting` shows a waiting player, and `?rights=spectator` shows the public view.
+The default footer also opens the company selector and starts the sample issue.
+These previews use local sample state, with no live game or backend writes.
+Player screens keep the board hidden and fit the viewport; the trade quantity/value controls,
+role progress, turn/period indicators, shareholder gain animation and portfolio table are shared
+with their existing game counterparts. Native TV preview: `?demo=1&view=rights`.

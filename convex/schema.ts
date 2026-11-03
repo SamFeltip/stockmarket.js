@@ -49,6 +49,12 @@ export default defineSchema({
         }))),
         suspended: v.array(v.number()),
         suspensionPeriod: v.optional(v.number()),
+        rightsIssue: v.optional(v.object({
+            insightId: v.id("playerInsights"), stockKey: v.number(), actorPlayerId: v.id("players"),
+            period: v.number(), turn: v.number(), index: v.number(), completed: v.optional(v.boolean()),
+            offers: v.array(v.object({ playerId: v.id("players"), held: v.number(), maximum: v.number(),
+                purchased: v.optional(v.number()) })),
+        })),
     }).index("by_code", ["code"]),
     players: defineTable({
         gameId: v.id("games"), userId: v.optional(v.id("users")),
@@ -76,6 +82,7 @@ export default defineSchema({
             kind: v.literal("government-loan"), insightId: v.id("playerInsights"),
         }), v.object({ kind: v.literal("debenture"), insightId: v.id("playerInsights"), stockKey: v.number() })),
         unitPrice: v.optional(v.number()),
+        rightsIssueId: v.optional(v.id("playerInsights")),
     }).index("by_game_period_turn", ["gameId", "period", "turn"]),
     periodSummaries: defineTable({ gameId: v.id("games"), period: v.number(), opening: pricesValidator, settled: pricesValidator,
     }).index("by_game_period", ["gameId", "period"]),

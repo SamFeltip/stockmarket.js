@@ -13,7 +13,7 @@ export const sweep = internalMutation({
             const game = await context.db.get(pending.gameId);
             if (
                 !game
-                || game.status !== "playing"
+                || (game.status !== "playing" || game.rightsIssue)
                 || game.currentPlayerId !== pending.playerId
                 || game.currentPeriod !== pending.period
                 || game.turn !== pending.turn

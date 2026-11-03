@@ -1,5 +1,6 @@
 import { floorTradeQuantity, sharesPerCompany } from "../shared/rules";
-import { companyRoleThresholds } from "../shared/company-roles";
+import { TradeInputs } from "./TradeInputs";
+import { TradePosition } from "./TradePosition";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
@@ -68,132 +69,26 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                         });
                     }}
                 >
-                    <div className="purchase-form flex-fill">
-                        <h6 className="mb-0 header-amount-of-stocks">Amount of stocks</h6>
-                        <h6 className="mb-0 header-value">Value</h6>
-                        <div className="input-stock-group input-group mb-0">
-                            <input
-                                aria-label="Amount of stocks"
-                                aria-describedby={`${mode}-trade-feedback`}
-                                aria-invalid={quantity !== 0 && !valid}
-                                type="number"
-                                step={1000}
-                                min={0}
-                                max={limit}
-                                disabled={busy}
-                                className="form-control input-stock"
-                                value={shares}
-                                onChange={(event) =>
-                                {
-                                    setDraft({ field: "shares", value: event.target.value });
-                                }}
-                            />
-                        </div>
-                        <p className="equals d-flex justify-content-center align-items-center flex-fill">=</p>
-                        <div className="input-cash-group input-group mb-0">
-                            <span className="input-group-text text-black bg-white pe-1 border-end-0">£</span>
-                            <input
-                                className="form-control input-cash border-start-0 ps-0"
-                                type="number"
-                                min={0}
-                                step="0.01"
-                                disabled={busy}
-                                value={cash}
-                                aria-label="Value"
-                                aria-describedby={`${mode}-trade-feedback`}
-                                onChange={(event) =>
-                                {
-                                    setDraft({ field: "cash", value: event.target.value });
-                                }}
-                                onBlur={() =>
-                                {
-                                    setDraft((current) => ({ field: "shares",
-                                        value: String(resolveTradeDraft(current, price, limit).quantity) }));
-                                }}
-                            />
-                        </div>
-                        <div className="stock-btns d-flex gap-2">
-                            <button
-                                type="button"
-                                className="btn btn-danger flex-fill"
-                                aria-label="Decrease amount"
-                                disabled={busy}
-                                onClick={() =>
-                                {
-                                    setQuantity(stepShares(quantity, -1));
-                                }}
-                            >
-                                -
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-success flex-fill"
-                                aria-label="Increase amount"
-                                disabled={busy}
-                                onClick={() =>
-                                {
-                                    setQuantity(Math.min(limit, stepShares(quantity, 1)));
-                                }}
-                            >
-                                +
-                            </button>
-                        </div>
-                        <div className="cash-btns d-flex gap-2">
-                            <button
-                                type="button"
-                                className="btn btn-danger flex-fill"
-                                aria-label="Decrease amount"
-                                disabled={busy}
-                                onClick={() =>
-                                {
-                                    setQuantity(stepShares(quantity, -1));
-                                }}
-                            >
-                                -
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-success flex-fill"
-                                aria-label="Increase amount"
-                                disabled={busy}
-                                onClick={() =>
-                                {
-                                    setQuantity(Math.min(limit, stepShares(quantity, 1)));
-                                }}
-                            >
-                                +
-                            </button>
-                        </div>
-                        <div className="transaction-body">
-                            <p>
-                                Cash £
-                                {money(board.player.cash + (mode === "buy" ? -1 : 1) * previewQuantity * price)}
-                            </p>
-                            <p className="trade-shares-held">
-                                Shares held
-                                {" "}
-                                {money(projectedHolding)}
-                            </p>
-                            {mode === "buy" && (
-                                <div className="trade-role-progress">
-                                    {(["chairman", "director"] as const).map((role) =>
-                                    {
-                                        const remaining = Math.max(0, companyRoleThresholds[role] - projectedHolding);
-
-                                        return (
-                                            <div key={role}>
-                                                <img src={`/static/imgs/icons/${role}.svg`} alt="" />
-                                                <span>
-                                                    {remaining > 0 ? `${money(remaining)} stocks until ${role}`
-                                                        : `${role === "chairman" ? "Chairman" : "Director"} threshold reached`}
-                                                </span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                    <TradeInputs
+                        shares={shares}
+                        cash={cash}
+                        quantity={quantity}
+                        limit={limit}
+                        busy={busy}
+                        valid={valid}
+                        feedbackId={`${mode}-trade-feedback`}
+                        setDraft={setDraft}
+                        setQuantity={setQuantity}
+                        resolve={(value) => resolveTradeDraft(value, price, limit).quantity}
+                        increase={(value) => stepShares(value, 1)}
+                        decrease={(value) => stepShares(value, -1)}
+                    >
+                        <TradePosition
+                            cash={board.player.cash + (mode === "buy" ? -1 : 1) * previewQuantity * price}
+                            holding={projectedHolding}
+                            buying={mode === "buy"}
+                        />
+                    </TradeInputs>
                 </form>
             </div>
             <div className="modal-footer trade-footer d-flex flex-row">
