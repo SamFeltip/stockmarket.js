@@ -4,6 +4,7 @@ import type { NpcObservation } from "../../packages/game-contracts/src";
 import { legalActions } from "../../packages/game-contracts/src";
 import { members } from "../library";
 import { publicSeats } from "../game/legalActions";
+import { chanceOffers } from "./chance";
 export async function buildNpcObservation(
     context: QueryContext,
     game: Document_<"games">,
@@ -45,6 +46,7 @@ export async function buildNpcObservation(
 
     return {
         ...market,
+        chanceOffers: await chanceOffers(context, game, self, players),
         period: game.currentPeriod,
         finalPeriod: game.periodCount,
         turn: game.turn,

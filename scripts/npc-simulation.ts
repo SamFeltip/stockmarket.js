@@ -23,22 +23,26 @@ function proxy(input: NpcObservation, style: number, next: () => number): Action
 {
     if (style === 0)
     {
-        return decide(
+        const action = decide(
             input,
             { personality: "morgan", difficulty: "easy" },
             emptyMemory(),
             "cautious-proxy",
         ).action;
+
+        return isLegalProposal(action, input.legalActions) ? action : { kind: "pass" };
     }
 
     if (style === 1)
     {
-        return decide(
+        const action = decide(
             input,
             { personality: "casey", difficulty: "easy" },
             emptyMemory(),
             String(next()),
         ).action;
+
+        return isLegalProposal(action, input.legalActions) ? action : { kind: "pass" };
     }
 
     return input.legalActions[Math.floor(next() * input.legalActions.length)];
@@ -131,8 +135,13 @@ export function simulate(seed: number, profile: NpcProfile, heldOut: boolean): R
                 ? decide(input, actorProfile, memories[index], `decision:${seed}:${period}:${turn}`)
                 : undefined;
             const elapsed = performance.now() - started;
-            let action = decision?.action ?? proxy(input, seed % 3, next);
-            if (!isLegalProposal(action, input.legalActions))
+            const proposed = decision?.action ?? proxy(input, seed % 3, next);
+            let action: Action = { kind: "pass" };
+            if (isLegalProposal(proposed, input.legalActions))
+            {
+                action = proposed;
+            }
+            else
             {
                 action = { kind: "pass" };
                 result.fallbacks++;

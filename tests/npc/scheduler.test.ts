@@ -57,7 +57,8 @@ describe("NPC scheduler and privacy", () =>
         expect(closed.game.status).toBe("closed");
         expect(closed.game.turn).toBe(12);
         expect(
-            await t.run(async (context) => context.db.query("gameActions").collect()),
+            await t.run(async (context) => (await context.db.query("gameActions").collect())
+                .filter((event) => !event.rightsIssueId || event.action.kind !== "buy")),
         ).toHaveLength(12);
         expect(await t.run(async (context) => context.db.query("npcTurns").collect())).toHaveLength(
             0,
@@ -94,7 +95,8 @@ describe("NPC scheduler and privacy", () =>
         await t.mutation(internal.npc.worker.run, job);
         expect(await sam.query(api.board.get, { code: "test" })).toEqual(accepted);
         expect(
-            await t.run(async (context) => context.db.query("gameActions").collect()),
+            await t.run(async (context) => (await context.db.query("gameActions").collect())
+                .filter((event) => !event.rightsIssueId || event.action.kind !== "buy")),
         ).toHaveLength(2);
         const stale = (await t.run(async (context) => context.db.query("npcTurns").unique()))!;
 

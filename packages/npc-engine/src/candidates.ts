@@ -1,4 +1,4 @@
-import type { Action, NpcObservation } from "../../game-contracts/src";
+import type { Action, NpcAction, NpcObservation } from "../../game-contracts/src";
 export function smallTrade(
     observation: NpcObservation,
     kind: "buy" | "sell",
@@ -21,20 +21,32 @@ export function smallTrade(
     );
 }
 
-export function isLegalProposal(action: unknown, legal: readonly Action[]): action is Action
+export function isLegalProposal<T extends NpcAction>(action: unknown, legal: readonly T[]): action is T
 {
     if (!action || typeof action !== "object" || !("kind" in action))
     {
         return false;
     }
 
-    return legal.some(
-        (item) =>
-            item.kind === action.kind
-            && (item.kind === "pass"
-              || ("stockKey" in action
-                && "quantity" in action
-                && item.stockKey === action.stockKey
-                && item.quantity === action.quantity)),
-    );
+    return legal.some((item) =>
+    {
+        if (item.kind !== action.kind)
+        {
+            return false;
+        }
+
+        if (item.kind === "pass")
+        {
+            return true;
+        }
+
+        if (item.kind === "buy" || item.kind === "sell")
+        {
+            return "stockKey" in action && "quantity" in action
+              && item.stockKey === action.stockKey && item.quantity === action.quantity;
+        }
+
+        return "insightId" in item && "insightId" in action && item.insightId === action.insightId
+          && (item.kind === "government-loan" || ("stockKey" in action && item.stockKey === action.stockKey));
+    });
 }

@@ -96,6 +96,22 @@ describe("Complete mixed games", () =>
                                 generation: pending.generation,
                             });
                         }
+
+                        for (;;)
+                        {
+                            const paused = await sam.query(api.board.get, { code: "test" });
+                            const issue = paused.game.rightsIssue;
+                            if (!issue)
+                            {
+                                break;
+                            }
+
+                            await (issue.completed
+                                ? t.mutation(internal.rightsIssue.finish,
+                                    { gameId: paused.game._id, insightId: issue.insightId })
+                                : t.mutation(api.rightsIssue.skip,
+                                    { code: "test", insightId: issue.insightId, expectedIndex: issue.index }));
+                        }
                     }
 
                     const closed = await sam.query(api.board.get, { code: "test" });
@@ -129,7 +145,8 @@ describe("Complete mixed games", () =>
 
                 expect(final.game.status).toBe("finished");
                 const events = await t.run(async (context) =>
-                    context.db.query("gameActions").collect(),
+                    (await context.db.query("gameActions").collect())
+                        .filter((event) => !event.rightsIssueId || event.action.kind !== "buy"),
                 );
 
                 expect(events).toHaveLength((lastPeriod + 1) * (humans + npcs) * 3);

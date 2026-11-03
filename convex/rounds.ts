@@ -1,7 +1,8 @@
 import type { MutationCtx as MutationContext } from "./_generated/server";
 import type { Doc as Document_, Id } from "./_generated/dataModel";
+import { resolveNpcSuspensions } from "./npc/suspensions";
 import { pendingSuspensions } from "../shared/suspensions";
-import { checkSuspensionPhase, resolveNpcSuspensions, spendSuspension } from "./suspensions";
+import { checkSuspensionPhase, spendSuspension } from "./suspensions";
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { currentUser, gameByCode, fail, member, members, roundInsights } from "./library";

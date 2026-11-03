@@ -81,6 +81,13 @@ and Debenture activation are implemented, as is period-end Share Suspended.
 Rights Issue activation pauses play while each shareholder may buy one extra share per two held at £1 each.
 Only the initiating bargain uses a turn; decisions follow cyclic play order and then normal play resumes. Debentures carry over and sell the current player's entire bankrupt holding at the game's original opening price.
 
+AI players use all four retail chance cards: they collect Government Loans, claim eligible retained Debentures,
+open profitable Rights Issues, buy affordable Rights Issue entitlements, and use Share Suspended to protect
+portfolio losses. During trading they see only their own cards and public market data. Chance-card strategy
+lives in `packages/npc-engine/src/chance.ts`; `convex/npc/` adapts observations and schedules decisions.
+Human and AI activations share the same server validation and game commands. Rights Issue purchases
+pause normal turns and resume after every shareholder has responded.
+
 Some other mechanics still follow the patent variant. The [BGG retail review](https://boardgamegeek.com/thread/106869/review-of-stockmarket)
 also describes Rights Issues bought at £1 per extra share (one per two held), Debenture sales at
 the bankrupt company’s opening price, no cards retained between periods, and

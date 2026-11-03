@@ -8,6 +8,7 @@ import { ada, adaEasy } from "./personalities/ada";
 import { casey, caseyEasy } from "./personalities/casey";
 import { felix } from "./personalities/felix";
 import { morgan, morganEstimates } from "./personalities/morgan";
+import { chooseChance } from "./chance";
 import { plan } from "./planning";
 export { roster } from "./roster";
 
@@ -32,6 +33,12 @@ export function decide(
         nextMemory: memory,
         reason: action.kind === "pass" ? "retain-cash" : reason,
     });
+
+    const chance = chooseChance(observation);
+    if (chance)
+    {
+        return finish(chance, "cards");
+    }
 
     switch (profile.personality)
     {

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { decide, emptyMemory } from "../../packages/npc-engine/src";
+import { decide, emptyMemory, isLegalProposal } from "../../packages/npc-engine/src";
 import { updateMemory } from "../../packages/npc-engine/src/memory";
 import { transition } from "../../packages/game-contracts/src";
 import { observation } from "./fixtures";
@@ -38,6 +38,11 @@ it("preserves Medium Morgan's cash reserve while rebalancing an existing portfol
         emptyMemory(),
         "reserve",
     );
+    if (!isLegalProposal(result.action, input.legalActions))
+    {
+        throw new Error("Expected a legal trade");
+    }
+
     const after = transition(input, result.action).players.find((seat) => seat.id === "p0")!;
 
     expect(after.cash).toBeGreaterThanOrEqual(55_000 * 0.2);

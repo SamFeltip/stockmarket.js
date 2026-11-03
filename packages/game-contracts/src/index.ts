@@ -10,6 +10,18 @@ export type Action
           readonly quantity: number;
       };
 
+export type ChanceAction
+    = | { readonly kind: "government-loan"; readonly insightId: string }
+      | { readonly kind: "debenture"; readonly insightId: string; readonly stockKey: number }
+      | { readonly kind: "rights-issue"; readonly insightId: string; readonly stockKey: number };
+
+export type NpcAction = Action | ChanceAction;
+
+export interface ChanceOffer {
+    readonly action: ChanceAction;
+    readonly amount: number;
+}
+
 export interface Holding {
     readonly stockKey: number;
     readonly quantity: number;
@@ -67,6 +79,7 @@ export interface NpcObservation extends Market {
     readonly legalActions: readonly Action[];
     readonly remainingSeatOrder: readonly string[];
     readonly favouriteStockKey: number;
+    readonly chanceOffers?: readonly ChanceOffer[];
 }
 
 export interface NpcProfile {
@@ -100,7 +113,7 @@ export type ReasonCode
     = "loyalty" | "copy" | "cards" | "targets" | "bluff" | "unwind" | "plan" | "retain-cash";
 
 export interface Decision {
-    readonly action: Action;
+    readonly action: NpcAction;
     readonly nextMemory: NpcMemory;
     readonly reason: ReasonCode;
 }

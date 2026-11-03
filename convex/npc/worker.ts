@@ -1,3 +1,5 @@
+import type { Id } from "../_generated/dataModel";
+import { activateRightsIssue } from "../rightsIssue";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { internalMutation } from "../_generated/server";
@@ -77,7 +79,9 @@ export const run = internalMutation({
                     pending.seed,
                 );
 
-                if (!isLegalProposal(decision.action, observation.legalActions))
+                if (!isLegalProposal(decision.action, [
+                    ...observation.legalActions, ...(observation.chanceOffers ?? []).map((offer) => offer.action),
+                ]))
                 {
                     diagnostic = "Invalid proposed action";
                     decision = {
@@ -110,18 +114,29 @@ export const run = internalMutation({
             }
         }
 
-        await applyTurn(
-            context,
-            {
-                playerId: seat._id,
-                expectedPeriod: pending.period,
-                expectedTurn: pending.turn,
-                action: decision.action,
-            },
-            await publicIdentity(context, seat),
-        );
+        const action = decision.action;
+        const display = await publicIdentity(context, seat);
+        const command = { playerId: seat._id, expectedPeriod: pending.period, expectedTurn: pending.turn };
+        if (action.kind === "rights-issue")
+        {
+            await activateRightsIssue(context, game, seat, display,
+                { ...command, ...action, insightId: action.insightId as Id<"playerInsights"> });
+        }
+        else
+        {
+            const accepted = action.kind === "government-loan" || action.kind === "debenture"
+                ? { ...action, insightId: action.insightId as Id<"playerInsights"> } : action;
+
+            await applyTurn(context, { ...command, action: accepted }, display);
+        }
+
         await saveAcceptedDecision(context, pending, decision, Date.now() - started, diagnostic);
-        await context.db.delete(pendingId);
+
+        if (await context.db.get(pendingId))
+        {
+            await context.db.delete(pendingId);
+        }
+
         await enqueueNextNpcIfNeeded(context, game._id);
     },
 });
