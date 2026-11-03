@@ -1,4 +1,4 @@
-.rights-screen { height: 100dvh; width: 100%; display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); overflow: hidden; background: var(--bs-body-bg, #102d12); }
+.rights-screen { height: 100dvh; width: 100%; display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; padding: 1rem; overflow: hidden; background: var(--bs-body-bg, #102d12); }
 .rights-panel { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; width: min(100%, 32rem); max-height: 100%; min-height: 0; color: white; }
 .rights-summary { width: 100%; padding: 1.5rem; border-radius: 0.75rem; background: white; color: #111; display: flex; flex-direction: column; gap: 1.5rem; }
 .rights-panel p { margin: 0; }
@@ -108,7 +108,7 @@
 .rights-screen:not(.rights-spectator) .rights-holders { align-self: end; }
 .rights-own .rights-summary { gap: 1rem; }
 @media (max-width: 991.98px) {
-    .rights-spectator { padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); }
+    .rights-spectator { padding-bottom: 1.5rem; }
     .rights-spectator .rights-progress { width: 100%; }
     .rights-spectator .rights-skip { margin-bottom: 0.5rem; }
 }

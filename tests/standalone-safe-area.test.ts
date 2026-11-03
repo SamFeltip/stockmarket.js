@@ -46,3 +46,31 @@ for (const [label, isMobile, displayMode, iosStandalone, expected] of [
         expect(classes.has("mobile-standalone")).toBe(false);
     });
 }
+
+it("refreshes installed-mode detection when iOS restores an existing page", () =>
+{
+    const viewport = { content: "width=device-width, initial-scale=1" };
+    const classes = new Set<string>();
+    const page = new EventTarget();
+    const ios = { standalone: false };
+    const mobile = Object.assign(new EventTarget(), { matches: true });
+    const standalone = Object.assign(new EventTarget(), { matches: false });
+
+    vi.stubGlobal("matchMedia", (query: string) => query === "(display-mode: standalone)" ? standalone : mobile);
+    vi.stubGlobal("navigator", ios);
+    vi.stubGlobal("addEventListener", page.addEventListener.bind(page));
+    vi.stubGlobal("removeEventListener", page.removeEventListener.bind(page));
+    vi.stubGlobal("document", { querySelector: () => viewport, documentElement: { classList: {
+        contains: (name: string) => classes.has(name),
+        toggle: (name: string, enabled: boolean) => enabled ? classes.add(name) : classes.delete(name),
+    } } });
+    const cleanup = setupStandaloneSafeArea();
+
+    ios.standalone = true;
+    page.dispatchEvent(new Event("pageshow"));
+    expect(classes.has("mobile-standalone")).toBe(true);
+    expect(viewport.content).toContain("viewport-fit=cover");
+    cleanup();
+    page.dispatchEvent(new Event("pageshow"));
+    expect(classes.has("mobile-standalone")).toBe(false);
+});

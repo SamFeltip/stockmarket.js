@@ -164,10 +164,10 @@ button.nav-link { cursor: pointer; }
 }
 @media (max-width: 991.98px) {
     .mobile-standalone .trade-dialog .modal-footer {
-        padding-bottom: calc(var(--drawer-footer-padding, 1rem) + env(safe-area-inset-bottom, 0px) + 0.25rem);
+        padding-bottom: calc(var(--drawer-footer-padding, 1rem) + var(--app-safe-bottom, 0px) + 0.25rem);
     }
     .mobile-standalone #game-grid > .offcanvas-lg {
-        padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px) + 0.25rem) !important;
+        padding-bottom: calc(1rem + var(--app-safe-bottom, 0px) + 0.25rem) !important;
     }
 }
 @media (prefers-reduced-motion: reduce) {

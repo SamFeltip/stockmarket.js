@@ -2,9 +2,10 @@ import { SelectionTick } from "./SelectionTick";
 import { money } from "./shared";
 
 export function StockChoice({ stock, quantity, unitPrice, unavailableReason, selected, disabled = false,
-    name, onSelect, showName = false }: {
+    name, onSelect, showName = false, allowDeselect = false }: {
     stock: { name: string; imagePath: string }; quantity?: number; unitPrice?: number | null; showName?: boolean;
-    unavailableReason?: string | null; selected: boolean; disabled?: boolean; name: string; onSelect: () => void;
+    unavailableReason?: string | null; selected: boolean; disabled?: boolean; name: string;
+    onSelect: () => void; allowDeselect?: boolean;
 })
 {
     return (
@@ -16,7 +17,14 @@ export function StockChoice({ stock, quantity, unitPrice, unavailableReason, sel
                 aria-label={quantity === undefined ? stock.name : `${stock.name}: ${money(quantity)} stocks`}
                 checked={selected}
                 disabled={disabled || Boolean(unavailableReason)}
-                onChange={onSelect}
+                onClick={allowDeselect ? onSelect : undefined}
+                onChange={() =>
+                {
+                    if (!allowDeselect)
+                    {
+                        onSelect();
+                    }
+                }}
             />
             <span className="debenture-stock-picture">
                 <img src={stock.imagePath} alt={stock.name} />

@@ -170,3 +170,14 @@ These previews use local sample state, with no live game or backend writes.
 Player screens keep the board hidden and fit the viewport; the trade quantity/value controls,
 role progress, turn/period indicators, shareholder gain animation and portfolio table are shared
 with their existing game counterparts. Native TV preview: `?demo=1&view=rights`.
+
+The Rights Issue company selector lists only companies with existing shareholders. Tapping the
+selected company again clears it; Activate requires a valid selection. Activating from the default
+demo footer enters the same active/waiting Rights Issue flow as the dedicated preview URLs.
+
+Installed mobile apps share safe-area variables across the board footer, drawers and Rights Issue
+screens. The bottom inset has a 1rem minimum if the browser reports zero; normal browser and desktop
+spacing is unchanged. Detection supports both display-mode and iOS navigator.standalone, including
+page restoration. The demo includes the installable app manifest. Physical iPhone verification is
+still needed for device-specific notch/home-indicator rendering; automated checks cover detection
+and a browser preview with standalone mode simulated.

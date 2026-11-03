@@ -1,3 +1,5 @@
+import "./standalone-safe-area.css";
+
 // Let iOS expose safe-area insets only for the installed mobile app.
 export function setupStandaloneSafeArea()
 {
@@ -26,11 +28,13 @@ export function setupStandaloneSafeArea()
     update();
     mobile.addEventListener("change", update);
     standalone.addEventListener("change", update);
+    globalThis.addEventListener?.("pageshow", update);
 
     return () =>
     {
         mobile.removeEventListener("change", update);
         standalone.removeEventListener("change", update);
+        globalThis.removeEventListener?.("pageshow", update);
         root.classList.toggle("mobile-standalone", hadClass);
         viewport.content = original;
     };

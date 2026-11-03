@@ -1,0 +1,25 @@
+/* Reserve a modest minimum for installed apps even if the browser reports a
+   zero inset. Ordinary websites and desktop apps keep their existing spacing. */
+@media (max-width: 991.98px) {
+    .mobile-standalone {
+        --app-safe-top: env(safe-area-inset-top, 0px);
+        --app-safe-bottom: max(env(safe-area-inset-bottom, 0px), 1rem);
+        --app-safe-left: env(safe-area-inset-left, 0px);
+        --app-safe-right: env(safe-area-inset-right, 0px);
+    }
+    .mobile-standalone .rights-screen {
+        padding-top: calc(1rem + var(--app-safe-top));
+        padding-bottom: calc(1rem + var(--app-safe-bottom));
+        padding-left: max(1rem, var(--app-safe-left));
+        padding-right: max(1rem, var(--app-safe-right));
+    }
+    .mobile-standalone .rights-spectator { padding-bottom: calc(1.5rem + var(--app-safe-bottom)); }
+    .mobile-standalone .modal .modal-footer {
+        padding-bottom: calc(var(--drawer-footer-padding, 1rem) + var(--app-safe-bottom) + 0.25rem);
+    }
+    .mobile-standalone .trade-dialog .modal-dialog,
+    .mobile-standalone .trade-dialog .modal-content {
+        max-height: calc(100dvh - var(--app-safe-top) - 0.5rem);
+    }
+    .mobile-standalone .trade-dialog .modal-body { overflow-y: auto; }
+}

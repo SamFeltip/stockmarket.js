@@ -80,10 +80,10 @@
 @media (max-width: 991.98px) {
     /* viewport-fit=cover also exposes the notch; keep the header below it. */
     .mobile-standalone #game-grid:has(> #player-dock) {
-        padding-top: calc(var(--game-grid-spacing, 16px) + env(safe-area-inset-top, 0px)) !important;
+        padding-top: calc(var(--game-grid-spacing, 16px) + var(--app-safe-top, 0px)) !important;
     }
     .mobile-standalone #game-grid:has(> #player-dock) > #player-dock {
-        padding-bottom: calc(var(--game-panel-padding) + env(safe-area-inset-bottom, 0px) + 0.25rem) !important;
+        padding-bottom: calc(var(--game-panel-padding) + var(--app-safe-bottom, 0px) + 0.25rem) !important;
     }
 }
 /* Details scroll within the middle panel while the dock remains in view. */

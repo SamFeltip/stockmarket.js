@@ -202,7 +202,7 @@ it("preserves bank inventory and does not spend an invalid offer or create share
         holding.stockKey === 8)?.quantity ?? 0), 0)).toBe(200_000);
 });
 
-it("offers every company in the shared stock selector, including bankrupt companies and those without holders", async () =>
+it("offers only companies with shareholders in the shared selector, including bankrupt companies", async () =>
 {
     const { t, bob, board, command } = await fixture();
 
@@ -217,7 +217,10 @@ it("offers every company in the shared stock selector, including bankrupt compan
         </ConvexProvider>,
     );
 
-    expect(html.match(/type="radio"/g)).toHaveLength(current.stocks.filter((stock) => stock.display).length);
+    expect(html.match(/type="radio"/g)).toHaveLength(1);
+    expect(html).toContain("aria-label=\"UB\"");
+    expect(html).not.toContain("aria-label=\"Natwest\"");
+    expect(html).toContain("disabled=\"\">Activate");
     expect(html).toContain(">Cancel</button>");
     await bob.mutation(api.rightsIssue.activate, command);
     expect((await bob.query(api.board.get, { code: "test" })).game.rightsIssue?.stockKey).toBe(8);

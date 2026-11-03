@@ -17,7 +17,9 @@ export function RightsIssueModal({ board, insightId, used, onActivate }: {
     const { run, busy, error } = useAction();
     const myTurn = board.game.status === "playing" && !board.game.rightsIssue
       && board.game.currentPlayerId === board.player._id;
-    const stocks = board.stocks.filter((stock) => stock.display);
+    const stocks = board.stocks.filter((stock) => stock.display && board.players.some((player) =>
+        player.holdings.some((holding) => holding.stockKey === stock.key && holding.quantity > 0)));
+    const selectedStock = stocks.find((stock) => stock.key === selected);
     const id = `chance-card-${insightId}`;
 
     function close()
@@ -44,11 +46,12 @@ export function RightsIssueModal({ board, insightId, used, onActivate }: {
                             name={`${id}-company`}
                             selected={selected === stock.key}
                             disabled={busy}
-                            onSelect={() => setSelected(stock.key)}
+                            onSelect={() => setSelected((current) => current === stock.key ? undefined : stock.key)}
+                            allowDeselect
                             showName
                         />
                     ))}
-                    {stocks.length === 0 && <div className="debenture-empty">No stocks available</div>}
+                    {stocks.length === 0 && <div className="debenture-empty">No companies with shareholders</div>}
                 </div>
                 {!myTurn && <p>Wait for your turn to activate.</p>}
                 <Alert message={error} />
@@ -57,19 +60,20 @@ export function RightsIssueModal({ board, insightId, used, onActivate }: {
                 <button className="btn btn-secondary" disabled={busy} onClick={close}>Cancel</button>
                 <button
                     className="btn btn-primary"
-                    disabled={busy || used || !myTurn || selected === undefined}
+                    disabled={busy || used || !myTurn || !selectedStock}
                     onClick={() =>
                     {
-                        if (!myTurn || used || busy || selected === undefined)
+                        if (!myTurn || used || busy || !selectedStock)
                         {
                             return;
                         }
 
                         void run(async () =>
                         {
-                            await (onActivate ? onActivate(insightId, selected) : activate({ code: board.game.code,
-                                expectedTurn: board.game.turn, expectedPeriod: board.game.currentPeriod,
-                                insightId, stockKey: selected }));
+                            await (onActivate ? onActivate(insightId, selectedStock.key) : activate({
+                                code: board.game.code, expectedTurn: board.game.turn,
+                                expectedPeriod: board.game.currentPeriod, insightId, stockKey: selectedStock.key,
+                            }));
                             close();
                         });
                     }}

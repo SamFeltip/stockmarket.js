@@ -66,7 +66,7 @@ label.suspension-stock { cursor: pointer; }
 }
 @media (max-width: 991.98px) {
     .round-end.suspension-round { padding: 1rem !important; }
-    .mobile-standalone .suspension-round { padding-top: calc(1rem + env(safe-area-inset-top, 0px)) !important; padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px)) !important; }
+    .mobile-standalone .suspension-round { padding-top: calc(1rem + var(--app-safe-top, 0px)) !important; padding-bottom: calc(1rem + var(--app-safe-bottom, 0px)) !important; }
 }
 @media (max-width: 575.98px) {
     .suspension-panel { gap: 1rem; }
