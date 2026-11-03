@@ -1,6 +1,7 @@
 import { expect, it } from "vitest";
 import raw from "../experiments/cash-dock-board.json";
 import type { Board } from "../src/types";
+import { spectatorBoard } from "../src/spectator-board";
 import { finishRightsDemo } from "../experiments/rights-demo-finish";
 
 function fixture(lastTurn: boolean): Board
@@ -21,12 +22,15 @@ function fixture(lastTurn: boolean): Board
 it("resumes after exactly one bargain and records completion in the demo feed", () =>
 {
     const board = fixture(false);
+
+    board.feed[0] = { ...board.feed[0], message: "bought 1000 shares in UB", quantity: 1000 };
     const after = finishRightsDemo(board, board.game.rightsIssue!.insightId);
 
     expect(after.game).toMatchObject({ turn: 1, currentPeriod: board.game.currentPeriod,
         currentPlayerId: board.players[1]._id, status: "playing", rightsIssue: undefined });
     expect(after.feed[0].message).toBe("Rights Issue complete. Trading resumes.");
     expect(after.players).toEqual(board.players);
+    expect(spectatorBoard(after).latestPurchase?.message).toBe("bought 1000 shares in UB");
     expect(finishRightsDemo(after, board.game.rightsIssue!.insightId)).toBe(after);
 });
 

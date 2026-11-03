@@ -2,7 +2,8 @@ import type { Board } from "./display-types";
 
 export function spectatorBoard(board: Board)
 {
-    const latest = board.feed.find((item) => (item.quantity ?? 0) > 0);
+    const latest = board.feed.find((item) => (item.quantity ?? 0) > 0
+      || /^bought \d+ shares in /.test(item.message));
 
     return {
         canControl: false, reveal: null,
