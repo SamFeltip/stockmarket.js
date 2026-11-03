@@ -114,3 +114,14 @@ body:has(#player-dock) { overflow: hidden; }
 .debenture-detail > p { color: #636b66; font-weight: 400; line-height: 1.45; }
 .debenture-stock > span { font-size: 0.95rem; }
 .debenture-stock .debenture-stock-price, .debenture-stock .debenture-unavailable { font-size: 0.8rem; }
+
+.modal.trade-dialog .modal-body.government-loan-detail { display: grid; grid-template-rows: auto minmax(0, 1fr); align-content: stretch; gap: 1rem; min-height: 26rem; }
+.government-loan-detail > h2 { font-size: 1.25rem; font-weight: 500; }
+.government-loan-content { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; text-align: center; padding-block: 1rem; }
+.government-loan-icon { width: 22rem; max-width: 100%; height: auto; aspect-ratio: 160 / 104; object-fit: contain; flex-shrink: 0; }
+.government-loan-content > h3 { font-size: 1.4rem; margin: 0; color: #111; }
+.government-loan-content > p { margin: 0; color: #636b66; line-height: 1.45; }
+.government-loan-content > .government-loan-instructions { margin-top: 2rem; }
+@media (max-width: 991.98px) {
+    .modal.trade-dialog .modal-body.government-loan-detail { min-height: 0; }
+}

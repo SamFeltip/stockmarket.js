@@ -27,16 +27,22 @@ export function GovernmentLoanModal({ board, insightId, used, onActivate }: {
 
     return (
         <Modal id={id} title="Government Loan" mobileDrawer>
-            <div className="modal-body loan-detail d-grid gap-3">
+            <div className="modal-body loan-detail government-loan-detail">
                 <h2 className="text-black mb-0">Government Loan</h2>
-                <h3>{`Receive £${money(governmentLoanAmount)}`}</h3>
-                <p>This bonus goes straight into your cash balance. Invest it in shares or save it for later.</p>
-                <p>You can use this card once. Activating it uses one turn.</p>
-                {!canActivate && <p>{used ? "This card has been used." : "Wait for your turn to activate."}</p>}
-                <Alert message={error} />
+                <div className="government-loan-content">
+                    <img src="/static/imgs/icons/cash.svg" alt="" className="government-loan-icon" />
+                    <h3>{`Receive £${money(governmentLoanAmount)}`}</h3>
+                    <p className="government-loan-instructions">
+                        You can use this card once.
+                        <br />
+                        Activating it uses one turn.
+                    </p>
+                    {!canActivate && <p>{used ? "This card has been used." : "Wait for your turn to activate."}</p>}
+                    <Alert message={error} />
+                </div>
             </div>
             <div className="modal-footer trade-footer">
-                <button type="button" className="btn btn-secondary" onClick={closeDialog} disabled={busy}>Cancel</button>
+                <button type="button" className="btn btn-secondary" onClick={closeDialog} disabled={busy}>Close</button>
                 <button
                     type="button"
                     className="btn btn-primary"
