@@ -1,3 +1,4 @@
+import { TradeStockSummary } from "./TradeStockSummary";
 import { Change } from "./shared";
 import type { Board, Stock } from "./types";
 
@@ -11,6 +12,10 @@ export function StockPreview({ board, stock, large = false, active = false }: {
     const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
     const value = board.insights.filter((insight) => insight.stockKey === stock.key)
         .reduce((sum, insight) => sum + insight.value, 0);
+    if (large)
+    {
+        return <TradeStockSummary stock={stock} price={price} detail={<Change value={value} />} />;
+    }
 
     return (
         <div className={`d-flex flex-fill justify-content-between align-items-center ${large ? "flex-row" : "stock-tab-preview"}`}>

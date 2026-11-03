@@ -51,10 +51,9 @@ export const activate = mutation({
             return held > 0
                 ? [{ playerId: seat._id, held, maximum: rightsEntitlement(held) }] : [];
         });
-        if (!stock || offers.length === 0
-          || (game.prices.find((price) => price.stockKey === stock.key)?.value ?? 0) <= 0)
+        if (!stock)
         {
-            fail("Choose a trading company with shareholders");
+            fail("Choose a tradable stock");
         }
 
         const rightsIssue = { insightId: card._id, stockKey: stock.key, actorPlayerId: player._id,
@@ -63,6 +62,15 @@ export const activate = mutation({
         await context.db.insert("gameActions", { gameId: game._id, period: game.currentPeriod, turn: game.turn,
             actorPlayerId: player._id, action: { kind: "pass" }, rightsIssueId: card._id });
         await context.db.patch(card._id, { used: true, resolved: true });
+
+        if (offers.length === 0)
+        {
+            await finishTurn(context, game, player, seats);
+            await enqueueNextNpcIfNeeded(context, game._id);
+
+            return;
+        }
+
         await context.db.patch(game._id, { rightsIssue });
         await feedItem(context, game, user.name, `opened a Rights Issue for ${stock.name}`, user.profileRoot, "");
         await advanceNpcs(context, { ...game, rightsIssue });

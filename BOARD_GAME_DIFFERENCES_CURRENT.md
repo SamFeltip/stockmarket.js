@@ -125,7 +125,8 @@ Shareholder choices do not consume bargains or advance the period. The initiatin
 and consumed once the issue completes; its original turn stays on screen during all choices.
 Allowances are fixed from holdings when the card is activated. An eligible holder can buy any whole
 number from zero (skip) to that allowance, within cash; an odd holding rounds down. No debt is created.
-A company must be trading and have shareholders. The existing bank inventory limit is retained and shared across the queue; ordinary trading lot
+Any company can be selected, including bankrupt companies and companies without shareholders.
+If nobody holds the selected stock, activation spends the initiating bargain without opening a purchase queue. The existing bank inventory limit is retained and shared across the queue; ordinary trading lot
 restrictions do not apply to this special purchase.
 These rounding, cash, and inventory details are implementation choices where the retail review is silent,
 not rules imported from the patent. NPC holders accept profitable offers within cash and otherwise skip.

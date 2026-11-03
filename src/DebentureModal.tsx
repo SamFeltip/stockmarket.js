@@ -1,4 +1,4 @@
-import { SelectionTick } from "./SelectionTick";
+import { StockChoice } from "./StockChoice";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
@@ -99,31 +99,15 @@ export function DebentureStockChoice({ offer, selected, busy, name, onSelect }: 
 })
 {
     return (
-        <label className={`debenture-stock ${selected ? "is-selected" : ""}`}>
-            <input
-                className="visually-hidden"
-                type="radio"
-                name={name}
-                aria-label={`${offer.stock.name}: ${money(offer.quantity)} stocks`}
-                checked={selected}
-                disabled={busy || Boolean(offer.unavailableReason)}
-                onChange={onSelect}
-            />
-            <span className="debenture-stock-picture">
-                <img src={offer.stock.imagePath} alt={offer.stock.name} />
-            </span>
-            {selected && (
-                <span className="debenture-stock-check" aria-hidden="true">
-                    <SelectionTick />
-                </span>
-            )}
-            <span>{`${money(offer.quantity)} stocks`}</span>
-            {offer.unitPrice !== null && (
-                <span className="debenture-stock-price">
-                    {`${Math.abs(offer.unitPrice * 100 - Math.round(offer.unitPrice * 100)) > 0.000_001 ? "≈" : ""}£${offer.unitPrice.toFixed(2)} each`}
-                </span>
-            )}
-            {offer.unavailableReason && <span className="debenture-unavailable">{offer.unavailableReason}</span>}
-        </label>
+        <StockChoice
+            stock={offer.stock}
+            quantity={offer.quantity}
+            unitPrice={offer.unitPrice}
+            unavailableReason={offer.unavailableReason}
+            selected={selected}
+            disabled={busy}
+            name={name}
+            onSelect={onSelect}
+        />
     );
 }

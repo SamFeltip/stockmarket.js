@@ -125,3 +125,5 @@ body:has(#player-dock) { overflow: hidden; }
 @media (max-width: 991.98px) {
     .modal.trade-dialog .modal-body.government-loan-detail { min-height: 0; }
 }
+
+.debenture-stock > strong { font-size: 0.95rem; font-weight: 500; }

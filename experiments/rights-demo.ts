@@ -30,9 +30,15 @@ function begin(board: Board, insightId: Board["insights"][number]["_id"], stockK
             return held > 0 ? [{ playerId: player._id, held, maximum: rightsEntitlement(held) }] : [];
         }) };
 
-    return synchronize({ ...board, game: { ...board.game, rightsIssue: issue },
-        insights: board.insights.map((card) => card._id === insightId
-            ? { ...card, used: true, resolved: true } : card) });
+    const empty = issue.offers.length === 0;
+    const next = board.players[(board.players.findIndex((player) => player._id === issue.actorPlayerId) + 1)
+      % board.players.length];
+
+    return synchronize({ ...board, game: { ...board.game, rightsIssue: empty ? undefined : issue,
+        ...(empty ? { turn: issue.turn + 1, currentPlayerId: next._id,
+            status: issue.turn + 1 >= board.players.length * 3 ? "closed" : "playing" } : {}) },
+    insights: board.insights.map((card) => card._id === insightId
+        ? { ...card, used: true, resolved: true } : card) });
 }
 
 export function configureRightsDemo(board: Board)
@@ -52,7 +58,7 @@ export function configureRightsDemo(board: Board)
 
     if (rightsMode === "waiting")
     {
-        board.player = { ...board.player, ...board.players[3] };
+        board.player = { ...board.player, ...board.players[1] };
     }
 }
 

@@ -1,3 +1,4 @@
+import { TradeStockSummary } from "./TradeStockSummary";
 import { useState } from "react";
 import type { Board } from "./display-types";
 import { rightsIssueOrder, rightsIssuePrice, rightsPurchaseError, rightsAvailable } from "../shared/rights-issue";
@@ -23,27 +24,27 @@ export function RightsIssue({ board, playerId, spectator = false, onDecision }: 
     const ordered = rightsIssueOrder(board.players, issue.actorPlayerId);
 
     return (
-        <main className={`rights-screen ${spectator ? "rights-spectator" : ""}`}>
+        <main className={`rights-screen ${spectator ? "rights-spectator" : ""} ${own ? "rights-own" : ""}`}>
             <section className="rights-panel" aria-label="Rights Issue">
-                <header className="suspension-heading">
-                    <p>Chance Card</p>
-                    <h1>Rights Issue</h1>
-                    {own && <p>{`Optionally buy more ${stock.name} shares at £1 per extra share.`}</p>}
-                </header>
-                {own ? (
-                    <RightsPurchase key={`${issue.insightId}-${issue.index}`} board={board} onDecision={onDecision} />
-                ) : (
-                    <div className="rights-waiting">
-                        {spectator && <img className="rights-current rounded" src={current.profileRoot} alt={current.name} />}
-                        <img className="rights-company" src={stock.imagePath} alt={stock.name} />
-                        <p>
-                            {issue.completed ? "Rights Issue complete. Resuming trading…" : (spectator ? `${current.name} is deciding how much ${stock.name} stock to purchase during the Rights Issue.`
-                                : `Gameplay is paused while ${stock.name} conducts a Rights Issue.`)}
-                        </p>
-                    </div>
-                )}
-                {spectator ? (
-                    <>
+                <div className="rights-summary">
+                    <header className="suspension-heading">
+                        <p>Chance Card</p>
+                        <h1>Rights Issue</h1>
+                        {own && <p>{`Optionally buy more ${stock.name} shares at £1 per extra share.`}</p>}
+                    </header>
+                    {own ? (
+                        <RightsPurchase key={`${issue.insightId}-${issue.index}`} board={board} onDecision={onDecision} />
+                    ) : (
+                        <div className="rights-waiting">
+                            {spectator && <img className="rights-current rounded" src={current.profileRoot} alt={current.name} />}
+                            <img className="rights-company" src={stock.imagePath} alt={stock.name} />
+                            <p>
+                                {issue.completed ? "Rights Issue complete. Resuming trading…" : (spectator ? `${current.name} is deciding how much ${stock.name} stock to purchase during the Rights Issue.`
+                                    : `Gameplay is paused while ${stock.name} conducts a Rights Issue.`)}
+                            </p>
+                        </div>
+                    )}
+                    {spectator && (
                         <DecisionPortfolios
                             board={board}
                             activePlayerId={current._id}
@@ -51,6 +52,10 @@ export function RightsIssue({ board, playerId, spectator = false, onDecision }: 
                             mutedStockKey={stock.key}
                             animateStockKey={stock.key}
                         />
+                    )}
+                </div>
+                {spectator ? (
+                    <>
                         <div className="rights-stock-prices">
                             {board.stocks.filter((item) => item.display).map((item) => (
                                 <article key={item.key}>
@@ -128,18 +133,17 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
                 }
             }}
         >
-            <div className="rights-offer-title">
-                <div>
-                    <img src={stock.imagePath} alt="" />
-                    <strong>{stock.name}</strong>
-                </div>
-                <div>
-                    <span>Rights Issue price</span>
-                    <strong>£1.00</strong>
-                    <small>{`${price >= rightsIssuePrice ? "−" : "+"}£${Math.abs(price - rightsIssuePrice).toFixed(2)}`}</small>
-                </div>
-            </div>
-            <p className="rights-limit">{`Maximum: ${money(limit)} shares`}</p>
+            <TradeStockSummary
+                stock={stock}
+                price={rightsIssuePrice}
+                priceLabel="Rights Issue price"
+                detail={(
+                    <small className="text-secondary">
+                        {`${price >= rightsIssuePrice ? "−" : "+"}£${Math.abs(price - rightsIssuePrice).toFixed(2)}`}
+                    </small>
+                )}
+            />
+            <p className="small rights-limit">{`Maximum: ${money(limit)} shares`}</p>
             <TradeInputs
                 shares={draft.value}
                 cash={draft.value}
@@ -158,7 +162,7 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
                 <TradePosition cash={player.cash - projected} holding={offer.held + projected} buying />
             </TradeInputs>
             <p id="rights-purchase-feedback" className={`trade-feedback ${error || reason ? "is-error" : ""}`} role="status">
-                {error || reason || "You may buy one extra share for every two you owned when this issue started."}
+                {error || reason}
             </p>
             <div className="trade-footer">
                 <button

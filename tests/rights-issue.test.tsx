@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { RightsIssueModal } from "../src/RightsIssueModal";
 import { renderToStaticMarkup } from "react-dom/server";
 import { api, internal } from "../convex/_generated/api";
 import { chanceStockKey } from "../shared/chance-cards";
@@ -81,7 +83,7 @@ it("rejects wrong owners, stale/replayed choices, overspending, excess entitleme
     await expect(sam.mutation(api.rightsIssue.activate, command)).rejects.toThrow("not your turn");
     await expect(outsider.mutation(api.rightsIssue.activate, command)).rejects.toThrow();
     await expect(bob.mutation(api.rightsIssue.activate, { ...command, expectedPeriod: 0 })).rejects.toThrow("turn has changed");
-    await expect(bob.mutation(api.rightsIssue.activate, { ...command, stockKey: -1 })).rejects.toThrow("trading company");
+    await expect(bob.mutation(api.rightsIssue.activate, { ...command, stockKey: -1 })).rejects.toThrow("tradable stock");
     await t.run(async (context) => await context.db.patch(insightId, { playerId: board.players[0]._id }));
     await expect(bob.mutation(api.rightsIssue.activate, command)).rejects.toThrow("cannot be used");
     await t.run(async (context) => await context.db.patch(insightId, { playerId: board.player._id }));
@@ -165,6 +167,8 @@ it("renders purchase, waiting and spectator variants using the shared trade cont
     const spectator = renderToStaticMarkup(<RightsIssue board={board} spectator />);
 
     expect(own).toContain("trade-inputs");
+    expect(own).not.toContain("You may only buy one extra share");
+    expect(own).not.toContain("You may buy one extra share");
     expect(own).toContain("Maximum: 3,000 shares");
     expect(own).toContain("Rights Issue price");
     expect(own).not.toContain("game-grid");
@@ -195,4 +199,40 @@ it("preserves bank inventory and does not spend an invalid offer or create share
 
     expect(after.players.reduce((sum, player) => sum + (player.holdings.find((holding) =>
         holding.stockKey === 8)?.quantity ?? 0), 0)).toBe(200_000);
+});
+
+it("offers every company in the shared stock selector, including bankrupt companies and those without holders", async () =>
+{
+    const { t, bob, board, command } = await fixture();
+
+    await t.run(async (context) => await context.db.patch(board.game._id, {
+        prices: board.game.prices.map((price) => ({ ...price, value: 0 })),
+    }));
+    const current = await bob.query(api.board.get, { code: "test" });
+    const client = new ConvexReactClient("https://rights-selector-test.invalid");
+    const html = renderToStaticMarkup(
+        <ConvexProvider client={client}>
+            <RightsIssueModal board={current} insightId={command.insightId} used={false} />
+        </ConvexProvider>,
+    );
+
+    expect(html.match(/type="radio"/g)).toHaveLength(current.stocks.filter((stock) => stock.display).length);
+    expect(html).toContain(">Cancel</button>");
+    await bob.mutation(api.rightsIssue.activate, command);
+    expect((await bob.query(api.board.get, { code: "test" })).game.rightsIssue?.stockKey).toBe(8);
+});
+
+it("spends one bargain and returns to play when the chosen company has no shareholders", async () =>
+{
+    const { bob, board, command } = await fixture();
+
+    await bob.mutation(api.rightsIssue.activate, { ...command, stockKey: 9 });
+    const after = await bob.query(api.board.get, { code: "test" });
+
+    expect(after.game.rightsIssue).toBeUndefined();
+    expect(after.game.turn).toBe(7);
+    expect(after.game.currentPeriod).toBe(1);
+    expect(after.game.currentPlayerId).toBe(board.players[2]._id);
+    expect(after.insights.find((card) => card._id === command.insightId)).toMatchObject({ used: true, resolved: true });
+    expect(after.player.cash).toBe(10_000);
 });
