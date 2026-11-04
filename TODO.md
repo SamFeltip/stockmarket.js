@@ -9,7 +9,7 @@
 
 ## add extra game behaviour from boardgame
     - CEO/owner behaviour from boardgame
-    - add any leftover differences in `/home/sam/Code/stockmarket/stockmarket.js/BOARD_GAME_DIFFERENCES_CURRENT.md`
+    - add any leftover differences in [the shared rules comparison](https://github.com/SamFeltip/stockmarket-game-engine/blob/main/stockmarket-shared/docs/RULES_COMPARISON.md)
 
 ## other bits
 

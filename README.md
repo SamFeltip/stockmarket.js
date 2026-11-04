@@ -4,62 +4,25 @@ A cloud-hosted migration of the original Go/templ/HTMX game. React 19, TypeScrip
 
 ## Live deployment
 
-- Frontend: https://stockmarket-convex.pages.dev (Cloudflare Pages)
+- Frontend: https://stockmarket.samfelton.com (Cloudflare Pages; alias https://stockmarket-convex.pages.dev)
 - Backend: https://effervescent-flamingo-244.convex.cloud (Convex production)
 - Dashboard: https://dashboard.convex.dev/t/sf-samfelton/stockmarket-convex
 
 These are separate development and production databases. Create a new account on the production app; the migration does not copy existing PostgreSQL users, passwords or games.
 
-## Run locally
+## Setup, checks and deployment
 
-This branch requires the full parent workspace: clone `SamFeltip/stockmarket-game-engine`
-with `--recurse-submodules`, then run the commands below inside `stockmarket-convex`.
-The shared engine lives in the sibling `stockmarket-shared` directory. See [workspace setup](WORKSPACE.md).
+Use the parent workspace's [setup guide](https://github.com/SamFeltip/stockmarket-game-engine/blob/main/SETUP.md) and [deployment guide](https://github.com/SamFeltip/stockmarket-game-engine/blob/main/DEPLOYMENT.md). Clone the parent with submodules: this app imports the sibling shared engine and cannot be built from this repository alone.
 
-Requires Node.js 22.18+.
-
-```sh
-npm ci
-npm run dev
-```
-
-This starts the Convex backend watcher and Vite frontend together in one terminal. Press Ctrl+C to stop both. The project is already linked through ignored `.env.local`. On a fresh checkout, select the `stockmarket-convex` project when Convex asks. To run either service separately, use `npm run backend` or `npm run dev:frontend`.
-
-Open http://127.0.0.1:5173. On a brand-new Convex project, configure password signing keys once with `node scripts/init-auth.mjs`. Do not run this against an already-configured project unless you intend to rotate its signing keys. Secrets are piped directly into Convex and never written to files or printed.
-
-## Quality checks
-
-```sh
-npm run check
-```
-
-This runs ESLint, gameplay integration and lobby-error tests, strict TypeScript checking, a production build and asset validation. Tests have a 15-second limit per case to accommodate complete-game simulations on this machine. ESLint is adapted from the supplied config: recommended and type-aware TypeScript rules, Unicorn, Allman braces, four-space indentation, double quotes, semicolons, statement spacing, one statement per line, 120-character lines and 250-line files. Astro-only rules were replaced with React hooks and accessibility checks. JSX property indentation is explicitly four spaces to agree with the existing indent rule. ESLint also checks authored CSS with `@eslint/css`.
-
-Vendored Bootstrap and the original CSS are immutable copies, excluded from lint formatting; generated Convex bindings and the generated SQL catalog are excluded too. Application code and scripts are linted. `npm run lint:fix` applies supported automatic fixes without disabling checks.
-
-## Deploy updates
-
-Run the complete deployment from this directory:
-
-```sh
-npm run deploy
-```
-
-This runs all quality checks, deploys Convex and rebuilds the frontend against its production URL, then uploads `dist` to Cloudflare Pages. Each step must succeed before the next runs. The backend command explicitly confirms the production deployment so it also works from non-interactive terminals. Convex and Cloudflare authentication must already be configured; use `npx convex login` and `wrangler login` on a new machine. Run `wrangler whoami` to verify Cloudflare access. Deployments need network access and permission to write the CLIs' configuration and log directories.
-
-The individual steps are available as `npm run deploy:backend` (including the production frontend build) and `npm run deploy:frontend` (upload only). Always run the backend step before the frontend step: a plain `npm run build` uses the development URL in `.env.local` and must not be uploaded to production. The production signing keys have already been configured. For a new production deployment only, use `node scripts/init-auth.mjs --prod` once.
-
-Cloudflare's newer `cf` CLI does not currently offer Pages direct upload; Wrangler is used specifically for that operation. No Worker, nginx, Docker, PostgreSQL instance or custom WebSocket service is needed.
-
-For future Git-connected Cloudflare Pages builds, use the parent `stockmarket-game-engine` repository with its submodules checked out, set the root to `stockmarket-convex`, the output to `dist`, and the build command to `npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name VITE_CONVEX_URL`. Add a production `CONVEX_DEPLOY_KEY` as a secret in Cloudflare; never commit it. This directory can also be used as its own repository root.
+`npm run check` in this directory runs ESLint, gameplay integration tests, strict TypeScript checking, the frontend build and asset validation. `npm run lint:fix` applies supported formatting fixes. Generated bindings, vendored Bootstrap and original CSS are excluded from formatting.
 
 ## Game features
 
 - Username/password sign-up, five original profile pictures, sign-in and sign-out.
 - Original routes: `/`, `/login`, `/signup`, `/logout`, `/games`, `/games/new`, `/games/show/:code`, `/users`, `/users/show/:id`, `/insights`.
-- Case-insensitive lobby codes, two to six players, host-controlled six-to-ten-period game length and launch, live lobby updates.
+- Case-insensitive lobby codes, four to six players (including NPCs), host-controlled six-to-ten-period game length and launch, live lobby updates.
 - £60,000 starting cash; all six original stocks, prices, volatility and SQL insight templates; ten private insights per player per period.
-- Rotating turns with three actions per player per period and a new opening seat each period; buying/selling 1,000–5,000 shares in steps of 1,000, then multiples of 10,000; 200,000 shares per company; passing; investor lists and portfolio rankings.
+- Rotating turns with three actions per player per period and a new opening seat each period; buying/selling positive multiples of 1,000 shares; 200,000 shares per company; passing; investor lists and portfolio rankings.
 - Private insights, stock/player tabs, special insight display, activity feed, mobile offcanvas/menu and trade notifications.
 - Animated round-end insight reveals, aggregate price changes floored at zero, special currency and hold-stock handling, next rounds and final rankings.
 - Insight-description editor; editing now requires sign-in. User lists expose display names only.
@@ -71,7 +34,7 @@ New games record their complete price history. Existing games begin history at t
 
 Convex mutations validate identity, membership, ownership, turn, quantities, cash and supply on the server. Trades and settlements are atomic. Stale turn/period guards reject duplicate clicks. The legacy implementation stored game length but never finished a game; this implementation settles the final selected period and shows final rankings. Existing active games keep their stored length and balances; existing lobbies with a shorter length must choose 6–10 periods before launch. Leaving a lobby removes the seat and transfers hosting if necessary. Leaving during play retains the seat for reconnection, as the old disconnect path did not remove players.
 
-The six simpler board-game rule changes are implemented and tested. See [the current board-game comparison](BOARD_GAME_DIFFERENCES_CURRENT.md) for completed changes and remaining differences, including special cards and shareholder powers.
+The implemented board-game rules are tested. See [the current board-game comparison](https://github.com/SamFeltip/stockmarket-game-engine/blob/main/stockmarket-shared/docs/RULES_COMPARISON.md) for completed changes and remaining differences, including special cards and shareholder powers.
 
 ## Chance cards and cash insights
 
@@ -90,16 +53,16 @@ Only the initiating bargain uses a turn; decisions follow cyclic play order and 
 AI players use all four retail chance cards: they collect Government Loans, claim eligible retained Debentures,
 open profitable Rights Issues, buy affordable Rights Issue entitlements, and use Share Suspended to protect
 portfolio losses. During trading they see only their own cards and public market data. Chance-card strategy
-lives in `packages/npc-engine/src/chance.ts`; `convex/npc/` adapts observations and schedules decisions.
+lives in `../stockmarket-shared/src/packages/npc-engine/src/chance.ts`; `convex/npc/` adapts observations and schedules decisions.
 Human and AI activations share the same server validation and game commands. Rights Issue purchases
 pause normal turns and resume after every shareholder has responded.
 
 Some other mechanics still follow the patent variant. The [BGG retail review](https://boardgamegeek.com/thread/106869/review-of-stockmarket)
 also describes Rights Issues bought at £1 per extra share (one per two held), Debenture sales at
 the bankrupt company’s opening price, no cards retained between periods, and
-£500 currency rounding (now implemented). See the [rules comparison](BOARD_GAME_DIFFERENCES_CURRENT.md#retail-rules-described-in-the-bgg-review-2-november-2026)
+£500 currency rounding (now implemented). See the [rules comparison](https://github.com/SamFeltip/stockmarket-game-engine/blob/main/stockmarket-shared/docs/RULES_COMPARISON.md#retail-rules-described-in-the-bgg-review-2-november-2026)
 for the source differences and unresolved details. Those remaining implementation differences are documented explicitly.
-See [merge and release verification](MERGE_READINESS.md) for the coordinated web/backend and TV release checks.
+See [merge and release verification](https://github.com/SamFeltip/stockmarket-game-engine/blob/main/RELEASE_VERIFICATION.md) for the coordinated web/backend and TV release checks.
 
 ## Original assets and missing source data
 
