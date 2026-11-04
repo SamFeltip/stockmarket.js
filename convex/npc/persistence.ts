@@ -1,33 +1,23 @@
 import type { MutationCtx as MutationContext } from "../_generated/server";
 import type { Doc as Document_ } from "../_generated/dataModel";
-import type { Decision, NpcMemory } from "../../packages/game-contracts/src";
-import { emptyMemory } from "../../packages/npc-engine/src/memory";
-export async function loadMemory(
+import type { NpcState, NpcTurnDecision } from "../../../stockmarket-shared/src/npc";
+export async function loadState(
     context: MutationContext,
     playerId: Document_<"players">["_id"],
-): Promise<NpcMemory>
+): Promise<NpcState | null>
 {
     const state = await context.db
         .query("npcStates")
         .withIndex("by_player", (q) => q.eq("playerId", playerId))
         .unique();
-    if (!state)
-    {
-        return emptyMemory();
-    }
 
-    if (state.version !== 1)
-    {
-        throw new Error("Unsupported NPC memory version");
-    }
-
-    return JSON.parse(state.memory) as NpcMemory;
+    return state ? { memory: state.memory, version: state.version } : null;
 }
 
 export async function saveAcceptedDecision(
     context: MutationContext,
     pending: Document_<"npcTurns">,
-    decision: Decision,
+    decision: NpcTurnDecision,
     elapsedMs: number,
     diagnostic?: string,
 ): Promise<void>
@@ -39,8 +29,7 @@ export async function saveAcceptedDecision(
     const fields = {
         gameId: pending.gameId,
         playerId: pending.playerId,
-        memory: JSON.stringify(decision.nextMemory),
-        version: 1,
+        ...decision.state,
     };
 
     await (state ? context.db.patch(state._id, fields) : context.db.insert("npcStates", fields));
@@ -54,6 +43,6 @@ export async function saveAcceptedDecision(
         elapsedMs,
         diagnostic,
         attempts: pending.attempts,
-        engineVersion: 1,
+        engineVersion: decision.engineVersion,
     });
 }

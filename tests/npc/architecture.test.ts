@@ -50,10 +50,37 @@ it("keeps all transitive engine dependencies inside pure contracts, shared rules
         }
     }
 
-    for (const file of files(path.resolve("packages/npc-engine/src")))
+    for (const file of [
+        ...files(path.resolve("packages/npc-engine/src")),
+        path.resolve("../stockmarket-shared/src/packages/npc-engine/src/runtime.ts"),
+    ])
     {
         walk(file);
     }
+});
+
+it("keeps the web application behind the public NPC boundary", () =>
+{
+    for (const file of ["convex", "src", "shared"].flatMap((directory) => files(path.resolve(directory))))
+    {
+        if (!/\.tsx?$/.test(file) || file.includes("/_generated/"))
+        {
+            continue;
+        }
+
+        const source = readFileSync(file, "utf8");
+        for (const item of ts.preProcessFile(source).importedFiles)
+        {
+            expect(item.fileName, file).not.toMatch(/npc-engine|\/personalities\/|\/npc.*\/(?:memory|difficulty|planning|estimate)$/);
+        }
+    }
+
+    const persistence = readFileSync(path.resolve("convex/npc/persistence.ts"), "utf8");
+
+    expect(persistence).not.toMatch(/JSON\.(?:parse|stringify)|NpcMemory|emptyMemory/);
+    const worker = readFileSync(path.resolve("convex/npc/worker.ts"), "utf8");
+
+    expect(worker).not.toMatch(/personality|npcDifficulty|retain-cash|isLegalProposal|nextMemory|config\??\.engineVersion/);
 });
 it("prevents core game modules from importing NPC integration or strategy transitively", () =>
 {

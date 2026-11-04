@@ -5,11 +5,8 @@ import { currentUser, gameByCode, fail, members } from "../library";
 import type { Doc as Document_ } from "../_generated/dataModel";
 import { maximumPlayers, minimumPlayers, startingCash } from "../../shared/rules";
 import { difficultyValidator } from "../schema";
-import { roster } from "../../packages/npc-engine/src/roster";
-import { random, shuffled } from "../../packages/npc-engine/src/random";
-import { engineVersion, tuningVersion } from "../../packages/npc-engine/src/difficulty";
+import { createNpcGameConfig, prepareNpcState } from "../../../stockmarket-shared/src/npc";
 import { phoneHost, spectatorHost } from "../game/hosting";
-import { emptyMemory } from "../../packages/npc-engine/src/memory";
 
 async function hostLobby(context: MutationContext, code: string)
 {
@@ -52,12 +49,7 @@ async function addSeats(
         const configId = await context.db.insert("npcGameConfigs", {
             gameId: game._id,
             rosterSeed,
-            queue: shuffled(
-                roster.map((entry) => entry.id),
-                random(rosterSeed),
-            ),
-            engineVersion,
-            tuningVersion,
+            ...createNpcGameConfig(rosterSeed),
         });
 
         config = (await context.db.get(configId))!;
@@ -81,8 +73,7 @@ async function addSeats(
         await context.db.insert("npcStates", {
             gameId: game._id,
             playerId,
-            memory: JSON.stringify(emptyMemory()),
-            version: 1,
+            ...prepareNpcState(null),
         });
     }
 

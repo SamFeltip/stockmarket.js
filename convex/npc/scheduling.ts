@@ -4,7 +4,7 @@ import { internal } from "../_generated/api";
 import { members } from "../library";
 import { isCurrent, isNpc } from "../game/seats";
 import { actionAnimationMs } from "../../shared/presentation";
-import { random } from "../../packages/npc-engine/src/random";
+import { random } from "../../../stockmarket-shared/src/shared/random";
 export async function enqueueNextNpcIfNeeded(
     context: MutationContext,
     gameId: Id<"games">,

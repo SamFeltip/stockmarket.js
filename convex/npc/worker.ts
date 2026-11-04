@@ -3,14 +3,14 @@ import { activateRightsIssue } from "../rightsIssue";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { internalMutation } from "../_generated/server";
-import type { Decision } from "../../packages/game-contracts/src";
-import { decide, emptyMemory, engineVersion, isLegalProposal } from "../../packages/npc-engine/src";
-import { buildNpcObservation } from "./observation";
+import type { NpcTurnDecision } from "../../../stockmarket-shared/src/npc";
+import { buildNpcTurnInput, decideNpcTurn, fallbackNpcTurn, prepareNpcState } from "../../../stockmarket-shared/src/npc";
+import { readEngine } from "../engine";
 import { applyTurn } from "../game/commands";
 import { isCurrent } from "../game/seats";
 import { publicIdentity } from "./identity";
 import { enqueueNextNpcIfNeeded } from "./scheduling";
-import { loadMemory, saveAcceptedDecision } from "./persistence";
+import { loadState, saveAcceptedDecision } from "./persistence";
 export const run = internalMutation({
     args: { pendingId: v.id("npcTurns"), generation: v.string() },
     handler: async (context, { pendingId, generation }): Promise<void> =>
@@ -39,17 +39,15 @@ export const run = internalMutation({
             return;
         }
 
-        const memory = pending.attempts >= 3 ? emptyMemory() : await loadMemory(context, seat._id);
+        const state = prepareNpcState(
+            pending.attempts >= 3 ? null : await loadState(context, seat._id),
+        );
         const config = await context.db
             .query("npcGameConfigs")
             .withIndex("by_game", (q) => q.eq("gameId", game._id))
             .unique();
         const started = Date.now();
-        let decision: Decision = {
-            action: { kind: "pass" },
-            nextMemory: memory,
-            reason: "retain-cash",
-        };
+        let decision: NpcTurnDecision = fallbackNpcTurn(state);
         let diagnostic: string | undefined = pending.lastError
             ? `Recovered after: ${pending.lastError}`
             : undefined;
@@ -59,37 +57,13 @@ export const run = internalMutation({
         }
         else
         {
-            const observation = await buildNpcObservation(context, game, seat);
+            const input = await buildNpcTurnInput(readEngine(context), game, seat);
 
             // Catch engine failures only; database, observation and command failures roll back the transaction.
             try
             {
-                if (config?.engineVersion !== engineVersion || config.tuningVersion !== 1)
-                {
-                    throw new Error("Unsupported pinned engine version");
-                }
-
-                decision = decide(
-                    observation,
-                    {
-                        personality: seat.controller.personality,
-                        difficulty: seat.npcDifficulty ?? game.npcDifficulty ?? "medium",
-                    },
-                    memory,
-                    pending.seed,
-                );
-
-                if (!isLegalProposal(decision.action, [
-                    ...observation.legalActions, ...(observation.chanceOffers ?? []).map((offer) => offer.action),
-                ]))
-                {
-                    diagnostic = "Invalid proposed action";
-                    decision = {
-                        action: { kind: "pass" },
-                        nextMemory: memory,
-                        reason: "retain-cash",
-                    };
-                }
+                decision = decideNpcTurn(input, state, pending.seed, config);
+                diagnostic = decision.diagnostic ?? diagnostic;
             }
             catch (error)
             {
@@ -110,7 +84,7 @@ export const run = internalMutation({
                 }
 
                 diagnostic = `Decision failed after repeated attempts: ${message}`;
-                decision = { action: { kind: "pass" }, nextMemory: memory, reason: "retain-cash" };
+                decision = fallbackNpcTurn(state);
             }
         }
 

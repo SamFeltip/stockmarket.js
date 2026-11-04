@@ -1,7 +1,7 @@
 import type { Doc as Document_ } from "../_generated/dataModel";
 import type { QueryCtx as QueryContext } from "../_generated/server";
 import { identity } from "../game/seats";
-import { roster } from "../../packages/npc-engine/src/roster";
+import { roster } from "../../../stockmarket-shared/src/npc-catalog";
 export async function publicIdentity(context: QueryContext, seat: Document_<"players">)
 {
     if (seat.controller?.kind === "npc")

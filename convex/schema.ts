@@ -1,6 +1,7 @@
 import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { roster, npcDifficulties } from "../../stockmarket-shared/src/npc-catalog";
 
 export const stockFields = {
     key: v.number(), name: v.string(), startingValue: v.number(), imagePath: v.string(),
@@ -13,9 +14,9 @@ export const insightFields = {
 
 export const companyRoleValidator = v.union(v.literal("chairman"), v.literal("director"));
 
-export const difficultyValidator = v.union(v.literal("easy"), v.literal("medium"), v.literal("hard"));
+export const difficultyValidator = v.union(...npcDifficulties.map((level) => v.literal(level)));
 
-export const personalityValidator = v.union(v.literal("frankie"), v.literal("casey"), v.literal("ada"), v.literal("felix"), v.literal("morgan"));
+export const personalityValidator = v.union(...roster.map((entry) => v.literal(entry.id)));
 
 export const actionValidator = v.union(v.object({ kind: v.literal("pass") }), v.object({
     kind: v.union(v.literal("buy"), v.literal("sell")), stockKey: v.number(), quantity: v.number(),

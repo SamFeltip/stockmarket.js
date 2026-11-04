@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import * as engine from "../../packages/npc-engine/src";
+import * as engine from "../../../stockmarket-shared/src/packages/npc-engine/src";
 import type { Action } from "../../packages/game-contracts/src";
 import { api, internal } from "../../convex/_generated/api";
 import { setup } from "../game-setup";
 
-vi.mock("../../packages/npc-engine/src", async (original) =>
+vi.mock("../../../stockmarket-shared/src/packages/npc-engine/src", async (original) =>
 {
     const actual = await original<typeof engine>();
 
