@@ -57,6 +57,10 @@ it("orders physical cards by the period's rotated play order and filters used or
 
     expect(pendingSuspensions(1, board.players, used).map((card) => card._id)).toEqual([samCard]);
     expect(pendingSuspensions(2, board.players, board.insights)).toEqual([]);
+    expect(pendingSuspensions(1, [], board.insights)).toEqual([]);
+    expect(pendingSuspensions(1, board.players, [])).toEqual([]);
+    expect(pendingSuspensions(1, board.players.filter((player) => player._id !== board.insights
+        .find((card) => card._id === bobCard)!.playerId), board.insights).map((card) => card._id)).toEqual([samCard]);
 });
 
 it("enforces the phase, owner, queue, stock and period; spending freezes just one price at settlement", async () =>
