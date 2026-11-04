@@ -20,4 +20,4 @@ Run the independent shared and headless checks from the parent as described in `
 No UI, training application or production deployment is included in the extraction.
 
 Pre-existing local rule edits (including £500 rounding and NatWest at £8) were preserved as the
-extraction baseline. Their existing documentation and test edits remain separate working-tree changes.
+extraction baseline. Their existing documentation and test edits are recorded in a separate baseline commit.
