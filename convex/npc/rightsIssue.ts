@@ -1,28 +1,10 @@
+import { advanceNpcRights as advance } from "../../../stockmarket-shared/src/engine/npcRights";
+import { runEngine } from "../engine";
 import type { MutationCtx as MutationContext } from "../_generated/server";
 import type { Doc as Document_ } from "../_generated/dataModel";
-import { members } from "../library";
-import { rightsAvailable } from "../../shared/rights-issue";
-import { rightsPurchase } from "../../packages/npc-engine/src/chance";
-
-export async function advanceNpcRights(context: MutationContext, game: Document_<"games">,
+export function advanceNpcRights(context: MutationContext, game: Document_<"games">,
     purchase: (context: MutationContext, game: Document_<"games">, quantity: number) => Promise<Document_<"games">>)
 {
-    while (game.rightsIssue && !game.rightsIssue.completed)
-    {
-        const issue = game.rightsIssue;
-        const offer = issue.offers[issue.index];
-        const player = (await context.db.get(offer.playerId))!;
-        if (player.controller?.kind !== "npc")
-        {
-            break;
-        }
-
-        const price = game.prices.find((item) => item.stockKey === issue.stockKey)?.value ?? 0;
-
-        // Take a profitable retail offer within cash, otherwise decline it; no normal trading turn is spent.
-        const available = rightsAvailable(await members(context, game._id), issue.stockKey);
-        const quantity = rightsPurchase(price, offer.maximum, player.cash, available);
-
-        game = await purchase(context, game, quantity);
-    }
+    return runEngine(context, (runtime) => advance(runtime, game,
+        (_runtime, current, quantity) => purchase(context, current, quantity)));
 }

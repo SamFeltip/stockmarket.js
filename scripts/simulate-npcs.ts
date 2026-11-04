@@ -3,7 +3,7 @@ import { simulate } from "./npc-simulation";
 import { wilsonInterval, pairedComparisons, felixProxyBreakdown } from "./npc-statistics";
 import type { Result } from "./npc-statistics";
 
-export function runSimulations(seedCount = 200)
+export async function runSimulations(seedCount = 200)
 {
     const results: Result[] = [];
     for (let index = 0; index < seedCount; index++)
@@ -14,7 +14,7 @@ export function runSimulations(seedCount = 200)
         {
             for (const difficulty of ["easy", "medium", "hard"] as const)
             {
-                results.push(simulate(seed, { personality: entry.id, difficulty }, heldOut));
+                results.push(await simulate(seed, { personality: entry.id, difficulty }, heldOut));
             }
         }
     }
@@ -88,7 +88,7 @@ export function runSimulations(seedCount = 200)
                 )
                 .map((row) => row.seed),
         },
-        method: "Paired deals, shuffled seats, 4–6 players, 6–10 periods, medium NPC opponents, cautious/following/random-legal proxy. Wilson win-rate and normal wealth/difference 95% intervals; final metrics per focus NPC.",
+        method: "Paired deals, shuffled seats, 4–6 players, 6–10 periods, full shared-engine rules, medium NPC opponents, cautious/following/random-legal proxy. Wilson win-rate and normal wealth/difference 95% intervals; final metrics per focus NPC.",
         groups,
         pairedComparisons: pairedComparisons(results),
         felixProxyBreakdown: felixProxyBreakdown(results),

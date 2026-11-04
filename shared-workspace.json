@@ -1,0 +1,8 @@
+{
+  "path": "..",
+  "sharedCodeBaseline": "c5e0b356222a7ab50348688af0098e2083749e87",
+  "packages": [
+    "stockmarket-shared",
+    "stockmarket-ai"
+  ]
+}

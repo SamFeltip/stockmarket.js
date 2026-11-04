@@ -1,11 +1,8 @@
-import { restoreDirectorPriority } from "./game/roleHistory";
-import { cashStock } from "../shared/chance-cards";
-import { portfolioWorth } from "../shared/settlement";
+import * as engine from "../../stockmarket-shared/src/engine/library";
+import { readEngine, runEngine, type Arguments } from "./engine";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError } from "convex/values";
 import type { MutationCtx as MutationContext, QueryCtx as QueryContext } from "./_generated/server";
-import type { Doc as Document_, Id } from "./_generated/dataModel";
-import { stockCatalog, insightCatalog } from "./catalog";
 
 export function fail(message: string): never
 {
@@ -37,14 +34,9 @@ export async function gameByCode(context: QueryContext, code: string)
         .unique() ?? fail("No game found!");
 }
 
-export async function members(context: QueryContext, gameId: Id<"games">)
+export function members(context: QueryContext, ...arguments_: Arguments<typeof engine.members>)
 {
-    const seats = await context.db.query("players").withIndex("by_game", (q) => q.eq("gameId", gameId)).collect();
-
-    const order = new Map(seats.map((seat, index) => [seat._id, seat.seatOrder ?? index]));
-
-    return await restoreDirectorPriority(context, gameId,
-        seats.toSorted((a, b) => order.get(a._id)! - order.get(b._id)!));
+    return engine.members(readEngine(context), ...arguments_);
 }
 
 export async function member(context: QueryContext, code: string)
@@ -64,77 +56,24 @@ export async function member(context: QueryContext, code: string)
     return { user, game, player: prepared };
 }
 
-export async function seedCatalog(context: MutationContext)
+export function seedCatalog(context: MutationContext, ...arguments_: Arguments<typeof engine.seedCatalog>)
 {
-    if (!await context.db.query("stocks").withIndex("by_key", (q) => q.eq("key", cashStock.key)).unique())
-    {
-        await context.db.insert("stocks", cashStock);
-    }
-
-    if (await context.db.query("stocks").withIndex("by_key", (q) => q.eq("key", stockCatalog[0].key)).first())
-    {
-        return;
-    }
-
-    for (const stock of stockCatalog)
-    {
-        await context.db.insert("stocks", stock);
-    }
-
-    for (const insight of insightCatalog)
-    {
-        await context.db.insert("insights", insight);
-    }
+    return runEngine(context, (runtime) => engine.seedCatalog(runtime, ...arguments_));
 }
 
-export async function roundInsights(context: QueryContext, game: Document_<"games">)
+export function roundInsights(context: QueryContext, ...arguments_: Arguments<typeof engine.roundInsights>)
 {
-    return await context.db.query("playerInsights").withIndex("by_game_period", (q) =>
-        q.eq("gameId", game._id).eq("period", game.currentPeriod)).collect();
+    return engine.roundInsights(readEngine(context), ...arguments_);
 }
 
-export async function deal(context: MutationContext, game: Document_<"games">, players: Document_<"players">[])
+export function deal(context: MutationContext, ...arguments_: Arguments<typeof engine.deal>)
 {
-    const snapshot = await context.db.query("gameCatalogs").withIndex("by_game", (q) => q.eq("gameId", game._id)).unique();
-    const retained = (await context.db.query("playerInsights")
-        .withIndex("by_game_period", (q) => q.eq("gameId", game._id)).collect())
-        .filter((card) => card.chanceKind === "debenture" && !card.used);
-    const heldIds = new Set(retained.map((card) => card.catalogCardId).filter(Boolean));
-    const deck = snapshot ? snapshot.cards.filter((card) => !heldIds.has(card.id)) : (await context.db.query("insights").collect())
-        .map((card) => ({ ...card, id: String(card._id) }));
-    if (deck.length < players.length * 10)
-    {
-        fail("Not enough insights for all players");
-    }
-
-    // Convex supplies seeded randomness that is stable across transaction retries.
-    for (let index = deck.length - 1; index > 0; index--)
-    {
-        const index_ = Math.floor(Math.random() * (index + 1));
-
-        [deck[index], deck[index_]] = [deck[index_], deck[index]];
-    }
-
-    for (const [index, player] of players.entries())
-    {
-        for (const insight of deck.slice(index * 10, index * 10 + 10))
-        {
-            await context.db.insert("playerInsights", {
-                gameId: game._id, playerId: player._id, period: game.currentPeriod,
-                stockKey: insight.stockKey, description: insight.description, value: insight.value, resolved: false,
-                catalogCardId: insight.id, chanceKind: "chanceKind" in insight ? insight.chanceKind : undefined,
-            });
-        }
-    }
+    return runEngine(context, (runtime) => engine.deal(runtime, ...arguments_));
 }
 
-export async function feedItem(context: MutationContext, game: Document_<"games">, title: string,
-    message: string, imageRoot: string, colour = "", trade: Pick<Partial<Document_<"feed">>, "stockKey" | "quantity" | "cashBonus" | "debenturePayout" | "roleBefore" | "roleAfter"> = {})
+export function feedItem(context: MutationContext, ...arguments_: Arguments<typeof engine.feedItem>)
 {
-    await context.db.insert("feed", { gameId: game._id, period: game.currentPeriod, title, message, imageRoot, colour, ...trade });
+    return runEngine(context, (runtime) => engine.feedItem(runtime, ...arguments_));
 }
 
-export function netWorth(player: Document_<"players">, game: Document_<"games">)
-{
-    return portfolioWorth(player, game.prices);
-}
+export const netWorth = engine.netWorth;

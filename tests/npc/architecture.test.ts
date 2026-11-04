@@ -27,7 +27,8 @@ function dependencies(file: string): string[]
 
 it("keeps all transitive engine dependencies inside pure contracts, shared rules and the engine", () =>
 {
-    const allowed = ["packages/npc-engine/src", "packages/game-contracts/src", "shared"].map(
+    const allowed = ["packages/npc-engine/src", "packages/game-contracts/src", "shared",
+        "../stockmarket-shared/src/packages", "../stockmarket-shared/src/shared"].map(
         (directory) => path.resolve(directory) + "/",
     );
     const seen = new Set<string>();
@@ -87,7 +88,9 @@ it("prevents core game modules from importing NPC integration or strategy transi
         }
     }
 
-    for (const file of files(path.resolve("convex/game")))
+    for (const file of ["commands", "debenture", "hosting", "legalActions", "roleHistory", "seats"].map(
+        (name) => path.resolve("../stockmarket-shared/src/engine", `${name}.ts`),
+    ))
     {
         walk(file);
     }

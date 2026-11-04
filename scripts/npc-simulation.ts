@@ -1,265 +1,119 @@
 import type { Result } from "./npc-statistics";
 import { performance } from "node:perf_hooks";
-import { legalActions, settledPrice, transition } from "../packages/game-contracts/src";
-import type {
-    Action,
-    NpcObservation,
-    NpcProfile,
-    PublicActionEvent,
-    PublicPeriodSummary,
-    PublicSeat,
-} from "../packages/game-contracts/src";
-import { decide, emptyMemory, isLegalProposal, roster } from "../packages/npc-engine/src";
+import type { Action, NpcMemory, NpcObservation, NpcProfile } from "../packages/game-contracts/src";
+import { decide, emptyMemory, roster } from "../packages/npc-engine/src";
 import { random, shuffled } from "../packages/npc-engine/src/random";
-import { insightCatalog, stockCatalog } from "../convex/catalog";
-
-const catalog = insightCatalog.map((card) => ({
-    id: String(card.key),
-    stockKey: card.stockKey,
-    value: card.value,
-}));
+import { GameEnvironment, npcAction } from "../../stockmarket-ai/src";
 
 function proxy(input: NpcObservation, style: number, next: () => number): Action
 {
-    if (style === 0)
+    if (style < 2)
     {
-        const action = decide(
-            input,
-            { personality: "morgan", difficulty: "easy" },
-            emptyMemory(),
-            "cautious-proxy",
-        ).action;
+        const action = decide(input, {
+            personality: style === 0 ? "morgan" : "casey", difficulty: "easy",
+        }, emptyMemory(), String(next())).action;
 
-        return isLegalProposal(action, input.legalActions) ? action : { kind: "pass" };
-    }
-
-    if (style === 1)
-    {
-        const action = decide(
-            input,
-            { personality: "casey", difficulty: "easy" },
-            emptyMemory(),
-            String(next()),
-        ).action;
-
-        return isLegalProposal(action, input.legalActions) ? action : { kind: "pass" };
+        return action.kind === "buy" || action.kind === "sell" || action.kind === "pass" ? action : { kind: "pass" };
     }
 
     return input.legalActions[Math.floor(next() * input.legalActions.length)];
 }
 
-export function simulate(seed: number, profile: NpcProfile, heldOut: boolean): Result
+// Evaluation orchestration only: every deal, action, special phase and settlement uses the shared engine.
+export async function simulate(seed: number, profile: NpcProfile, heldOut: boolean): Promise<Result>
 {
     const seats = 4 + (seed % 3);
-    const finalPeriod = 5 + (seed % 5);
+    const environment = await GameEnvironment.create({ seed, players: seats, periods: 6 + (seed % 5) });
     const next = random(`proxy:${seed}`);
-    const assignment = shuffled(
-        roster.filter((item) => item.id !== profile.personality),
-        random(`roster:${seed}`),
-    );
-    const profiles: (NpcProfile | undefined)[] = [
-        profile,
-        undefined,
-        ...assignment
-            .slice(0, seats - 2)
-            .map((item) => ({ personality: item.id, difficulty: "medium" as const })),
-    ];
-    const order = shuffled(
-        Array.from({ length: seats }, (_, index) => String(index)),
-        random(`order:${seed}`),
-    );
-    let prices = stockCatalog
-        .filter((stock) => stock.display)
-        .map((stock) => ({ stockKey: stock.key, value: stock.startingValue }));
-    let players: PublicSeat[] = order.map((id, index) => ({
-        id,
-        cash: 60_000,
-        holdings: prices.map((price) => ({ stockKey: price.stockKey, quantity: 0 })),
-        ranking: index + 1,
-        periodStartRanking: index + 1,
-    }));
-    const memories = profiles.map(() => emptyMemory());
-    const events: PublicActionEvent[] = [];
-    const summaries: PublicPeriodSummary[] = [];
+    const assignment = shuffled(roster.filter((item) => item.id !== profile.personality), random(`roster:${seed}`));
+    const profiles: (NpcProfile | undefined)[] = [profile, undefined,
+        ...assignment.slice(0, seats - 2).map((item) => ({ personality: item.id, difficulty: "medium" as const }))];
+    const order = shuffled(Array.from({ length: seats }, (_, index) => index), random(`order:${seed}`));
+    const initial = (await environment.current()).decision!;
+    const ids = initial.observation.players.map((player) => player.id);
+    const focusId = ids[order.indexOf(0)];
+    const memories = new Map<string, NpcMemory>();
     const result: Result = {
-        personality: profile.personality,
-        difficulty: profile.difficulty,
-        heldOut,
-        won: false,
-        wealth: 0,
-        cashFraction: 0,
-        concentration: 0,
-        passes: 0,
-        actions: 0,
-        reversals: 0,
-        bluffs: 0,
-        following: 0,
-        bluffResponses: 0,
-        latency: [],
-        fallbacks: 0,
-        seed,
+        personality: profile.personality, difficulty: profile.difficulty, heldOut, won: false, wealth: 0,
+        cashFraction: 0, concentration: 0, passes: 0, actions: 0, reversals: 0, bluffs: 0, following: 0,
+        bluffResponses: 0, latency: [], fallbacks: 0, seed,
     };
+    let state = await environment.current();
     let pendingBluff: { period: number; turn: number; stockKey: number } | undefined;
-    for (let period = 0; period <= finalPeriod; period++)
+
+    while (state.decision)
     {
-        const deck = shuffled(catalog, random(`hidden-deal:${seed}:${period}`));
-        const hands = new Map(
-            order.map((id, index) => [id, deck.slice(index * 10, index * 10 + 10)]),
-        );
-        for (let turn = 0; turn < seats * 3; turn++)
+        const decision = state.decision;
+        const input = decision.observation;
+        const index = ids.indexOf(decision.playerId);
+        const actorProfile = profiles[order[index]];
+        const memory = memories.get(decision.playerId) ?? emptyMemory();
+        const started = performance.now();
+        const selected = npcAction(decision, actorProfile ?? { personality: "morgan", difficulty: "easy" },
+            memory, `decision:${seed}:${decision.token}`);
+        const elapsed = performance.now() - started;
+        const action = !actorProfile && decision.phase === "trading" ? proxy(input, seed % 3, next) : selected.action;
+        const events = input.events;
+        if (decision.phase === "trading")
         {
-            const selfId = order[(turn + period) % seats];
-            const input: NpcObservation = {
-                selfId,
-                players,
-                prices,
-                period,
-                finalPeriod,
-                turn,
-                actionsRemaining: (3 - Math.floor(turn / seats)) as 1 | 2 | 3,
-                ownInsights: hands.get(selfId)!,
-                catalog,
-                events,
-                settledPeriods: summaries,
-                legalActions: legalActions({ selfId, players, prices }),
-                favouriteStockKey: 7,
-                remainingSeatOrder: Array.from(
-                    { length: seats - 1 },
-                    (_, index) => order[(turn + period + index + 1) % seats],
-                ),
-            };
-            const index = Number(selfId);
-            const actorProfile = profiles[index];
-            const started = performance.now();
-            const decision = actorProfile
-                ? decide(input, actorProfile, memories[index], `decision:${seed}:${period}:${turn}`)
-                : undefined;
-            const elapsed = performance.now() - started;
-            const proposed = decision?.action ?? proxy(input, seed % 3, next);
-            let action: Action = { kind: "pass" };
-            if (isLegalProposal(proposed, input.legalActions))
-            {
-                action = proposed;
-            }
-            else
-            {
-                action = { kind: "pass" };
-                result.fallbacks++;
-            }
-
-            if (decision)
-            {
-                memories[index] = decision.nextMemory;
-            }
-
-            if (selfId === "0")
+            const reason = actorProfile ? selected.reason : undefined;
+            if (decision.playerId === focusId)
             {
                 if (pendingBluff)
                 {
                     const bait = pendingBluff;
 
-                    result.bluffResponses += events.filter(
-                        (event) =>
-                            event.period === bait.period
-                            && event.turn > bait.turn
-                            && event.actorPlayerId !== "0"
-                            && event.action.kind === "buy"
-                            && event.action.stockKey === bait.stockKey,
-                    ).length;
+                    result.bluffResponses += events.filter((event) => event.period === bait.period
+                      && event.turn > bait.turn && event.actorPlayerId !== focusId
+                      && event.action.kind === "buy" && event.action.stockKey === bait.stockKey).length;
                     pendingBluff = undefined;
                 }
 
-                if (decision?.reason === "bluff" && action.kind === "buy")
+                if (reason === "bluff" && action.kind === "buy")
                 {
-                    pendingBluff = { period, turn, stockKey: action.stockKey };
+                    pendingBluff = { period: input.period, turn: input.turn, stockKey: action.stockKey };
                 }
 
                 result.latency.push(elapsed);
                 result.actions++;
-
-                if (action.kind === "pass")
-                {
-                    result.passes++;
-                }
-
-                if (decision?.reason === "bluff")
-                {
-                    result.bluffs++;
-                }
-
-                const previous = events.findLast(
-                    (event) => event.actorPlayerId === "0" && event.period === period,
-                );
-                if (
-                    action.kind !== "pass"
-                    && previous?.action.kind !== "pass"
-                    && previous
-                    && previous.action.stockKey === action.stockKey
-                    && previous.action.kind !== action.kind
-                )
+                result.passes += Number(action.kind === "pass");
+                result.bluffs += Number(reason === "bluff");
+                const previous = events.findLast((event) =>
+                    event.actorPlayerId === focusId && event.period === input.period);
+                if ((action.kind === "buy" || action.kind === "sell") && previous
+                  && previous.action.kind !== "pass" && previous.action.stockKey === action.stockKey
+                  && previous.action.kind !== action.kind)
                 {
                     result.reversals++;
                 }
             }
 
-            if (action.kind === "buy")
+            const previous = events.at(-1);
+            if (action.kind === "buy" && previous?.action.kind === "buy"
+              && previous.action.stockKey === action.stockKey && previous.actorPlayerId === focusId)
             {
-                const previous = events.at(-1);
-                if (
-                    previous?.action.kind === "buy"
-                    && previous.action.stockKey === action.stockKey
-                    && previous.actorPlayerId === "0"
-                )
-                {
-                    result.following++;
-                }
+                result.following++;
             }
-
-            players = [...transition({ selfId, players, prices }, action).players];
-            events.push({ actorPlayerId: selfId, period, turn, action });
         }
 
-        const opening = prices;
-
-        prices = prices.map((price) => ({
-            ...price,
-            value: settledPrice(
-                price.value,
-                deck
-                    .slice(0, seats * 10)
-                    .filter((card) => card.stockKey === price.stockKey)
-                    .reduce((sum, card) => sum + card.value, 0),
-            ),
-        }));
-        summaries.push({ period, opening, settled: prices });
-        const worth = (seat: PublicSeat) =>
-            seat.cash
-            + seat.holdings.reduce(
-                (sum, holding) =>
-                    sum
-                    + holding.quantity
-                    * prices.find((price) => price.stockKey === holding.stockKey)!.value,
-                0,
-            );
-        const ranks = players.toSorted((a, b) => worth(b) - worth(a));
-
-        players = players.map((seat) => ({
-            ...seat,
-            ranking: ranks.findIndex((item) => item.id === seat.id) + 1,
-            periodStartRanking: ranks.findIndex((item) => item.id === seat.id) + 1,
-        }));
+        state = await environment.step(action, decision.token);
+        memories.set(decision.playerId, selected.nextMemory);
     }
 
-    const self = players.find((seat) => seat.id === "0")!;
-    const values = self.holdings.map(
-        (holding) =>
-            holding.quantity * prices.find((price) => price.stockKey === holding.stockKey)!.value,
-    );
+    const standings = await environment.standings();
+    const self = standings.find((player) => player.id === focusId)!;
+    const snapshot = environment.snapshot();
+    const game = snapshot.store.rows.find((row) => row._id === snapshot.gameId)!;
+    if (!("prices" in game))
+    {
+        throw new Error("Missing final prices");
+    }
 
-    result.wealth = self.cash + values.reduce((sum, value) => sum + value, 0);
+    result.wealth = state.rewards[focusId];
     result.won = self.ranking === 1;
     result.cashFraction = self.cash / Math.max(1, result.wealth);
-    result.concentration = Math.max(...values) / Math.max(1, result.wealth);
+    result.concentration = Math.max(...self.holdings.map((holding) => holding.quantity
+      * (game.prices.find((price) => price.stockKey === holding.stockKey)?.value ?? 0))) / Math.max(1, result.wealth);
 
     return result;
 }

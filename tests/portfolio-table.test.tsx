@@ -17,8 +17,9 @@ it("adapts the existing portfolio table to ordered decisions with compact cash a
         <PortfolioTable stocks={stocks} players={players} activePlayerId="bob" compact mutedStockKey={2} />,
     );
 
-    expect(html).toContain("£10k");
-    expect(html).toContain("£25k");
+    // ICU releases differ in whether compact currency retains an insignificant .0.
+    expect(html).toMatch(/£10(?:\.0)?k/);
+    expect(html).toMatch(/£25(?:\.0)?k/);
     expect(html.indexOf("Bob")).toBeLessThan(html.indexOf("Sam"));
     expect(html).toMatch(/class="current is-active "/);
     expect(html).toMatch(/class=" is-muted"/);

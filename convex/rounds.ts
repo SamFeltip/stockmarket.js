@@ -1,11 +1,12 @@
+import * as engine from "../../stockmarket-shared/src/engine/rounds";
+import { runEngine } from "./engine";
 import type { MutationCtx as MutationContext } from "./_generated/server";
 import type { Doc as Document_, Id } from "./_generated/dataModel";
 import { resolveNpcSuspensions } from "./npc/suspensions";
-import { pendingSuspensions } from "../shared/suspensions";
 import { checkSuspensionPhase, spendSuspension } from "./suspensions";
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { currentUser, gameByCode, fail, member, members, roundInsights } from "./library";
+import { currentUser, gameByCode, fail, member, members } from "./library";
 
 import { spectatorHost } from "./game/hosting";
 import { advancePeriod } from "./advancePeriod";
@@ -29,36 +30,8 @@ export const hold = mutation({
     handler: async (context, { code, insightId, stockKey }) =>
     {
         const { game, player } = await member(context, code);
-        if (game.status !== "closed" && game.status !== "special_insights")
-        {
-            fail("Wait for special insights");
-        }
 
-        const insight = await context.db.get(insightId);
-        if (!insight || insight.gameId !== game._id || insight.period !== game.currentPeriod
-          || insight.playerId !== player._id || insight.resolved)
-        {
-            fail("This insight cannot be used");
-        }
-
-        const special = await context.db.query("stocks").withIndex("by_key", (q) => q.eq("key", insight.stockKey)).unique();
-        if (special?.name !== "Hold Stock Price")
-        {
-            fail("This is not a hold-stock insight");
-        }
-
-        if (stockKey !== undefined)
-        {
-            const stock = await context.db.query("stocks").withIndex("by_key", (q) => q.eq("key", stockKey)).unique();
-            if (!stock?.display)
-            {
-                fail("Choose a tradable stock");
-            }
-
-            await context.db.patch(game._id, { suspended: [...new Set([...game.suspended, stockKey])] });
-        }
-
-        await context.db.patch(insightId, { resolved: true });
+        await runEngine(context, (runtime) => engine.holdStock(runtime, game, player, insightId, stockKey));
     },
 });
 
@@ -147,20 +120,7 @@ export const skipSuspension = mutation({
     },
 });
 
-async function currentSuspension(context: MutationContext, game: Document_<"games">, insightId: Id<"playerInsights">)
+function currentSuspension(context: MutationContext, game: Document_<"games">, insightId: Id<"playerInsights">)
 {
-    if (game.suspensionPeriod !== game.currentPeriod)
-    {
-        fail("Wait until the stock and cash reveals are complete");
-    }
-
-    const players = await members(context, game._id);
-    const insights = await roundInsights(context, game);
-    const queue = pendingSuspensions(game.currentPeriod, players, insights);
-    if (queue[0]?._id !== insightId)
-    {
-        fail("This Share Suspended decision has already changed");
-    }
-
-    return queue[0];
+    return runEngine(context, (runtime) => engine.currentSuspension(runtime, game, insightId));
 }

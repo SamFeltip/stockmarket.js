@@ -9,7 +9,7 @@ const server = await createServer({
 try
 {
     const { runSimulations } = await server.ssrLoadModule("/scripts/simulate-npcs.ts");
-    const report = runSimulations(Number(process.argv[2] ?? 200));
+    const report = await runSimulations(Number(process.argv[2] ?? 200));
 
     mkdirSync("reports", { recursive: true });
     writeFileSync("reports/npc-balance.json", JSON.stringify(report, null, 2) + "\n");

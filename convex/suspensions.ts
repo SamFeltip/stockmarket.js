@@ -1,48 +1,26 @@
-import type { Doc as Document_ } from "./_generated/dataModel";
+import { ConvexError } from "convex/values";
+import * as engine from "../../stockmarket-shared/src/engine/suspensions";
+import type { Arguments } from "./engine";
+import { runEngine } from "./engine";
 import type { MutationCtx as MutationContext } from "./_generated/server";
-import { fail, feedItem } from "./library";
-import { publicIdentity } from "./npc/identity";
-
-export function checkSuspensionPhase(game: Document_<"games">, expectedPeriod: number)
+export function spendSuspension(context: MutationContext, ...arguments_: Arguments<typeof engine.spendSuspension>)
 {
-    if ((game.status !== "closed" && game.status !== "special_insights") || game.currentPeriod !== expectedPeriod)
-    {
-        fail("The round has already changed");
-    }
+    return runEngine(context, (runtime) => engine.spendSuspension(runtime, ...arguments_));
 }
 
-export async function spendSuspension(context: MutationContext, game: Document_<"games">,
-    card: Document_<"playerInsights">, stockKey?: number)
+export function checkSuspensionPhase(...arguments_: Parameters<typeof engine.checkSuspensionPhase>)
 {
-    const stocks = await context.db.query("stocks").collect();
-    const owner = await context.db.get(card.playerId);
-    if (!owner)
+    try
     {
-        fail("Player not found");
+        return engine.checkSuspensionPhase(...arguments_);
     }
-
-    if (stockKey !== undefined)
+    catch (error)
     {
-        if (!stocks.some((stock) => stock.display && stock.key === stockKey))
+        if (error instanceof Error)
         {
-            fail("Choose a tradable stock");
+            throw new ConvexError(error.message);
         }
 
-        if (game.suspended.includes(stockKey))
-        {
-            fail("This stock is already suspended");
-        }
-
-        game = { ...game, suspended: [...game.suspended, stockKey] };
-        await context.db.patch(game._id, { suspended: game.suspended });
+        throw error;
     }
-
-    await context.db.patch(card._id, { used: true, resolved: true });
-    const display = await publicIdentity(context, owner);
-    const stock = stocks.find((item) => item.key === stockKey);
-
-    await feedItem(context, game, display.name, stock ? `suspended ${stock.name}’s price change` : "skipped Share Suspended",
-        display.profileRoot, "grey");
-
-    return game;
 }
