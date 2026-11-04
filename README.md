@@ -12,6 +12,10 @@ These are separate development and production databases. Create a new account on
 
 ## Run locally
 
+This branch requires the full parent workspace: clone `SamFeltip/stockmarket-game-engine`
+with `--recurse-submodules`, then run the commands below inside `stockmarket-convex`.
+The shared engine lives in the sibling `stockmarket-shared` directory. See [workspace setup](WORKSPACE.md).
+
 Requires Node.js 22.18+.
 
 ```sh
@@ -47,7 +51,7 @@ The individual steps are available as `npm run deploy:backend` (including the pr
 
 Cloudflare's newer `cf` CLI does not currently offer Pages direct upload; Wrangler is used specifically for that operation. No Worker, nginx, Docker, PostgreSQL instance or custom WebSocket service is needed.
 
-For future Git-connected Cloudflare Pages builds, set the root to this directory, the output to `dist`, and the build command to `npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name VITE_CONVEX_URL`. Add a production `CONVEX_DEPLOY_KEY` as a secret in Cloudflare; never commit it. This directory can also be used as its own repository root.
+For future Git-connected Cloudflare Pages builds, use the parent `stockmarket-game-engine` repository with its submodules checked out, set the root to `stockmarket-convex`, the output to `dist`, and the build command to `npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name VITE_CONVEX_URL`. Add a production `CONVEX_DEPLOY_KEY` as a secret in Cloudflare; never commit it. This directory can also be used as its own repository root.
 
 ## Game features
 
