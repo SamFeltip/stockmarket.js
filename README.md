@@ -61,6 +61,8 @@ For future Git-connected Cloudflare Pages builds, set the root to this directory
 - Insight-description editor; editing now requires sign-in. User lists expose display names only.
 - Responsive stock details with investor photos, share counts and a Recharts price-history line chart; recorded starting and settled prices, accessible chart data, and layouts that adapt to panel width and viewport height.
 
+New games start NatWest at £8, matching the documented retail board game. Existing games retain their saved prices and opening history.
+
 New games record their complete price history. Existing games begin history at their current known prices when their next round settles; earlier prices are not fabricated.
 
 Convex mutations validate identity, membership, ownership, turn, quantities, cash and supply on the server. Trades and settlements are atomic. Stale turn/period guards reject duplicate clicks. The legacy implementation stored game length but never finished a game; this implementation settles the final selected period and shows final rankings. Existing active games keep their stored length and balances; existing lobbies with a shorter length must choose 6–10 periods before launch. Leaving a lobby removes the seat and transfers hosting if necessary. Leaving during play retains the seat for reconnection, as the old disconnect path did not remove players.
@@ -76,7 +78,7 @@ replacement each round. Existing running games keep their pinned decks.
 
 The footer shows only the current player's aggregate cash signal and granted
 chance cards. All cash cards are revealed at period end and jointly affect every
-player's remaining cash, with the adjustment rounded to £1,000. Government Loan
+player's remaining cash, with the adjustment rounded to £500. Government Loan
 and Debenture activation are implemented, as is period-end Share Suspended.
 Rights Issue activation pauses play while each shareholder may buy one extra share per two held at £1 each.
 Only the initiating bargain uses a turn; decisions follow cyclic play order and then normal play resumes. Debentures carry over and sell the current player's entire bankrupt holding at the game's original opening price.
@@ -91,7 +93,7 @@ pause normal turns and resume after every shareholder has responded.
 Some other mechanics still follow the patent variant. The [BGG retail review](https://boardgamegeek.com/thread/106869/review-of-stockmarket)
 also describes Rights Issues bought at £1 per extra share (one per two held), Debenture sales at
 the bankrupt company’s opening price, no cards retained between periods, and
-£500 currency rounding. See the [rules comparison](BOARD_GAME_DIFFERENCES_CURRENT.md#retail-rules-described-in-the-bgg-review-2-november-2026)
+£500 currency rounding (now implemented). See the [rules comparison](BOARD_GAME_DIFFERENCES_CURRENT.md#retail-rules-described-in-the-bgg-review-2-november-2026)
 for the source differences and unresolved details. Those remaining implementation differences are documented explicitly.
 See [merge and release verification](MERGE_READINESS.md) for the coordinated web/backend and TV release checks.
 

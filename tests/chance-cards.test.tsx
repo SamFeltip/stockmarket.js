@@ -164,15 +164,29 @@ describe("board-game special cards", () =>
         expect(privateCashPercent([{ ...own, value: -0.1 }], "a")).toBe(-10);
     });
 
-    it("settles the shared cash movement for every player, rounding the adjustment symmetrically to £1,000", () =>
+    it("settles the shared cash movement for every player, rounding the adjustment symmetrically to £500", () =>
     {
         const card = { playerId: "a", stockKey: cashStockKey, value: 0.1 };
 
-        expect(roundCash({ _id: "a", cash: 65_500 }, [card], [])).toBe(72_500);
-        expect(roundCash({ _id: "b", cash: 25_000 }, [card], [])).toBe(28_000);
-        expect(roundCash({ _id: "b", cash: 25_000 }, [{ ...card, value: -0.1 }], [])).toBe(22_000);
+        expect(roundCash({ _id: "a", cash: 65_500 }, [card], [])).toBe(72_000);
+        expect(roundCash({ _id: "b", cash: 25_000 }, [card], [])).toBe(27_500);
+        expect(roundCash({ _id: "b", cash: 25_000 }, [{ ...card, value: -0.1 }], [])).toBe(22_500);
         expect(roundCash({ _id: "a", cash: 65_500 }, [card, { ...card, value: -0.1 }], [])).toBe(65_500);
+        expect(roundCash({ _id: "a", cash: 62_500 }, [card], [])).toBe(69_000);
+        expect(roundCash({ _id: "a", cash: 62_500 }, [{ ...card, value: -0.1 }], [])).toBe(56_000);
+        expect(roundCash({ _id: "a", cash: 62_499 }, [card], [])).toBe(68_499);
+        expect(roundCash({ _id: "a", cash: 62_499 }, [{ ...card, value: -0.1 }], [])).toBe(56_499);
         expect(roundCash({ _id: "a", cash: 4000 }, [{ ...card, value: -2 }], [])).toBe(0);
+    });
+
+    it("rounds imported currency adjustments to £500 for their owner only", () =>
+    {
+        const card = { playerId: "a", stockKey: 13, value: 0.1 };
+        const stocks = [{ key: 13, name: "currency", display: false }];
+
+        expect(roundCash({ _id: "a", cash: 62_500 }, [card], stocks)).toBe(69_000);
+        expect(roundCash({ _id: "a", cash: 62_500 }, [{ ...card, value: -0.1 }], stocks)).toBe(56_000);
+        expect(roundCash({ _id: "b", cash: 62_500 }, [card], stocks)).toBe(62_500);
     });
 
     it("settles cash exactly once and matches the round preview without blocking on disabled chance cards", async () =>
@@ -207,10 +221,10 @@ describe("board-game special cards", () =>
         await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
         const next = await sam.query(api.board.get, { code: "test" });
 
-        expect(next.player.cash).toBe(72_500);
+        expect(next.player.cash).toBe(72_000);
         expect(next.players.map((player) => player.cash)).toEqual(preview.players.map((player) => player.cash));
         expect(next.game.prices).toEqual(closed.game.prices);
         await expect(sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 })).rejects.toThrow();
-        expect((await sam.query(api.board.get, { code: "test" })).player.cash).toBe(72_500);
+        expect((await sam.query(api.board.get, { code: "test" })).player.cash).toBe(72_000);
     });
 });

@@ -15,14 +15,13 @@ deck. Existing running games keep their original pinned catalogs.
 
 Cash is shown as a private aggregate in the footer, including grey +0%. At period
 end, the sum of everyone's dealt cash cards affects all remaining balances; the
-adjustment is rounded to £1,000. Legacy imported `currency` cards keep their
-previous per-player treatment. Government Loan and Debenture are implemented;
+adjustment is rounded to £500. Legacy imported `currency` cards keep their
+per-player treatment, also rounding adjustments to £500. Government Loan and Debenture are implemented;
 Share Suspended is implemented after stock and cash reveals, before the summary.
 Rights Issue is implemented as one initiating bargain with a paused shareholder purchase sequence.
 Legacy Option activation remains disabled. Debentures
-are retained and sell bankrupt holdings at the game-opening price within the two-period claim window. These are patent-based
-behaviors: the retail review instead describes a 108-card deck, £500 cash rounding,
-opening-price Debenture sales and no retained cards.
+are retained and sell bankrupt holdings at the game-opening price within the two-period claim window. Debenture retention and the claim window remain patent-based
+behaviors; the retail review describes no retained cards.
 See `shared/chance-cards.ts`, `shared/settlement.ts`, `convex/launch.ts`, and
 `tests/chance-cards.test.tsx`. The card rows below distinguish this branch from the earlier baseline;
 other implementation notes retain their original research scope.
@@ -52,7 +51,7 @@ The application side below comes from the local **stockmarket-convex** source, i
 
 The review does not specify Rights Issue rounding, insufficient-cash handling or supply limits, nor a Debenture claim deadline beyond the card’s current-period lifetime. Do not import the patent’s details into those gaps. Its later replies include a separate digital adaptation with house rules; those are not retail rules.
 
-Other evidence: the review confirms the six company names and gives Legal & General’s opening price as £4 and NatWest’s as £8 (the app starts NatWest at £9). It describes an agreed game length; the reviewer recommends at least four periods, rather than establishing the patent’s 6–10 as a retail requirement. The full retail starting-price chart and card frequencies remain unverified.
+Other evidence: the review confirms the six company names and gives Legal & General’s opening price as £4 and NatWest’s as £8 (new app games now also start NatWest at £8). It describes an agreed game length; the reviewer recommends at least four periods, rather than establishing the patent’s 6–10 as a retail requirement. The full retail starting-price chart and card frequencies remain unverified.
 
 ## Differences in ordinary games
 
@@ -68,7 +67,7 @@ Card, currency and lifecycle entries below use the retail review above. Other en
 | Chairman              | At ≥100,000 shares, discard one revealed company card; earliest qualifier wins ties.                           | **Aligned (automatic):** qualification order is retained across periods and reset when holdings fall below 100,000. The chairman automatically cancels the worst revealed negative company card. In legacy games without qualification records, tied existing holdings use seat order.                                                                                                                                                                           | [schema.ts](convex/schema.ts), [trading.ts](convex/trading.ts), [rounds.ts](convex/rounds.ts)                                               |
 | Director              | At 50,000–100,000 shares, discard one own company card; chairman takes precedence. One discard/company/period. | **Aligned (automatic):** each company has at most one director and one chairman. First qualification keeps the role while eligible; later buyers do not displace incumbents. The director cancels the worst negative card in their own hand, with chairman precedence and one cancellation per company per period. Both roles have investor badges; round reveals and the final overview show the cancelled value as a role bonus.                                                                                                                                                                                  | [StockPanel.tsx](src/StockPanel.tsx), [rounds.ts](convex/rounds.ts)                                                                         |
 | Deck                  | Retail review: 108 cards (92 share, eight currency, eight chance); no Options.                                                                    | New games: **108 cards**, with two Share Suspended cards; ten are dealt per player without replacement each period. Existing games retain their pinned catalogs. | [catalog.ts](convex/catalog.ts), [library.ts](convex/library.ts), `deal`; [README.md](README.md), “Original assets and missing source data” |
-| Gold movements        | Aggregate currency cards affect everyone; retail review rounds to £500 (patent: £1,000).                                             | Current branch: all dealt cash cards jointly affect remaining balances, with the adjustment rounded to £1,000. **Differs from the review’s £500 rounding.** Imported legacy currency cards retain per-player handling. | [catalog.ts](convex/catalog.ts), [rounds.ts](convex/rounds.ts)                                                                              |
+| Gold movements        | Aggregate currency cards affect everyone; retail review rounds to £500 (patent: £1,000).                                             | **Aligned with retail rounding:** all dealt cash cards jointly affect remaining balances, with the adjustment rounded to £500. Imported legacy currency cards retain per-player handling and also round adjustments to £500. | [catalog.ts](convex/catalog.ts), [rounds.ts](convex/rounds.ts)                                                                              |
 | Share Suspended       | Freeze one company's price at period end.                                                                      | Implemented: choose after stock and cash reveals, in the period’s rotated play order, before summary and settlement. Use or confirmed skip spends one physical card; spectator displays can override with a confirmed skip. The old Hold Stock Price path is separate. | [rounds.ts](convex/rounds.ts), `hold`; [catalog.ts](convex/catalog.ts)                                                                      |
 | Government Loan Stock | Spend a turn to collect £10,000.                                                                               | Implemented on this branch: consumes one card and one turn to pay £10,000.                                                                                                                                                                                                                                   | [trading.ts](convex/trading.ts), [catalog.ts](convex/catalog.ts)                                                                            |
 | Debenture | Retail review: spend a bargain to sell bankrupt-company shares at the company’s opening price; no retention. | Sell all current holdings in the chosen bankrupt company at its recorded game-opening price. Purchase prices and FIFO lots do not affect the payout. Unused physical cards still carry across deals and the two-round claim window remains. **Differs from retail:** claim window and retention. | [debenture.ts](convex/game/debenture.ts), [commands.ts](convex/game/commands.ts), [DebentureModal.tsx](src/DebentureModal.tsx) |
@@ -84,10 +83,10 @@ The following notes describe the earlier catalog’s legacy `currency` and hold-
 `rounds.next` selects `currency` insights **belonging to each individual player**, sums that player's values, and applies:
 
 ```text
-new cash = max(0, truncate(old cash × (1 + own currency-card sum)))
+new cash = max(0, old cash + roundToNearest500(old cash × own currency-card sum))
 ```
 
-Consequently, importing gold/currency cards alone would not implement the shared gold adjustment described in the comparison table. For example, if Alice alone held a +10% currency insight and Alice and Bob each had £65,000 left, the current code would give Alice £71,500 and leave Bob at £65,000. It also truncates to whole pounds rather than using the retail review’s £500 rounding (or the patent’s £1,000 adjustment rounding). See [rounds.ts](convex/rounds.ts), `next`.
+Consequently, importing gold/currency cards alone would not implement the shared gold adjustment described in the comparison table. For example, if Alice alone held a +10% currency insight and Alice and Bob each had £65,000 left, the current code would give Alice £71,500 and leave Bob at £65,000. Its adjustment now uses the retail review’s £500 rounding, while retaining this legacy owner-only scope. See [rounds.ts](convex/rounds.ts), `next`.
 
 ### Hold-stock support needs catalog data
 
@@ -105,7 +104,7 @@ Stock details now show investor faces with share counts and missing-photo fallba
 
 ## Limits of this comparison
 
-- The shipped companies are Trusthouse Forte, UB, Legal & General, Thames, Saatchi & Saatchi and Natwest, with starting prices £2, £2.50, £4, £5.50, £7.50 and £9 respectively. The review confirms those company identities but gives NatWest’s opening price as £8, so the app’s £9 differs. The full retail starting-price chart and exact share-card frequencies remain unverified. See [catalog.ts](convex/catalog.ts).
+- The shipped companies are Trusthouse Forte, UB, Legal & General, Thames, Saatchi & Saatchi and Natwest, with starting prices £2, £2.50, £4, £5.50, £7.50 and £8 respectively. NatWest’s opening price now matches the review; existing games retain their recorded prices. The full retail starting-price chart and exact share-card frequencies remain unverified. See [catalog.ts](convex/catalog.ts).
 - The retail review explicitly requires all cards to be returned and reshuffled each period. Retaining a chance card would conflict with that account.
 - The original implementation aligned six simpler items with the patent: starting cash, share supply, game length, minimum players, period turn rotation and trade sizes. The later card changes are described above; the retail-rule corrections in this update change documentation only.
 - Validation: `npm run check` passes: lint, all 27 tests, TypeScript, production build and 27 asset references.
@@ -149,3 +148,12 @@ The rules-source limitations and rounding/supply implementation choices above st
 Only one chairman and one director can hold office in each company. Director qualification priority survives periods; dropping below the threshold releases it, and a retiring chairman cannot displace an existing director. Older games recover director qualification from complete recorded trade history, with stable seat order used only when history cannot explain imported holdings. Purchases in Rights Issues use the same role rules. Buy and sell dialogs/drawers show “Director role assigned” (and the chairman equivalent) while occupied.
 
 Debenture offers and redemption use the player’s current holding count multiplied by the original game-opening price, taken from period-zero history. Legacy games without that snapshot use the catalogue opening price. Subsequent catalogue changes do not override a recorded opening quote.
+
+### Cash rounding and NatWest opening price (3 November 2026)
+
+Cash adjustments now round symmetrically to the nearest £500, including imported legacy
+currency cards. Existing balances are preserved rather than rounded independently. Shared
+settlement drives player and spectator previews and server settlement for human and NPC players.
+The remaining 1,000 increments govern share quantities, not pounds, and are unchanged.
+NatWest now opens at £8 in new games. Seeding corrects the old £9 catalog default without
+rewriting saved game prices or opening-price history.

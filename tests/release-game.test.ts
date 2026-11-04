@@ -140,7 +140,7 @@ for (const tvControlled of [false, true])
 
             if (period === 0)
             {
-                expect(settled.player.cash).toBe(59_000);
+                expect(settled.player.cash).toBe(59_500);
                 expect(settled.game.prices.find((price) => price.stockKey === 8)?.value).toBe(2.5);
             }
         }
@@ -166,6 +166,16 @@ it("pauses and resumes a real NPC schedule around Rights Issue decisions", async
     const npc = board.players.find((player) => player.kind === "npc")!;
     const insightId = await t.run(async (context) =>
     {
+        // Keep this scheduling test focused on the human-initiated issue: a randomly
+        // dealt NPC Rights Issue could otherwise pause its next bargain again.
+        for (const card of await context.db.query("playerInsights").collect())
+        {
+            if (card.playerId === npc._id && card.chanceKind === "rights")
+            {
+                await context.db.delete(card._id);
+            }
+        }
+
         for (const playerId of [board.player._id, npc._id])
         {
             await context.db.patch(playerId, { holdings: [{ stockKey: 8, quantity: 2000 }] });

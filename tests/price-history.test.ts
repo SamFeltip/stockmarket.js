@@ -6,6 +6,30 @@ import { setup } from "./game-setup";
 
 describe("Stock history and investors", () =>
 {
+    it("starts NatWest at £8 and corrects an existing £9 catalog without rewriting saved games", async () =>
+    {
+        const { t, sam } = await setup();
+        const initial = await sam.query(api.board.get, { code: "test" });
+
+        expect(initial.game.prices.find((price) => price.stockKey === 12)?.value).toBe(8);
+        await t.run(async (context) =>
+        {
+            const stock = await context.db.query("stocks").withIndex("by_key", (q) => q.eq("key", 12)).unique();
+            const prices = initial.game.prices.map((price) => price.stockKey === 12 ? { ...price, value: 9 } : price);
+
+            await context.db.patch(stock!._id, { startingValue: 9 });
+            await context.db.patch(initial.game._id, { prices, priceHistory: [{ period: 0, prices }] });
+        });
+        await sam.mutation(api.games.create, { code: "new-prices", periodCount: 5 });
+        const next = await sam.query(api.board.get, { code: "new-prices" });
+        const saved = await sam.query(api.board.get, { code: "test" });
+
+        expect(next.game.prices.find((price) => price.stockKey === 12)?.value).toBe(8);
+        expect(next.game.priceHistory?.[0].prices.find((price) => price.stockKey === 12)?.value).toBe(8);
+        expect(saved.game.prices.find((price) => price.stockKey === 12)?.value).toBe(9);
+        expect(saved.game.priceHistory?.[0].prices.find((price) => price.stockKey === 12)?.value).toBe(9);
+    });
+
     it("shows the complete round axis while leaving unrevealed prices empty", () =>
     {
         const prices = [{ stockKey: 8, value: 2.5 }];

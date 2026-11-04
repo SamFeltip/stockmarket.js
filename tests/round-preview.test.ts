@@ -39,8 +39,8 @@ it("updates revealed wealth and charts before advancing, matching settled stock 
     expect(priceSeries(partial.game, 9)[1].value).toBeNull();
     const complete = previewRound(before, before.insights, before.stocks.map((stock) => stock.key));
 
-    expect(complete.players[0].cash).toBe(1100);
-    expect(complete.players[0].netWorth).toBe(5100);
+    expect(complete.players[0].cash).toBe(1000);
+    expect(complete.players[0].netWorth).toBe(5000);
     expect(complete.game.prices.find((price) => price.stockKey === 9)?.value).toBe(4);
     await skipDealtSuspensions(sam, "test");
     await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
