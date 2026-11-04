@@ -2,6 +2,9 @@
 
 A cloud-hosted migration of the original Go/templ/HTMX game. React 19, TypeScript and Vite render the same Bootstrap layout; Convex provides username/password authentication, transactional game logic, persistent data and live subscriptions. The original Go project is untouched.
 
+
+See [ENVIRONMENT.md](ENVIRONMENT.md) for repository-local env files, variable ownership and configuration instructions.
+
 ## Live deployment
 
 - Frontend: https://stockmarket.samfelton.com (Cloudflare Pages; alias https://stockmarket-convex.pages.dev)
