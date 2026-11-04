@@ -5,9 +5,10 @@ import { TradeStockSummary } from "./TradeStockSummary";
 import { useState } from "react";
 import type { Board } from "./display-types";
 import { rightsIssueOrder, rightsIssuePrice, rightsPurchaseError, rightsAvailable } from "../shared/rights-issue";
+import { floorTradeQuantity } from "../shared/rules";
 import { TradeInputs } from "./TradeInputs";
 import { TradePosition } from "./TradePosition";
-import type { TradeDraft } from "./trades";
+import { resolveTradeDraft, stepShares, type TradeDraft } from "./trades";
 import { GameMetrics } from "./GameMetrics";
 import { DecisionPortfolios } from "./DecisionPortfolios";
 import { NetWorthNumber } from "./RoundWealth";
@@ -115,12 +116,12 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
     const stock = board.stocks.find((item) => item.key === issue.stockKey)!;
     const [draft, setDraft] = useState<TradeDraft>({ field: "shares", value: "0" });
     const { run, busy, error } = useAction();
-    const quantity = draft.value.trim() === "" ? 0 : Number(draft.value);
     const available = rightsAvailable(board.players, issue.stockKey);
+    const limit = floorTradeQuantity(Math.min(offer.maximum, player.cash / rightsIssuePrice, available));
+    const { quantity, shares, cash } = resolveTradeDraft(draft, rightsIssuePrice, limit);
     const reason = rightsPurchaseError(quantity, offer.maximum, player.cash)
       || (quantity > available ? "There aren't enough shares available. Try fewer shares." : "");
     const valid = !reason && quantity > 0;
-    const limit = Math.min(offer.maximum, Math.floor(player.cash), available);
     const projected = Number.isSafeInteger(quantity) && quantity >= 0 ? quantity : 0;
     const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
     const setQuantity = (value: number) => setDraft({ field: "shares", value: String(value) });
@@ -154,8 +155,8 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
             />
             <p className="small rights-limit">{`Maximum: ${money(limit)} shares`}</p>
             <TradeInputs
-                shares={draft.value}
-                cash={draft.value}
+                shares={shares}
+                cash={cash}
                 quantity={quantity}
                 limit={limit}
                 busy={busy}
@@ -163,10 +164,9 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
                 feedbackId="rights-purchase-feedback"
                 setDraft={setDraft}
                 setQuantity={setQuantity}
-                resolve={(value) => Number(value.value)}
-                step={1}
-                increase={(value) => Math.min(limit, Math.floor(value / 1000 + 1) * 1000)}
-                decrease={(value) => Math.max(0, Math.ceil(value / 1000 - 1) * 1000)}
+                resolve={(value) => resolveTradeDraft(value, rightsIssuePrice, limit).quantity}
+                increase={(value) => stepShares(value, 1)}
+                decrease={(value) => stepShares(value, -1)}
             >
                 <TradePosition
                     cash={player.cash - projected}

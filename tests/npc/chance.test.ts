@@ -159,7 +159,8 @@ it("ignores expired loans, used cards and unprofitable Rights Issues", async () 
         await context.db.patch(board.game._id, { prices: [{ stockKey: 8, value: 1 }] });
     });
     expect((await observe()).chanceOffers).toEqual([]);
-    expect(rightsPurchase(2, 1000, 500, 200)).toBe(200);
+    expect(rightsPurchase(2, 1000, 500, 200)).toBe(0);
+    expect(rightsPurchase(2, 3500, 2900, 2500)).toBe(2000);
     expect(rightsPurchase(0, 1000, 500, 200)).toBe(0);
     expect(suspensionChoice([{ stockKey: 8, quantity: 1000 }], [{ stockKey: 8, value: 2 }],
         [{ stockKey: 8, value: 1 }], [])).toBe(8);

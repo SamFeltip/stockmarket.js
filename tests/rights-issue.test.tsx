@@ -103,8 +103,10 @@ it("rejects wrong owners, stale/replayed choices, overspending, excess entitleme
     await expect(bob.mutation(api.trading.redeemDebenture, command)).rejects.toThrow("Trading is paused");
     expect(await bob.query(api.board.get, { code: "test" })).toEqual(before);
     await t.run(async (context) => await context.db.patch(board.player._id, { cash: 10 }));
-    await expect(bob.mutation(api.rightsIssue.decide, { ...choice, quantity: 11 })).rejects.toThrow("enough cash");
-    await bob.mutation(api.rightsIssue.decide, { ...choice, quantity: 1 }); // New issues permit whole shares, not trading lots.
+    await expect(bob.mutation(api.rightsIssue.decide, { ...choice, quantity: 1000 })).rejects.toThrow("enough cash");
+    await expect(bob.mutation(api.rightsIssue.decide, { ...choice, quantity: 1 })).rejects.toThrow("steps of 1,000");
+    await expect(bob.mutation(api.rightsIssue.decide, { ...choice, quantity: 500 })).rejects.toThrow("steps of 1,000");
+    await bob.mutation(api.rightsIssue.decide, { ...choice, quantity: 0 });
     await expect(bob.mutation(api.rightsIssue.decide, { ...choice, quantity: 1 })).rejects.toThrow("decision has changed");
     const publicBoard = (await t.query(api.tv.board, { code: "test" }))!;
 
@@ -167,6 +169,7 @@ it("renders purchase, waiting and spectator variants using the shared trade cont
     const spectator = renderToStaticMarkup(<RightsIssue board={board} spectator />);
 
     expect(own).toContain("trade-inputs");
+    expect(own).toContain("step=\"1000\"");
     expect(own).toContain("Rights Issue shareholders");
     expect(own).not.toContain("You may only buy one extra share");
     expect(own).not.toContain("You may buy one extra share");
@@ -179,8 +182,28 @@ it("renders purchase, waiting and spectator variants using the shared trade cont
     expect(spectator).toContain("is-muted");
     expect(spectator).not.toContain("trade-inputs");
     expect(rightsEntitlement(6001)).toBe(3000);
+    expect(rightsEntitlement(5000)).toBe(2000);
+    expect(rightsEntitlement(1000)).toBe(0);
     expect(rightsPurchaseError(0, 0, 0)).toBe("");
     expect(rightsPurchaseError(Number.NaN, 1000, 1000)).toContain("whole number");
+});
+
+it("rounds the purchase maximum down to a full trading lot when cash is limited", async () =>
+{
+    const { bob, command } = await fixture();
+
+    await bob.mutation(api.rightsIssue.activate, command);
+    const board = await bob.query(api.board.get, { code: "test" });
+    const current = board.players.find((player) => player._id === board.player._id)!;
+
+    current.cash = 2999;
+    expect(renderToStaticMarkup(<RightsIssue board={board} playerId={current._id} />))
+        .toContain("Maximum: 2,000 shares");
+    current.cash = 999;
+    const html = renderToStaticMarkup(<RightsIssue board={board} playerId={current._id} />);
+
+    expect(html).toContain("Maximum: 0 shares");
+    expect(html).toContain("disabled=\"\">Buy</button>");
 });
 
 it("preserves bank inventory and does not spend an invalid offer or create shares beyond available stock", async () =>
@@ -188,18 +211,18 @@ it("preserves bank inventory and does not spend an invalid offer or create share
     const { t, bob, board, command } = await fixture();
 
     await t.run(async (context) => await context.db.patch(board.player._id, {
-        holdings: [{ stockKey: 8, quantity: 193_999 }],
+        holdings: [{ stockKey: 8, quantity: 192_001 }],
     }));
     await bob.mutation(api.rightsIssue.activate, command);
-    const choice = { code: "test", insightId: command.insightId, expectedIndex: 0, quantity: 2 };
+    const choice = { code: "test", insightId: command.insightId, expectedIndex: 0, quantity: 2000 };
 
     await expect(bob.mutation(api.rightsIssue.decide, choice)).rejects.toThrow("enough shares available");
     expect((await bob.query(api.board.get, { code: "test" })).game.rightsIssue?.index).toBe(0);
-    await bob.mutation(api.rightsIssue.decide, { ...choice, quantity: 1 });
+    await bob.mutation(api.rightsIssue.decide, { ...choice, quantity: 1000 });
     const after = await bob.query(api.board.get, { code: "test" });
 
     expect(after.players.reduce((sum, player) => sum + (player.holdings.find((holding) =>
-        holding.stockKey === 8)?.quantity ?? 0), 0)).toBe(200_000);
+        holding.stockKey === 8)?.quantity ?? 0), 0)).toBe(199_001);
 });
 
 it("offers only companies with shareholders in the shared selector, including bankrupt companies", async () =>
