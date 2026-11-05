@@ -36,6 +36,11 @@ it("renders the manual Add NPC tile, per-NPC controls and launch tooltip without
     expect(host).toContain("Remove ");
     expect(host).toContain("difficulty: medium");
     expect(host).toContain("npc-remove-button");
+    expect(host).toContain("npc-personality-button");
+    expect(host.match(/npc-personality-button/g)).toHaveLength(2);
+    expect(host.indexOf("npc-personality-button")).toBeLessThan(host.indexOf("npc-difficulty-button"));
+    expect(host).not.toContain("Tap NPC portraits to change personality.");
+    expect(host).not.toContain("npc-personality-select");
     expect(host).not.toContain("NPC difficulty</legend>");
     const lobbyBoard = await sam.query(api.board.get, { code: "test" });
     for (const npc of lobbyBoard.players.filter((player) => player.kind === "npc"))
@@ -49,6 +54,7 @@ it("renders the manual Add NPC tile, per-NPC controls and launch tooltip without
     expect(guest).not.toContain("npc-add-tile");
     expect(guest).not.toContain("npc-remove-button");
     expect(guest).not.toContain("npc-difficulty-button");
+    expect(guest).not.toContain("npc-personality-button");
     expect(guest).not.toContain("Add NPC</button>");
     expect(guest).not.toContain("Launch Game</button>");
     await client.close();

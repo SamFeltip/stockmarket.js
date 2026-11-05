@@ -74,3 +74,24 @@ it("applies each stock's wealth change only on its summary, including skipped an
     expect(roundProgress(board, 6, 0).wealth.players[0].netWorth).toBe(8000);
     expect(board.players[0].netWorth).toBe(8000);
 });
+
+it("adds only revealed card segments and reserves the remaining round width", async () =>
+{
+    const { sam } = await setup();
+    const board = await sam.query(api.board.get, { code: "test" });
+
+    board.insights = [1, -0.5, 0.25].map((value, index) => ({
+        ...board.insights[index], stockKey: 8, value,
+    }));
+    const partial = previewRound(board, board.insights.slice(0, 1), [8]);
+    const complete = previewRound(board, board.insights, [8]);
+
+    expect(priceSeries(partial.game, 8).filter((point) => point.value !== null)).toEqual([
+        { round: 0, value: 2.5 }, { round: 1 / 3, value: 3.5 },
+    ]);
+    expect(priceSeries(complete.game, 8).filter((point) => point.value !== null)).toEqual([
+        { round: 0, value: 2.5 }, { round: 1 / 3, value: 3.5 },
+        { round: 2 / 3, value: 3 }, { round: 1, value: 3.25 },
+    ]);
+    expect(priceSeries(partial.game, 9).filter((point) => point.value !== null)).toHaveLength(1);
+});

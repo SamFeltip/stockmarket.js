@@ -1,4 +1,5 @@
-import { gameLengths, maximumPlayers, minimumPlayers } from "../shared/rules";
+import { GameLengthControl } from "./GameLengthControl";
+import { maximumPlayers, minimumPlayers } from "../shared/rules";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -38,28 +39,14 @@ export function Waiting({ board }: { board: Board })
                 <NpcLobbyControls board={board} />
                 <div className="py-3">
                     <p className="pb-2">Game length</p>
-                    {host ? (
-                        <div className="radio-row d-flex flex-wrap justify-content-center gap-2" id="difficulty-options-setter">
-                            {gameLengths.map((periods) => (
-                                <span key={periods}>
-                                    <input
-                                        type="radio"
-                                        className="btn-check"
-                                        name="game-length"
-                                        id={`option${periods}`}
-                                        checked={game.periodCount === periods - 1}
-                                        disabled={busy}
-                                        onChange={() =>
-                                        {
-                                            void run(() => setLength({ code: game.code, periodCount: periods - 1 }));
-                                        }}
-                                    />
-                                    <label className="btn bg-dark" htmlFor={`option${periods}`}>{`${periods} periods`}</label>
-                                </span>
-                            ))}
-                        </div>
-                    )
-                        : <div className="btn bg-dark" id="game-difficulty">{`${game.periodCount + 1} periods`}</div>}
+                    <GameLengthControl
+                        periods={game.periodCount + 1}
+                        busy={busy}
+                        onChange={host ? (periods) =>
+                        {
+                            void run(() => setLength({ code: game.code, periodCount: periods - 1 }));
+                        } : undefined}
+                    />
                 </div>
                 <div className="py-3">
                     <div id="game-actions" className="d-flex flex-row w-100 justify-content-center gap-3">

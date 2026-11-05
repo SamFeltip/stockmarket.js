@@ -19,3 +19,14 @@ it("reveals cash exactly once after all stock groups, even when no cash cards we
     expect(revealGroups(stocks, [{ stockKey: cashStock.key }]).map((stock) => stock.key)).toEqual([8, cashStock.key]);
     expect(revealGroups(stocks, []).map((stock) => stock.key)).toEqual([8, cashStock.key]);
 });
+
+it("keeps chance cards out of the stock reveal sequence", async () =>
+{
+    const { revealGroups } = await import("../src/reveals");
+    const { cashStock, chanceStockKey } = await import("../shared/chance-cards");
+    const stocks = [{ ...cashStock, key: 8, display: true },
+        { ...cashStock, key: chanceStockKey, name: "Share Suspended" }];
+
+    expect(revealGroups(stocks, [{ stockKey: chanceStockKey }]).map((stock) => stock.key))
+        .toEqual([8, cashStock.key]);
+});

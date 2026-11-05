@@ -1,4 +1,4 @@
-import { portfolioWorth, roundCash, roundPrices } from "../shared/settlement";
+import { portfolioWorth, roundCash, roundPrices, roundPriceSteps } from "../shared/settlement";
 import { revealGroups } from "./reveals";
 import type { Board, Insight } from "./display-types";
 
@@ -17,7 +17,9 @@ export function previewRound<T extends Board>(board: T, insights: Insight[], rev
     return { ...board,
         game: { ...board.game, prices, priceHistory: [...history,
             { period: board.game.currentPeriod + 1, prices: prices.filter((price) =>
-                revealedStockKeys.includes(price.stockKey)) }] },
+                revealedStockKeys.includes(price.stockKey)),
+            steps: roundPriceSteps(board.game.prices, insights, board.stocks, board.game.suspended, board.insights)
+                .filter((item) => revealedStockKeys.includes(item.stockKey)) }] },
         players: players.map((player) => ({ ...player,
             ranking: ranked.findIndex((item) => item._id === player._id) + 1 })),
     };

@@ -30,6 +30,12 @@ export async function runEngine<T>(context: MutationContext_,
         random: () => Math.random(),
         effects: {
             enqueueNextNpc: (gameId) => enqueueNextNpcIfNeeded(context, gameId),
+            npcRightsLater: async (command) =>
+            {
+                const delay = actionAnimationMs + Math.round(800 + Math.random() * 1000);
+
+                await context.scheduler.runAfter(delay, internal.npc.rightsIssue.run, command);
+            },
             finishRightsLater: async (command) =>
             {
                 await context.scheduler.runAfter(actionAnimationMs, internal.rightsIssue.finish, command);

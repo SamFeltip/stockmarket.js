@@ -19,7 +19,7 @@ export default function StockPriceChart({ game, stock }: { game: Board["game"]; 
                             dataKey="round"
                             type="number"
                             domain={[0, game.periodCount + 1]}
-                            ticks={data.map((point) => point.round)}
+                            ticks={Array.from({ length: game.periodCount + 2 }, (_, round) => round)}
                             interval={0}
                             tickFormatter={(round: number) => round === 0 ? "Start" : String(round)}
                             tickLine={false}
@@ -34,7 +34,7 @@ export default function StockPriceChart({ game, stock }: { game: Board["game"]; 
                             width={48}
                             tick={{ fontSize: 10 }}
                         />
-                        <Tooltip labelFormatter={(round) => Number(round) === 0 ? "Start" : `Round ${Number(round)}`} formatter={(value) => [priceLabel(Number(value)), "Share price"]} />
+                        <Tooltip labelFormatter={(round) => Number(round) === 0 ? "Start" : `Round ${Math.ceil(Number(round))}`} formatter={(value) => [priceLabel(Number(value)), "Share price"]} />
                         <Line
                             type="linear"
                             dataKey="value"
@@ -63,7 +63,7 @@ export default function StockPriceChart({ game, stock }: { game: Board["game"]; 
                 <tbody>
                     {known.map((point) => (
                         <tr key={point.round}>
-                            <th scope="row">{point.round === 0 ? "Start" : `Round ${point.round}`}</th>
+                            <th scope="row">{point.round === 0 ? "Start" : `Round ${Math.ceil(point.round)}`}</th>
                             <td>{priceLabel(point.value ?? 0)}</td>
                         </tr>
                     ))}

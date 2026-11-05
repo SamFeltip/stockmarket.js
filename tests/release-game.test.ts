@@ -194,8 +194,13 @@ it("pauses and resumes a real NPC schedule around Rights Issue decisions", async
     const paused = await pat.query(api.board.get, { code: "test" });
 
     expect(paused.game.turn).toBe(2);
-    expect(paused.game.rightsIssue?.completed).toBe(true);
-    expect(paused.game.rightsIssue?.offers[1]).toMatchObject({ playerId: npc._id, purchased: 1000 });
+    expect(paused.game.rightsIssue?.completed).toBeUndefined();
+    expect(paused.game.rightsIssue?.offers[1].purchased).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(7000);
+    const decided = await pat.query(api.board.get, { code: "test" });
+
+    expect(decided.game.rightsIssue?.completed).toBe(true);
+    expect(decided.game.rightsIssue?.offers[1]).toMatchObject({ playerId: npc._id, purchased: 1000 });
     await t.finishAllScheduledFunctions(vi.runAllTimers);
     const resumed = await pat.query(api.board.get, { code: "test" });
 

@@ -12,7 +12,7 @@ export function spectatorBoard(board: Board)
             currentPlayerId: board.players.find((player) => player._id === board.game.currentPlayerId)?._id,
             tvControlled: false, spectatorControlled: true },
         players: board.players.map((player) => ({ ...player, id: player._id, roles: player.roles ?? [],
-            kind: "human" as const, npcDifficulty: undefined, tagline: "" })),
+            kind: "human" as const, npcDifficulty: undefined, npcPersonality: undefined, tagline: "" })),
         stocks: board.stocks.filter((stock) => stock.display).map((stock) => ({ ...stock,
             startingValue: stock.startingValue ?? board.game.priceHistory?.[0]?.prices.find((price) =>
                 price.stockKey === stock.key)?.value ?? 0,

@@ -47,6 +47,9 @@ export default defineSchema({
         prices: v.array(v.object({ stockKey: v.number(), value: v.number() })),
         priceHistory: v.optional(v.array(v.object({
             period: v.number(), prices: v.array(v.object({ stockKey: v.number(), value: v.number() })),
+            steps: v.optional(v.array(v.object({
+                stockKey: v.number(), values: v.array(v.number()), count: v.number(),
+            }))),
         }))),
         suspended: v.array(v.number()),
         suspensionPeriod: v.optional(v.number()),

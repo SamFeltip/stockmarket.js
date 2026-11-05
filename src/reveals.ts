@@ -1,4 +1,4 @@
-import { cashStock, cashStockKey } from "../shared/chance-cards";
+import { cashStock, cashStockKey, chanceStockKey } from "../shared/chance-cards";
 import type { Stock as DisplayStock } from "./display-types";
 import type { Insight, Stock } from "./types";
 
@@ -19,5 +19,6 @@ export function revealGroups(stocks: DisplayStock[], insights: Pick<Insight, "st
         return [];
     }
 
-    return [...revealStocks(stocks, insights).filter((stock) => stock.key !== cashStockKey), cashStock];
+    return [...revealStocks(stocks, insights)
+        .filter((stock) => stock.key !== cashStockKey && stock.key !== chanceStockKey), cashStock];
 }

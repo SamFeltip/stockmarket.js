@@ -10,6 +10,7 @@ export async function publicIdentity(context: QueryContext, seat: Document_<"pla
         const entry = roster.find((item) => item.id === personality)!;
 
         return {
+            npcPersonality: entry.id,
             name: entry.name,
             profileRoot: entry.portrait,
             tagline: entry.tagline,
@@ -17,5 +18,5 @@ export async function publicIdentity(context: QueryContext, seat: Document_<"pla
         };
     }
 
-    return identity(context, seat);
+    return { ...await identity(context, seat), npcPersonality: undefined };
 }

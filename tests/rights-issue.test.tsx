@@ -3,39 +3,12 @@ import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { RightsIssueModal } from "../src/RightsIssueModal";
 import { renderToStaticMarkup } from "react-dom/server";
 import { api, internal } from "../convex/_generated/api";
-import { chanceStockKey } from "../shared/chance-cards";
 import { rightsEntitlement, rightsPurchaseError } from "../shared/rights-issue";
 import { RightsIssue } from "../src/RightsIssue";
-import { setup } from "./game-setup";
+import { fixture } from "./rights-issue-setup";
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
-
-async function fixture()
-{
-    const game = await setup();
-
-    await game.sam.mutation(api.games.start, { code: "test" });
-    const board = await game.bob.query(api.board.get, { code: "test" });
-    const insightId = await game.t.run(async (context) =>
-    {
-        await context.db.patch(board.game._id, { currentPeriod: 1, turn: 6,
-            currentPlayerId: board.player._id, currentUserId: board.user._id });
-
-        for (const [index, seat] of board.players.entries())
-        {
-            await context.db.patch(seat._id, { cash: 10_000,
-                holdings: [{ stockKey: 8, quantity: [4000, 6001, 0, 2000][index] }] });
-        }
-
-        return await context.db.insert("playerInsights", { gameId: board.game._id, playerId: board.player._id,
-            period: 1, stockKey: chanceStockKey, chanceKind: "rights", value: 0, description: "Rights Issue",
-            resolved: false });
-    });
-
-    return { ...game, board, insightId, command: { code: "test", expectedPeriod: 1,
-        expectedTurn: 6, insightId, stockKey: 8 } };
-}
 
 it("offers the retail one-for-two £1 purchase, in cyclic play order, without additional bargains", async () =>
 {
@@ -150,9 +123,16 @@ it("automatically handles NPC shareholders, updates company roles and preserves 
     await bob.mutation(api.rightsIssue.decide, { code: "test", insightId: command.insightId, expectedIndex: 0, quantity: 10_000 });
     const after = await bob.query(api.board.get, { code: "test" });
 
-    expect(after.game.rightsIssue?.index).toBe(2);
+    expect(after.game.rightsIssue?.index).toBe(1);
+    expect(after.game.rightsIssue?.offers[1].purchased).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(3500);
+    expect((await bob.query(api.board.get, { code: "test" })).game.rightsIssue?.index).toBe(1);
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    const decided = await bob.query(api.board.get, { code: "test" });
+
+    expect(decided.game.rightsIssue?.index).toBe(2);
     expect(after.game.rightsIssue?.offers[0].maximum).toBe(45_000);
-    expect(after.game.rightsIssue?.offers[1].purchased).toBe(1000);
+    expect(decided.game.rightsIssue?.offers[1].purchased).toBe(1000);
     expect(after.players.find((player) => player._id === board.player._id)?.roles)
         .toContainEqual({ stockKey: 8, role: "chairman" });
     expect(after.feed.some((item) => item.roleAfter === "chairman")).toBe(true);
@@ -265,4 +245,38 @@ it("spends one bargain and returns to play when the chosen company has no shareh
     expect(after.game.currentPlayerId).toBe(board.players[2]._id);
     expect(after.insights.find((card) => card._id === command.insightId)).toMatchObject({ used: true, resolved: true });
     expect(after.player.cash).toBe(10_000);
+});
+
+it("delays every consecutive NPC offer and ignores duplicate or skipped jobs", async () =>
+{
+    const { t, bob, board, command } = await fixture();
+
+    await t.run(async (context) =>
+    {
+        for (const seat of [board.players[3], board.players[0]])
+        {
+            await context.db.patch(seat._id, { controller: { kind: "npc", personality: "felix" } });
+        }
+    });
+    await bob.mutation(api.rightsIssue.activate, command);
+    await bob.mutation(api.rightsIssue.decide, { code: "test", insightId: command.insightId,
+        expectedIndex: 0, quantity: 0 });
+    const firstJob = { gameId: board.game._id, insightId: command.insightId, index: 1 };
+
+    expect((await bob.query(api.board.get, { code: "test" })).game.rightsIssue?.index).toBe(1);
+    await t.mutation(internal.npc.rightsIssue.run, firstJob);
+    const afterFirst = await bob.query(api.board.get, { code: "test" });
+
+    expect(afterFirst.game.rightsIssue?.index).toBe(2);
+    expect(afterFirst.game.rightsIssue?.offers[1].purchased).toBe(1000);
+    expect(afterFirst.game.rightsIssue?.offers[2].purchased).toBeUndefined();
+    await t.mutation(internal.npc.rightsIssue.run, firstJob);
+    expect((await bob.query(api.board.get, { code: "test" })).game.rightsIssue).toEqual(afterFirst.game.rightsIssue);
+    await bob.mutation(api.rightsIssue.skip, { code: "test", insightId: command.insightId, expectedIndex: 2 });
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    const after = await bob.query(api.board.get, { code: "test" });
+
+    expect(after.game.rightsIssue).toBeUndefined();
+    expect(after.players.find((player) => player._id === board.players[0]._id)?.holdings)
+        .toEqual([{ stockKey: 8, quantity: 4000 }]);
 });

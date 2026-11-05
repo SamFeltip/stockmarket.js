@@ -65,7 +65,8 @@ describe("Stock history and investors", () =>
         const settled = await bob.query(api.board.get, { code: "test" });
 
         expect(settled.game.priceHistory).toEqual([
-            { period: 0, prices: initial.game.prices }, { period: 1, prices: settled.game.prices },
+            { period: 0, prices: initial.game.prices },
+            expect.objectContaining({ period: 1, prices: settled.game.prices }),
         ]);
 
         for (const price of settled.game.prices)
@@ -95,7 +96,43 @@ describe("Stock history and investors", () =>
         const next = await sam.query(api.board.get, { code: "test" });
 
         expect(next.game.priceHistory).toEqual([
-            { period: 2, prices: board.game.prices }, { period: 3, prices: next.game.prices },
+            { period: 2, prices: board.game.prices }, expect.objectContaining({ period: 3, prices: next.game.prices }),
         ]);
     });
+});
+
+it("records each insight within a fixed round column and retains the path in subsequent rounds", async () =>
+{
+    const { t, sam } = await setup();
+
+    await sam.mutation(api.games.start, { code: "test" });
+    const board = await sam.query(api.board.get, { code: "test" });
+
+    await t.run(async (context) =>
+    {
+        for (const card of await context.db.query("playerInsights").collect())
+        {
+            await context.db.delete(card._id);
+        }
+
+        for (const value of [-4, 2, 1])
+        {
+            await context.db.insert("playerInsights", { gameId: board.game._id, playerId: board.player._id,
+                period: 0, stockKey: 8, value, description: "Price movement", resolved: true });
+        }
+
+        await context.db.patch(board.game._id, { status: "closed" });
+    });
+    await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
+    const settled = await sam.query(api.board.get, { code: "test" });
+    const points = priceSeries(settled.game, 8).filter((point) => point.value !== null);
+
+    expect(points).toEqual([
+        { round: 0, value: 2.5 },
+        { round: 1 / 3, value: 0 },
+        { round: 2 / 3, value: 0.5 },
+        { round: 1, value: 1.5 },
+    ]);
+    expect(settled.game.prices.find((price) => price.stockKey === 8)?.value).toBe(1.5);
+    expect(priceSeries({ ...settled.game, currentPeriod: 2 }, 8).slice(0, 4)).toEqual(points);
 });

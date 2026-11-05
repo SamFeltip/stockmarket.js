@@ -70,29 +70,11 @@ export function TradeInputs({ shares, cash, quantity, limit, busy, valid, feedba
                 </button>
                 <button
                     type="button"
-                    className="btn btn-success flex-fill"
-                    aria-label="Increase amount"
-                    disabled={busy}
-                    onClick={() =>
-                    {
-                        setQuantity(Math.min(limit, increase(quantity)));
-                    }}
+                    className="btn btn-secondary flex-fill"
+                    disabled={busy || limit <= 0}
+                    onClick={() => setQuantity(limit)}
                 >
-                    +
-                </button>
-            </div>
-            <div className="cash-btns d-flex gap-2">
-                <button
-                    type="button"
-                    className="btn btn-danger flex-fill"
-                    aria-label="Decrease amount"
-                    disabled={busy}
-                    onClick={() =>
-                    {
-                        setQuantity(decrease(quantity));
-                    }}
-                >
-                    -
+                    Max out
                 </button>
                 <button
                     type="button"

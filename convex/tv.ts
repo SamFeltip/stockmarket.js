@@ -130,7 +130,7 @@ export const board = query({
             return {
                 id: seat._id, name: display.name, profileRoot: display.profileRoot, kind: display.kind,
                 npcDifficulty: seat.controller?.kind === "npc" ? seat.npcDifficulty ?? game.npcDifficulty ?? "medium" : undefined,
-                tagline: display.tagline,
+                tagline: display.tagline, npcPersonality: display.npcPersonality,
                 roles: stocks.flatMap((stock) => companyRoles(seats, stock.key)
                     .filter((role) => role.playerId === seat._id)
                     .map((role) => ({ stockKey: stock.key, role: role.role }))),

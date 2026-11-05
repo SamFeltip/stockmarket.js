@@ -4,8 +4,8 @@ import type { MutationCtx as MutationContext } from "../_generated/server";
 import { currentUser, gameByCode, fail, members } from "../library";
 import type { Doc as Document_ } from "../_generated/dataModel";
 import { maximumPlayers, minimumPlayers, startingCash } from "../../shared/rules";
-import { difficultyValidator } from "../schema";
-import { createNpcGameConfig, prepareNpcState } from "../../../stockmarket-shared/src/npc";
+import { difficultyValidator, personalityValidator } from "../schema";
+import { createNpcGameConfig, prepareNpcState, roster } from "../../../stockmarket-shared/src/npc";
 import { phoneHost, spectatorHost } from "../game/hosting";
 
 async function hostLobby(context: MutationContext, code: string)
@@ -26,6 +26,7 @@ async function addSeats(
     context: MutationContext,
     game: Document_<"games">,
     count: number,
+    selectedPersonality?: typeof roster[number]["id"],
 ): Promise<void>
 {
     if (process.env.NPC_DISABLE_NEW_GAMES === "true")
@@ -59,7 +60,8 @@ async function addSeats(
     let seatOrder = Math.max(-1, ...players.map((seat, index) => seat.seatOrder ?? index)) + 1;
     for (let index = 0; index < count; index++)
     {
-        const personality = queue.shift() ?? fail("No NPC personalities available");
+        const personality = selectedPersonality ?? queue.shift()
+          ?? roster[Math.floor(Math.random() * roster.length)].id;
         const playerId = await context.db.insert("players", {
             gameId: game._id,
             controller: { kind: "npc", personality },
@@ -85,8 +87,8 @@ async function addSeats(
 }
 
 export const add = mutation({
-    args: { code: v.string(), required: v.optional(v.boolean()) },
-    handler: async (context, { code, required }) =>
+    args: { code: v.string(), required: v.optional(v.boolean()), personality: v.optional(personalityValidator) },
+    handler: async (context, { code, required, personality }) =>
     {
         const { game } = await hostLobby(context, code);
         const count = required
@@ -94,7 +96,7 @@ export const add = mutation({
             : 1;
         if (count)
         {
-            await addSeats(context, game, count);
+            await addSeats(context, game, count, personality);
         }
     },
 });
@@ -115,8 +117,10 @@ export const remove = mutation({
             .withIndex("by_game", (q) => q.eq("gameId", game._id))
             .unique())!;
 
+        const personality = player.controller.personality;
+
         await context.db.patch(config._id, {
-            queue: [...config.queue, player.controller.personality],
+            queue: [...config.queue.filter((id) => id !== personality), personality],
         });
         const state = await context.db
             .query("npcStates")
@@ -164,5 +168,28 @@ export const setDifficulty = mutation({
                 await context.db.patch(player._id, { npcDifficulty: difficulty });
             }
         }
+    },
+});
+
+export const setPersonality = mutation({
+    args: { code: v.string(), playerId: v.id("players"), personality: personalityValidator },
+    handler: async (context, { code, playerId, personality }) =>
+    {
+        const { game } = await hostLobby(context, code);
+        const player = await context.db.get(playerId);
+        if (player?.gameId !== game._id || player.controller?.kind !== "npc")
+        {
+            fail("Choose an NPC in this lobby");
+        }
+
+        await context.db.patch(playerId, { controller: { kind: "npc", personality } });
+        const state = await context.db.query("npcStates")
+            .withIndex("by_player", (q) => q.eq("playerId", playerId)).unique();
+        if (state)
+        {
+            await context.db.patch(state._id, prepareNpcState(null));
+        }
+
+        await context.db.patch(game._id, { rosterRevision: (game.rosterRevision ?? 0) + 1 });
     },
 });

@@ -114,7 +114,8 @@ describe("Board-game rules", () =>
 
                 expect(settled.game.status).toBe(period === lastPeriod ? "finished" : "playing");
                 expect(settled.game.priceHistory).toHaveLength(period + 2);
-                expect(settled.game.priceHistory?.at(-1)).toEqual({ period: period + 1, prices: settled.game.prices });
+                expect(settled.game.priceHistory?.at(-1))
+                    .toMatchObject({ period: period + 1, prices: settled.game.prices });
             }
         });
     }

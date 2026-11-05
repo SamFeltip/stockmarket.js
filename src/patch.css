@@ -411,6 +411,26 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 .round-end:not(:has(.round-overview)) { padding-bottom: 5rem !important; }
 .round-end:not(:has(.round-overview)) .round-navigation { position: fixed; bottom: 0; right: 0; padding: 1rem !important; z-index: 10; }
 
+.round-overview-stocks article > img { align-self: center; max-width: 100%; flex-shrink: 0; }
+.round-overview-stocks .stock-result { width: 100%; }
+.round-overview-stocks .stock-result > * { min-width: 0; }
+.round-overview-players article { min-width: 0; }
+@media (max-width: 991.98px) {
+    .round-overview .stock-result {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        grid-template-areas: "was change now" "before change after";
+        gap: 0.25rem;
+        align-items: center;
+    }
+    .round-overview .stock-result > p:first-child { grid-area: was; }
+    .round-overview .stock-result > h2:nth-child(2) { grid-area: before; }
+    .round-overview .stock-result-change { grid-area: change; font-size: 1.1rem; margin: 0; }
+    .round-overview .stock-result > p:nth-child(4) { grid-area: now; }
+    .round-overview .stock-result > h2:last-child { grid-area: after; }
+    .round-overview .stock-result h2 { font-size: clamp(1.1rem, 5vw, 1.75rem); margin: 0; }
+}
+
 /* On narrow panels, details scroll independently of the anchored trade actions. */
 .stock-panel-sections { grid-area: body; display: grid; min-width: 0; min-height: 0; overflow: auto; align-content: start; gap: clamp(0.75rem, 2vh, 1.5rem); grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(5, max-content); grid-template-areas: "stocks" "investors" "price-chart" "insights" "stock-info"; }
 .stock-panel-sections > * { min-width: 0; min-height: 0; }
@@ -451,17 +471,30 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
     padding: 1rem;
 }
 
+@media (max-width: 991.98px) {
+    .npc-waiting-room { max-height: 100dvh; }
+    .npc-waiting-room > .container-fluid { flex-grow: 1; min-height: 0 !important; }
+}
+
 .npc-lobby-roster { margin-block: 1rem 2rem; }
 .lobby-player-card { width: clamp(7rem, 20vw, 9.5rem); min-width: 0; }
 .lobby-player-portrait { position: relative; width: 100%; aspect-ratio: 1; }
 .lobby-player-portrait > img { width: 100%; height: 100%; object-fit: cover; }
 .lobby-player-portrait > img, .npc-add-tile { border-radius: 0.75rem; }
+/* Draw the remove mark independently of platform font metrics. */
+.npc-remove-button > span { position: relative; width: 0.8rem; height: 0.8rem; font-size: 0; }
+.npc-remove-button > span::before, .npc-remove-button > span::after {
+    content: ""; position: absolute; top: 50%; left: 0;
+    width: 100%; height: 2px; background: currentColor; border-radius: 1px;
+    transform: translateY(-50%) rotate(45deg);
+}
+.npc-remove-button > span::after { transform: translateY(-50%) rotate(-45deg); }
 .lobby-player-card h3 { font-size: 1.25rem; margin: 0.75rem 0 0.5rem; overflow-wrap: anywhere; }
 .npc-remove-button {
     position: absolute; top: -0.6rem; right: -0.6rem;
     width: 2.25rem; height: 2.25rem; border-radius: 50%;
     border: 0; color: white; font-size: 1.5rem;
-    display: grid; place-items: center; line-height: 1;
+    display: grid; place-items: center; line-height: 1; padding: 0; appearance: none;
 }
 .npc-add-tile {
     width: clamp(7rem, 20vw, 9.5rem); aspect-ratio: 1; border: 0;
@@ -473,6 +506,40 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 .npc-add-tile:focus-visible, .npc-remove-button:focus-visible { outline: 3px solid #fff284; outline-offset: 3px; }
 .npc-add-tile:disabled, .npc-remove-button:disabled { opacity: 0.5; }
 .npc-difficulty-button { text-transform: capitalize; }
+.npc-lobby-grid { display: flex; flex-wrap: wrap; justify-content: center; align-items: start; gap: 1.5rem; padding: 0.5rem; }
+.npc-lobby-settings { display: grid; gap: 0.375rem; margin-top: 0.5rem; }
+.npc-lobby-settings select { color-scheme: dark; --bs-form-select-bg-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E"); min-width: 0; width: 100%; font-size: 0.8rem; padding-left: 0.5rem; padding-right: 1.5rem; min-height: 2.75rem; }
+@media (max-width: 575.98px) {
+    .npc-waiting-room { padding-block: 0.5rem; }
+    .npc-waiting-room > .container-fluid { min-height: 0 !important; padding: 0.75rem; }
+    .npc-waiting-room > .container-fluid > p { margin-bottom: 0.25rem; font-size: 0.85rem; }
+    .npc-waiting-room > .container-fluid > h2 { font-size: 1.5rem; margin-bottom: 0.375rem; }
+    .npc-waiting-room > .container-fluid > .py-3 { padding-block: 0.5rem !important; }
+    .npc-lobby-roster { margin-block: 0.5rem; }
+    .npc-lobby-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem 0.375rem; padding: 0.375rem 0; }
+    .lobby-player-card { width: 100%; }
+    .lobby-player-portrait { width: clamp(2.75rem, 12vw, 3.5rem); margin-inline: auto; }
+    .lobby-player-card h3 { font-size: 0.75rem; line-height: 1.2; min-height: 2.4em; margin-block: 0.375rem; }
+    .npc-lobby-settings { gap: 0.25rem; margin-top: 0.375rem; }
+    .npc-lobby-settings select { font-size: 0.7rem; padding-left: 0.25rem; padding-right: 1rem; background-position: right 0.25rem center; background-size: 10px 8px; }
+    .npc-remove-button { width: 1.375rem; height: 1.375rem; top: -0.25rem; right: -0.375rem; }
+    .npc-remove-button > span { width: 0.6rem; height: 0.6rem; }
+    .npc-add-tile { width: 100%; min-height: 4rem; aspect-ratio: auto; font-size: 0.7rem; align-self: start; }
+    .npc-add-tile > span:first-child { font-size: 1.5rem; }
+    .npc-add-tile > span:last-child { font-size: 0.7rem; line-height: 1.2; white-space: nowrap; }
+    .npc-waiting-room .npc-identity .badge { font-size: 0.6rem; white-space: normal; }
+}
+@media (max-width: 575.98px) {
+    .npc-waiting-room h2.primary { padding-block: 0.375rem; }
+    .npc-waiting-room .py-3 > p { font-size: 0.85rem; margin-bottom: 0.25rem; padding-bottom: 0 !important; }
+    .npc-waiting-room #game-actions .btn { font-size: 0.85rem; min-height: 2.75rem; padding: 0.375rem; }
+}
+
+.npc-personality-button { display: block; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 0.75rem; overflow: hidden; background: transparent; }
+.npc-personality-button img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.npc-personality-button:focus-visible { outline: 3px solid #fff284; outline-offset: 3px; }
+.npc-personality-button:disabled { opacity: 0.5; }
+
 .launch-game-tooltip { display: inline-block; width: 100%; max-width: 14rem; }
 .launch-game-tooltip > button:disabled { pointer-events: none; }
 
@@ -585,3 +652,14 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 .cash-reveal-delta.text-secondary { color: #c1c8be !important; }
 
 .round-player-cash .net-worth-number, .round-player-cash .wealth-delta { font-size: inherit; }
+
+.game-length-mobile { display: none; }
+.game-length-desktop.radio-row { display: flex; }
+@media (max-width: 575.98px) {
+    .npc-waiting-room .game-length-desktop { display: none; }
+    .game-length-mobile { display: flex; justify-content: center; align-items: stretch; gap: 0.5rem; }
+    .game-length-mobile > button { width: 2.75rem; min-height: 2.75rem; padding: 0.25rem; font-size: 1.25rem; }
+    .game-length-value { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 6rem; padding: 0.25rem 1rem; line-height: 1.2; }
+    .game-length-value strong { font-size: 1.1rem; }
+    .game-length-value span { font-size: 0.75rem; }
+}

@@ -121,6 +121,11 @@ it("opens a Rights Issue, buys the AI entitlement, waits for a human and resumes
     });
     await t.mutation(internal.npc.worker.run, job);
     await t.mutation(internal.npc.worker.run, job);
+    const considering = await sam.query(api.board.get, { code: "test" });
+
+    expect(considering.game.rightsIssue?.index).toBe(0);
+    expect(considering.game.rightsIssue?.offers[0].purchased).toBeUndefined();
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
     const paused = await sam.query(api.board.get, { code: "test" });
 
     expect(paused.game.turn).toBe(1);

@@ -1,12 +1,13 @@
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { maximumPlayers } from "../../shared/rules";
-import { hideDropdown } from "../bootstrap";
+import { roster } from "../../../stockmarket-shared/src/npc-catalog";
 import { Alert, useAction } from "../shared";
 import { NpcIdentity } from "./NpcIdentity";
 import type { Board } from "../types";
 
-type LobbyPlayer = Pick<Board["players"][number], "_id" | "name" | "profileRoot" | "kind" | "npcDifficulty" | "tagline">;
+type LobbyPlayer = Pick<Board["players"][number], "_id" | "name" | "profileRoot" | "kind" | "npcDifficulty" | "tagline">
+  & { npcPersonality?: string };
 interface LobbyBoard {
     game: Pick<Board["game"], "code"> & Partial<Pick<Board["game"], "hostId">>;
     players: LobbyPlayer[];
@@ -17,6 +18,7 @@ export function NpcLobbyControls({ board, canManage }: { board: LobbyBoard; canM
 {
     const add = useMutation(api.npc.lobby.add);
     const remove = useMutation(api.npc.lobby.remove);
+    const setPersonality = useMutation(api.npc.lobby.setPersonality);
     const setDifficulty = useMutation(api.npc.lobby.setDifficulty);
     const { run, busy, error } = useAction();
     const { game, players, user } = board;
@@ -27,7 +29,7 @@ export function NpcLobbyControls({ board, canManage }: { board: LobbyBoard; canM
             <Alert message={error} />
             <div
                 id="player-list"
-                className="d-flex flex-wrap justify-content-center align-items-start gap-4 p-2"
+                className="npc-lobby-grid"
             >
                 {players.map((player) => (
                     <article
@@ -36,7 +38,26 @@ export function NpcLobbyControls({ board, canManage }: { board: LobbyBoard; canM
                         aria-label={player.name}
                     >
                         <div className="lobby-player-portrait">
-                            <img src={player.profileRoot} alt={player.name} />
+                            {host && player.kind === "npc" ? (
+                                <button
+                                    type="button"
+                                    className="npc-personality-button"
+                                    aria-label={`Change ${player.name} personality`}
+                                    title="Change NPC personality"
+                                    disabled={busy}
+                                    onClick={() =>
+                                    {
+                                        const index = roster.findIndex((entry) => entry.id === player.npcPersonality
+                                          || entry.name === player.name);
+                                        const personality = roster[(index + 1) % roster.length].id;
+
+                                        void run(() => setPersonality({ code: game.code,
+                                            playerId: player._id, personality }));
+                                    }}
+                                >
+                                    <img src={player.profileRoot} alt={player.name} />
+                                </button>
+                            ) : <img src={player.profileRoot} alt={player.name} />}
                             {host && player.kind === "npc" && (
                                 <button
                                     type="button"
@@ -57,47 +78,24 @@ export function NpcLobbyControls({ board, canManage }: { board: LobbyBoard; canM
                         <h3>{player.name}</h3>
                         {player.kind === "npc"
                           && (host ? (
-                              <div className="dropdown">
-                                  <button
-                                      type="button"
-                                      className="btn bg-dark text-white border-0 dropdown-toggle npc-difficulty-button"
-                                      data-bs-toggle="dropdown"
-                                      aria-expanded="false"
-                                      disabled={busy}
+                              <div className="npc-lobby-settings">
+                                  <select
+                                      className="form-select bg-dark text-white border-0 npc-difficulty-button"
                                       aria-label={`${player.name} difficulty: ${player.npcDifficulty ?? "medium"}`}
-                                  >
-                                      {player.npcDifficulty ?? "medium"}
-                                  </button>
-                                  <ul className="dropdown-menu">
-                                      {(["easy", "medium", "hard"] as const).map((difficulty) => (
-                                          <li key={difficulty}>
-                                              <button
-                                                  type="button"
-                                                  className={`dropdown-item text-capitalize ${player.npcDifficulty === difficulty ? "active" : ""}`}
-                                                  disabled={busy}
-                                                  onClick={(event) =>
-                                                  {
-                                                      const toggle = event.currentTarget.closest(".dropdown")
-                                                          ?.querySelector<HTMLElement>("[data-bs-toggle='dropdown']");
-                                                      if (toggle)
-                                                      {
-                                                          hideDropdown(toggle);
-                                                      }
+                                      value={player.npcDifficulty ?? "medium"}
+                                      disabled={busy}
+                                      onChange={(event) =>
+                                      {
+                                          const difficulty = event.target.value as "easy" | "medium" | "hard";
 
-                                                      void run(() =>
-                                                          setDifficulty({
-                                                              code: game.code,
-                                                              playerId: player._id,
-                                                              difficulty,
-                                                          }),
-                                                      );
-                                                  }}
-                                              >
-                                                  {difficulty}
-                                              </button>
-                                          </li>
+                                          void run(() => setDifficulty({ code: game.code,
+                                              playerId: player._id, difficulty }));
+                                      }}
+                                  >
+                                      {(["easy", "medium", "hard"] as const).map((difficulty) => (
+                                          <option key={difficulty} value={difficulty}>{difficulty}</option>
                                       ))}
-                                  </ul>
+                                  </select>
                               </div>
                           ) : (
                               <NpcIdentity player={player} />
