@@ -98,7 +98,7 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
                 </p>
                 <button type="button" className="btn btn-secondary flex-fill" data-bs-dismiss="modal">Cancel</button>
                 <button
-                    className={`btn btn-${valid ? (mode === "buy" ? "success" : "danger") : "secondary"} flex-fill`}
+                    className={`btn btn-${mode === "buy" ? "primary" : "danger"} flex-fill`}
                     type="submit"
                     form={`${mode}Stock`}
                     disabled={busy || !valid}

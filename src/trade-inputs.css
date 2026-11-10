@@ -7,6 +7,14 @@
 .trade-inputs .stock-btns { grid-area: stock-btns; }
 .trade-inputs .transaction-body { grid-area: transaction-body; }
 
+/* Keep the lime increment button through hover, focus and touch presses. */
+:is(#buyModal, #sellModal) .trade-inputs .stock-btns .btn-success {
+    --bs-btn-hover-bg: var(--bs-btn-bg);
+    --bs-btn-hover-border-color: var(--bs-btn-border-color);
+    --bs-btn-active-bg: var(--bs-btn-bg);
+    --bs-btn-active-border-color: var(--bs-btn-border-color);
+}
+
 @media (max-width: 991.98px) {
     .trade-inputs { row-gap: 0.75rem; }
 }
