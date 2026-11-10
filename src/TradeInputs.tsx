@@ -83,7 +83,7 @@ export function TradeInputs({ shares, cash, quantity, limit, busy, valid, feedba
                     disabled={busy}
                     onClick={() =>
                     {
-                        setQuantity(Math.min(limit, increase(quantity)));
+                        setQuantity(increase(quantity));
                     }}
                 >
                     +

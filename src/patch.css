@@ -548,6 +548,8 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 .round-transition { min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; gap: 1rem; }
 .round-player-holdings { font-size: 0.7rem; text-align: center; }
 .play-notification { display: flex; position: fixed; inset: 0; z-index: 1090; background: rgb(15 44 18 / 96%); color: white; pointer-events: none; }
+.play-notification-dismiss { position: absolute; inset: 0; width: 100%; border: 0; background: transparent; pointer-events: auto; cursor: pointer; }
+.play-notification-dismiss:focus-visible { outline: 2px solid white; outline-offset: -4px; }
 
 /* Anchor both animated cards to the same centred stack. */
 .profile-toggle { position: relative; justify-self: center; margin: 5px 0 15px 10px; }

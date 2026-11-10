@@ -18,20 +18,22 @@ export function PlayAnimation({ board, preview = false }: { board: Board; previe
 
     const active = state.queue[0];
 
+    const activeId = active?._id;
+
     useEffect(() =>
     {
-        if (!active)
+        if (!activeId)
         {
             return;
         }
 
         const timer = globalThis.setTimeout(() =>
         {
-            setState((old) => ({ ...old, queue: old.queue.slice(1) }));
+            setState((old) => old.queue[0]?._id === activeId ? { ...old, queue: old.queue.slice(1) } : old);
         }, actionAnimationMs);
 
         return () => globalThis.clearTimeout(timer);
-    }, [active]);
+    }, [activeId]);
 
     if (!active)
     {
@@ -47,6 +49,13 @@ export function PlayAnimation({ board, preview = false }: { board: Board; previe
                 <h1>{active.title}</h1>
                 <FeedMessage item={active} stocks={board.stocks} detailed />
             </div>
+            <button
+                type="button"
+                className="play-notification-dismiss"
+                aria-label="Dismiss play notification"
+                onClick={() => setState((old) => old.queue[0]?._id === activeId
+                    ? { ...old, queue: old.queue.slice(1) } : old)}
+            />
         </div>
     );
 }
