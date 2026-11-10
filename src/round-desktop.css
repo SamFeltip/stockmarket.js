@@ -19,7 +19,7 @@
     .player-round-end h2 { font-size: clamp(1rem, 2.5dvh, 1.35rem); margin: 0; }
     .player-round-end #insight-view { padding: clamp(0.4rem, 1dvh, 0.75rem) !important; border-width: 2px !important; }
     .player-round-end .round-reveal {
-        grid-template-rows: clamp(9.5rem, 22dvh, 12rem) minmax(0, 1fr);
+        grid-template-rows: clamp(9.5rem, 26dvh, 15rem) minmax(0, 1fr);
         gap: 0.5rem !important;
     }
     .player-round-end .round-reveal:not(:has(.round-reveal-chart)) { grid-template-rows: minmax(0, 1fr); }
