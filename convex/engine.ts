@@ -36,6 +36,10 @@ export async function runEngine<T>(context: MutationContext_,
 
                 await context.scheduler.runAfter(delay, internal.npc.rightsIssue.run, command);
             },
+            npcSuspensionLater: async (command) =>
+            {
+                await context.scheduler.runAfter(actionAnimationMs, internal.npc.suspensions.run, command);
+            },
             finishRightsLater: async (command) =>
             {
                 await context.scheduler.runAfter(actionAnimationMs, internal.rightsIssue.finish, command);

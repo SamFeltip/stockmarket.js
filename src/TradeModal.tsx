@@ -1,4 +1,4 @@
-import { floorTradeQuantity, sharesPerCompany } from "../shared/rules";
+import { floorTradeQuantity, sharesAvailable } from "../shared/rules";
 import { TradeInputs } from "./TradeInputs";
 import { TradePosition } from "./TradePosition";
 import { useState } from "react";
@@ -24,8 +24,7 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
 
     const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
     const held = board.player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0;
-    const available = sharesPerCompany - board.players.reduce((sum, player) => sum
-      + (player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0), 0);
+    const available = sharesAvailable(board.players, stock.key);
     const limit = floorTradeQuantity(mode === "buy"
         ? Math.min(available, sharesForCash(board.player.cash, price)) : held);
     const { quantity, shares, cash } = resolveTradeDraft(draft, price, limit);

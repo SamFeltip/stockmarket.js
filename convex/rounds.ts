@@ -2,7 +2,7 @@ import * as engine from "../../stockmarket-shared/src/engine/rounds";
 import { runEngine } from "./engine";
 import type { MutationCtx as MutationContext } from "./_generated/server";
 import type { Doc as Document_, Id } from "./_generated/dataModel";
-import { resolveNpcSuspensions } from "./npc/suspensions";
+import { advanceNpcSuspensions } from "./npc/suspensions";
 import { checkSuspensionPhase, spendSuspension } from "./suspensions";
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
@@ -80,8 +80,14 @@ export const beginSuspensions = mutation({
         const game = await gameByCode(context, code);
 
         checkSuspensionPhase(game, expectedPeriod);
-        await context.db.patch(game._id, { suspensionPeriod: game.currentPeriod });
-        await resolveNpcSuspensions(context, game);
+
+        if (game.suspensionPeriod !== game.currentPeriod)
+        {
+            const suspensionPeriod = game.currentPeriod;
+
+            await context.db.patch(game._id, { suspensionPeriod });
+            await advanceNpcSuspensions(context, { ...game, suspensionPeriod });
+        }
     },
 });
 
@@ -101,7 +107,7 @@ export const suspendShare = mutation({
 
         const updated = await spendSuspension(context, game, card, stockKey);
 
-        await resolveNpcSuspensions(context, updated);
+        await advanceNpcSuspensions(context, updated);
     },
 });
 
@@ -116,7 +122,7 @@ export const skipSuspension = mutation({
         const card = await currentSuspension(context, game, insightId);
         const updated = await spendSuspension(context, game, card);
 
-        await resolveNpcSuspensions(context, updated);
+        await advanceNpcSuspensions(context, updated);
     },
 });
 

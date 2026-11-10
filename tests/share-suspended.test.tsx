@@ -1,56 +1,21 @@
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { expect, it } from "vitest";
-import { api } from "../convex/_generated/api";
-import { chanceStockKey, specialDeck } from "../shared/chance-cards";
+import { expect, it, vi } from "vitest";
+import { roster } from "../../stockmarket-shared/src/npc-catalog";
+import { api, internal } from "../convex/_generated/api";
 import { pendingSuspensions } from "../shared/suspensions";
 import { previewRound } from "../src/round-preview";
 import { ShareSuspended, SuspensionStock } from "../src/ShareSuspended";
 import { RoundEnd } from "../src/RoundEnd";
 import { RoundPresentation } from "../src/spectator/RoundPresentation";
-import { setup } from "./game-setup";
+import { RoundOverview } from "../src/RoundOverview";
+import { suspensionFixture } from "./suspension-setup";
 
 const client = new ConvexReactClient("https://suspension-test.invalid");
 
-async function fixture()
-{
-    const game = await setup();
-
-    await game.sam.mutation(api.games.start, { code: "test" });
-    const board = await game.sam.query(api.board.get, { code: "test" });
-    const cards = await game.t.run(async (context) =>
-    {
-        for (const card of await context.db.query("playerInsights").collect())
-        {
-            await context.db.delete(card._id);
-        }
-
-        await context.db.patch(board.game._id, { status: "closed", currentPeriod: 1, turn: 12 });
-        await context.db.patch(board.players[1]._id, { cash: 10_000, holdings: [{ stockKey: 8, quantity: 2000 }] });
-        const ids = [];
-        for (const [index, physical] of specialDeck().filter((card) => card.chanceKind === "hold").entries())
-        {
-            ids.push(await context.db.insert("playerInsights", { gameId: board.game._id, period: 1,
-                playerId: board.players[index]._id, stockKey: chanceStockKey, value: 0,
-                description: physical.description, catalogCardId: physical.id, chanceKind: "hold", resolved: false }));
-        }
-
-        for (const [stockKey, value] of [[8, -1], [12, 1], [-1, 0.1]])
-        {
-            await context.db.insert("playerInsights", { gameId: board.game._id, period: 1,
-                playerId: board.players[0]._id, stockKey, value, description: "Test movement", resolved: false });
-        }
-
-        return ids;
-    });
-    const closed = await game.sam.query(api.board.get, { code: "test" });
-
-    return { ...game, board: closed, samCard: cards[0], bobCard: cards[1] };
-}
-
 it("orders physical cards by the period's rotated play order and filters used or old cards", async () =>
 {
-    const { board, samCard, bobCard } = await fixture();
+    const { board, samCard, bobCard } = await suspensionFixture();
 
     expect(pendingSuspensions(1, board.players, board.insights).map((card) => card._id)).toEqual([bobCard, samCard]);
     const used = board.insights.map((card) => card._id === bobCard ? { ...card, used: true } : card);
@@ -65,7 +30,7 @@ it("orders physical cards by the period's rotated play order and filters used or
 
 it("enforces the phase, owner, queue, stock and period; spending freezes just one price at settlement", async () =>
 {
-    const { t, sam, bob, outsider, board, samCard, bobCard } = await fixture();
+    const { t, sam, bob, clients, outsider, board, samCard, bobCard } = await suspensionFixture();
     const arguments_ = { code: "test", expectedPeriod: 1, insightId: bobCard, stockKey: 8 };
 
     await expect(bob.mutation(api.rounds.suspendShare, arguments_)).rejects.toThrow("reveals are complete");
@@ -96,11 +61,17 @@ it("enforces the phase, owner, queue, stock and period; spending freezes just on
     expect(settled.game.suspended).toEqual([]);
     expect(settled.game.suspensionPeriod).toBeUndefined();
     expect((await t.run(async (context) => await context.db.get(samCard)))?.used).toBe(true);
+    await t.run(async (context) => await context.db.patch(board.players[1]._id,
+        { holdings: [{ stockKey: 8, quantity: 199_000 }] }));
+    const trade = { code: "test", expectedPeriod: 2, expectedTurn: 0, stockKey: 8 };
+
+    await expect(clients[2].mutation(api.trading.play, { ...trade, quantity: 2000 })).rejects.toThrow("Not enough shares available");
+    await clients[2].mutation(api.trading.play, { ...trade, quantity: 1000 });
 });
 
 it("lets a public spectator skip only the current card and never carry it over", async () =>
 {
-    const { t, sam, samCard, bobCard } = await fixture();
+    const { t, sam, samCard, bobCard } = await suspensionFixture();
 
     await t.mutation(api.rounds.beginSuspensions, { code: "test", expectedPeriod: 1 });
     await expect(t.mutation(api.rounds.skipSuspension, { code: "test", expectedPeriod: 1, insightId: samCard }))
@@ -119,29 +90,54 @@ it("lets a public spectator skip only the current card and never carry it over",
     expect(after.insights.some((card) => card._id === samCard || card._id === bobCard)).toBe(false);
 });
 
-it("resolves NPC cards without blocking humans, protecting their greatest held loss", async () =>
+const npcSuspensionTest = it.each(roster.map(({ id }) => id));
+
+npcSuspensionTest("shows and resolves the %s NPC's suspension decision before the next player", async (personality) =>
 {
-    const { t, sam, board, bobCard, samCard } = await fixture();
+    const { t, sam, board, bobCard, samCard } = await suspensionFixture();
 
     await t.run(async (context) => await context.db.patch(board.players[1]._id,
-        { controller: { kind: "npc", personality: "felix" }, userId: undefined }));
-    await sam.mutation(api.rounds.beginSuspensions, { code: "test", expectedPeriod: 1 });
+        { controller: { kind: "npc", personality }, userId: undefined }));
+    const begin = { code: "test", expectedPeriod: 1 };
+
+    await sam.mutation(api.rounds.beginSuspensions, begin);
+    await sam.mutation(api.rounds.beginSuspensions, begin);
+    const considering = await sam.query(api.board.get, { code: "test" });
+    const preview = renderToStaticMarkup(
+        <ConvexProvider client={client}><RoundEnd board={considering} /></ConvexProvider>,
+    );
+
+    expect(considering.game.suspended).toEqual([]);
+    expect(preview).toContain("Stock valuations, ordered by volatility");
+    expect(preview).not.toContain("suspension-holder-avatars");
+    expect(preview).not.toContain("type=\"radio\"");
+
+    const job = { gameId: board.game._id, insightId: bobCard };
+
+    await t.mutation(internal.npc.suspensions.run, job);
+    await t.mutation(internal.npc.suspensions.run, job);
     const after = await sam.query(api.board.get, { code: "test" });
 
     expect(after.game.suspended).toEqual([8]);
     expect(after.insights.find((card) => card._id === bobCard)?.used).toBe(true);
     expect(pendingSuspensions(1, after.players, after.insights)[0]._id).toBe(samCard);
+    const summary = renderToStaticMarkup(
+        <RoundOverview before={after} after={previewRound(after, after.insights, [8])} />,
+    );
+
+    expect(summary).toContain("Share Suspended · Stock price held");
 });
 
 it("shows the actor's holdings and both valuations, waiting portraits, and spectator portfolios after cash", async () =>
 {
-    const { sam, t, board, bobCard } = await fixture();
+    const { sam, t, board, bobCard } = await suspensionFixture();
     const card = board.insights.find((item) => item._id === bobCard)!;
     const active = renderToStaticMarkup(<ShareSuspended board={board} card={card} own />);
     const waiting = renderToStaticMarkup(<ShareSuspended board={board} card={card} />);
     const spectator = renderToStaticMarkup(<ShareSuspended board={board} card={card} spectator />);
 
     expect(active).toContain("2,000 shares");
+    expect(active).toContain("suspension-holder-avatars");
     expect(active).toContain("0 shares");
     expect(active).toContain("£2.50");
     expect(active).toContain("£1.50");
@@ -150,8 +146,10 @@ it("shows the actor's holdings and both valuations, waiting portraits, and spect
     expect(waiting).toContain("bob is deciding which stock valuation to suspend");
     expect(waiting).not.toContain("role=\"radiogroup\"");
     expect(waiting).not.toContain(">Suspend</button>");
+    expect(waiting).not.toContain("suspension-holder-avatars");
     expect(spectator).toContain("Player portfolios");
     expect(spectator).not.toContain("suspension-quantity");
+    expect(spectator).not.toContain("suspension-holder-avatars");
     expect(spectator).not.toContain("2,000 shares");
     expect(spectator).not.toContain("suspension-valuations");
     expect(spectator.indexOf(">worth</span>")).toBeLessThan(spectator.indexOf("suspension-change"));
@@ -206,7 +204,7 @@ it("shows the actor's holdings and both valuations, waiting portraits, and spect
 
 it("handles two physical cards owned by one player, zero-share choices, and final-period settlement", async () =>
 {
-    const { t, bob, board, samCard } = await fixture();
+    const { t, bob, board, samCard } = await suspensionFixture();
 
     await t.run(async (context) =>
     {
@@ -238,7 +236,7 @@ it("handles two physical cards owned by one player, zero-share choices, and fina
 
 it("rejects premature phases and lets consecutive NPC holders discard cards with no beneficial suspension", async () =>
 {
-    const { t, board } = await fixture();
+    const { t, board } = await suspensionFixture();
 
     await t.run(async (context) => await context.db.patch(board.game._id, { status: "playing" }));
     await expect(t.mutation(api.rounds.beginSuspensions, { code: "test", expectedPeriod: 1 })).rejects.toThrow("round has already changed");
@@ -252,7 +250,18 @@ it("rejects premature phases and lets consecutive NPC holders discard cards with
                 userId: undefined, holdings: [] });
         }
     });
-    await t.mutation(api.rounds.beginSuspensions, { code: "test", expectedPeriod: 1 });
+    vi.useFakeTimers();
+
+    try
+    {
+        await t.mutation(api.rounds.beginSuspensions, { code: "test", expectedPeriod: 1 });
+        await t.finishAllScheduledFunctions(vi.runAllTimers);
+    }
+    finally
+    {
+        vi.useRealTimers();
+    }
+
     const publicBoard = (await t.query(api.tv.board, { code: "test" }))!;
 
     expect(publicBoard.reveal!.suspended).toEqual([]);

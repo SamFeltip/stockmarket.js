@@ -7,6 +7,7 @@ export type Insight = Pick<PlayerBoard["insights"][number], "_id" | "playerId" |
 
 export type Player = Pick<PlayerBoard["players"][number],
     "_id" | "name" | "profileRoot" | "cash" | "holdings" | "netWorth" | "ranking"> & {
+        kind?: PlayerBoard["players"][number]["kind"];
         roles?: { stockKey: number; role: CompanyRole }[];
     };
 

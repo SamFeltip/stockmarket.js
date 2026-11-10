@@ -9,9 +9,9 @@ const count = (value: number) => value.toLocaleString("en-GB");
 const quantityHeld = (player: Player | undefined, stockKey: number) =>
     player?.holdings.find((holding) => holding.stockKey === stockKey)?.quantity ?? 0;
 
-export function SuspensionStock({ stock, quantity, before, after, selected = false, disabled = false,
+export function SuspensionStock({ stock, quantity, holders, before, after, selected = false, disabled = false,
     unavailable = false, spectator = false, onSelect }: {
-    stock: Stock; quantity: number; spectator?: boolean;
+    stock: Stock; quantity: number; holders?: Player[]; spectator?: boolean;
     before: number; after: number; selected?: boolean; disabled?: boolean; unavailable?: boolean; onSelect?: () => void;
 })
 {
@@ -51,6 +51,23 @@ export function SuspensionStock({ stock, quantity, before, after, selected = fal
                         <strong>{`£${after.toFixed(2)}`}</strong>
                     </div>
                 </div>
+            )}
+            {holders && (
+                <span className="suspension-holders">
+                    <small>{holders.length > 0 ? "Shareholders" : "No shareholders"}</small>
+                    {holders.length > 0 && (
+                        <span className="suspension-holder-avatars">
+                            {holders.map((holder) => (
+                                <img
+                                    key={holder._id}
+                                    src={holder.profileRoot}
+                                    alt={holder.name}
+                                    title={`${holder.name} · ${count(quantityHeld(holder, stock.key))} shares`}
+                                />
+                            ))}
+                        </span>
+                    )}
+                </span>
             )}
         </>
     );
@@ -118,6 +135,7 @@ export function ShareSuspended({ board, card, own = false, spectator = false, bu
     const [selected, setSelected] = useState<number>();
     const [confirmSkip, setConfirmSkip] = useState(false);
     const owner = board.players.find((player) => player._id === card.playerId);
+    const showPreview = own || spectator || owner?.kind === "npc";
     const stocks = board.stocks.filter((stock) => stock.display)
         .toSorted((a, b) => (a.variation ?? 0) - (b.variation ?? 0));
     const preview = previewRound(board, board.insights, stocks.map((stock) => stock.key));
@@ -140,7 +158,7 @@ export function ShareSuspended({ board, card, own = false, spectator = false, bu
                     <DecisionPortfolios board={{ ...board, players: preview.players }} activePlayerId={card.playerId} />
                 )}
             </div>
-            {(own || spectator) && (
+            {showPreview && (
                 <div className="suspension-stocks" role={own ? "radiogroup" : "group"} aria-label="Stock valuations, ordered by volatility">
                     {stocks.map((stock) => (
                         <SuspensionStock
@@ -148,6 +166,8 @@ export function ShareSuspended({ board, card, own = false, spectator = false, bu
                             stock={stock}
                             spectator={spectator}
                             quantity={quantityHeld(owner, stock.key)}
+                            holders={own ? board.players.filter((player) =>
+                                quantityHeld(player, stock.key) > 0) : undefined}
                             before={board.game.prices.find((price) => price.stockKey === stock.key)?.value ?? 0}
                             after={preview.game.prices.find((price) => price.stockKey === stock.key)?.value ?? 0}
                             selected={selected === stock.key}

@@ -72,3 +72,17 @@ label.suspension-stock { cursor: pointer; }
     .suspension-panel { gap: 1rem; }
     .suspension-waiting { flex-direction: column; text-align: center; }
 }
+
+.suspension-holders {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    width: 100%;
+    margin-top: auto;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e0e5dd;
+}
+.suspension-holders small { font-size: 0.75rem; color: #636b66; }
+.suspension-holder-avatars { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.25rem; }
+.suspension-holder-avatars img { width: 1.65rem; height: 1.65rem; border-radius: 50%; object-fit: cover; }

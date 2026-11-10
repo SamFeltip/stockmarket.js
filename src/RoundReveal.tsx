@@ -72,7 +72,7 @@ export function RoundReveal({ board, preview, stock, insights, index }: {
                 <div className="round-result d-flex flex-column justify-content-center bg-white rounded text-black">
                     {special ? <p className="text-center p-4">All additional insights revealed</p> : <StockResult before={before} after={after} />}
                     {insights.length === 0 && <p className="text-center">No insights for this stock</p>}
-                    {board.game.suspended.includes(stock.key) && <p className="text-center">Stock price held</p>}
+                    {board.game.suspended.includes(stock.key) && <p className="text-center">Share Suspended · Stock price held</p>}
                 </div>
             )}
             {!special && (
