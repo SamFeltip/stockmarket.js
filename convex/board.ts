@@ -1,3 +1,4 @@
+import { debentureInHand } from "../shared/debenture";
 import { debentureOffers } from "./game/debenture";
 import { withRoleBonuses, companyRoles } from "../shared/company-roles";
 import { stockCatalog } from "./catalog";
@@ -21,7 +22,8 @@ export const get = query({
         const allInsights = await roundInsights(context, game);
         const retained = (await context.db.query("playerInsights")
             .withIndex("by_player_period", (q) => q.eq("playerId", player._id)).collect())
-            .filter((card) => card.chanceKind === "debenture" && !card.used && card.period < game.currentPeriod);
+            .filter((card) => card.chanceKind === "debenture" && card.period < game.currentPeriod
+              && debentureInHand(card, game.currentPeriod));
         const debentures = allInsights.some((card) => card.playerId === player._id && card.chanceKind === "debenture"
           && !card.used) || retained.length > 0;
         const claims = debentures ? await debentureOffers(context, game, player) : [];

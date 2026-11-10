@@ -69,16 +69,30 @@ it("sells only the chosen bankrupt holding at the game opening price, consumes t
     expect((await sam.query(api.board.get, { code: "test" })).player.cash).toBe(after.player.cash);
 });
 
-it("allows the second claim round, rejects expired or recovered stocks, and works without purchase history", async () =>
+it("expires old cards and allows a fresh card to claim in the second bankruptcy round", async () =>
 {
-    const { t, sam, board, command } = await bankruptGame();
+    const { t, sam, board, command, insightId } = await bankruptGame();
 
-    await t.run(async (context) => await context.db.patch(board.game._id, { currentPeriod: 3 }));
-    await expect(sam.mutation(api.trading.redeemDebenture, { ...command, expectedPeriod: 3 }))
-        .rejects.toThrow("claim window has ended");
+    await t.run(async (context) => await context.db.patch(board.game._id, { currentPeriod: 2 }));
+    await expect(sam.mutation(api.trading.redeemDebenture, { ...command, expectedPeriod: 2 }))
+        .rejects.toThrow("cannot be used");
     const expired = await sam.query(api.board.get, { code: "test" });
 
-    expect(expired.debentureOffers.find((offer) => offer.stockKey === 8)?.unavailableReason).toContain("ended");
+    expect(expired.insights.some((card) => card._id === insightId)).toBe(false);
+    await t.run(async (context) =>
+    {
+        await context.db.patch(insightId, { period: 1 });
+        await context.db.patch(board.game._id, { currentPeriod: 3 });
+    });
+    await expect(sam.mutation(api.trading.redeemDebenture, { ...command, expectedPeriod: 3 }))
+        .rejects.toThrow("cannot be used");
+    await t.run(async (context) =>
+    {
+        await context.db.patch(insightId, { period: 2 });
+        await context.db.patch(board.game._id, { currentPeriod: 3 });
+    });
+    await expect(sam.mutation(api.trading.redeemDebenture, { ...command, expectedPeriod: 3 }))
+        .rejects.toThrow("claim window has ended");
     await t.run(async (context) => await context.db.patch(board.game._id, { currentPeriod: 2,
         prices: board.game.prices.map((price) => price.stockKey === 8 ? { ...price, value: 1 } : price) }));
     await expect(sam.mutation(api.trading.redeemDebenture, { ...command, expectedPeriod: 2 }))
