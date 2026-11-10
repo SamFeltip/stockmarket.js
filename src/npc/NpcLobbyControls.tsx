@@ -23,6 +23,8 @@ export function NpcLobbyControls({ board, canManage }: { board: LobbyBoard; canM
     const { run, busy, error } = useAction();
     const { game, players, user } = board;
     const host = canManage ?? Boolean(user && user._id === game.hostId);
+    const canAdd = host && players.length < maximumPlayers;
+    const emptySeats = Math.max(0, maximumPlayers - players.length - Number(canAdd));
 
     return (
         <section className="npc-lobby-roster" aria-label="Lobby players">
@@ -92,9 +94,11 @@ export function NpcLobbyControls({ board, canManage }: { board: LobbyBoard; canM
                                               playerId: player._id, difficulty }));
                                       }}
                                   >
-                                      {(["easy", "medium", "hard"] as const).map((difficulty) => (
-                                          <option key={difficulty} value={difficulty}>{difficulty}</option>
-                                      ))}
+                                      <optgroup label="Difficulty">
+                                          <option value="easy">Easy</option>
+                                          <option value="medium">Medium</option>
+                                          <option value="hard">Hard</option>
+                                      </optgroup>
                                   </select>
                               </div>
                           ) : (
@@ -102,7 +106,7 @@ export function NpcLobbyControls({ board, canManage }: { board: LobbyBoard; canM
                           ))}
                     </article>
                 ))}
-                {host && players.length < maximumPlayers && (
+                {canAdd && (
                     <button
                         type="button"
                         className="npc-add-tile bg-dark"
@@ -116,6 +120,9 @@ export function NpcLobbyControls({ board, canManage }: { board: LobbyBoard; canM
                         <span>Add NPC</span>
                     </button>
                 )}
+                {Array.from({ length: emptySeats }, (_, index) => (
+                    <div className="lobby-empty-seat" aria-hidden="true" key={maximumPlayers - index} />
+                ))}
             </div>
         </section>
     );

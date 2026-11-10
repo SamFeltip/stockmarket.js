@@ -1,4 +1,6 @@
 import { gameLengths } from "../shared/rules";
+import { useState } from "react";
+import { GameLengthControl } from "./GameLengthControl";
 import { useMutation } from "convex/react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../convex/_generated/api";
@@ -7,6 +9,7 @@ import { LobbyCard } from "./LobbyCard";
 
 export function CreateGame()
 {
+    const [periods, setPeriods] = useState(gameLengths[0]);
     const create = useMutation(api.games.create);
     const navigate = useNavigate();
     const { run, busy, error } = useAction();
@@ -24,7 +27,7 @@ export function CreateGame()
                     void run(async () =>
                     {
                         const code = await create({
-                            code: formText(form, "code"), periodCount: Number(form.get("difficulty")),
+                            code: formText(form, "code"), periodCount: periods - 1,
                             spectate: form.get("spectate") === "on",
                         });
 
@@ -55,23 +58,7 @@ export function CreateGame()
                 </div>
                 <fieldset disabled={busy}>
                     <legend className="form-label fs-5">Game length</legend>
-                    <div className="d-grid gap-2 lobby-lengths">
-                        {gameLengths.map((periods, index) => (
-                            <div key={periods}>
-                                <input
-                                    type="radio"
-                                    className="btn-check"
-                                    name="difficulty"
-                                    id={`length-${index}`}
-                                    value={periods - 1}
-                                    defaultChecked={index === 0}
-                                />
-                                <label className="btn btn-outline-light w-100 py-3" htmlFor={`length-${index}`}>
-                                    <span className="d-block">{`${periods} periods`}</span>
-                                </label>
-                            </div>
-                        ))}
-                    </div>
+                    <GameLengthControl periods={periods} busy={busy} onChange={setPeriods} />
                 </fieldset>
                 <div className="spectate-option">
                     <div className="form-check form-switch spectate-toggle">
