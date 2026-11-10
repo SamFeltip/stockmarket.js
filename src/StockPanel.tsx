@@ -1,4 +1,4 @@
-import { sharesPerCompany } from "../shared/rules";
+import { sharesAvailable } from "../shared/rules";
 import { lazy, Suspense } from "react";
 import { Change, Insights, money } from "./shared";
 import { StockPreview } from "./StockPreview";
@@ -18,8 +18,7 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
     const held = player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0;
     const ownInsights = insights.filter((insight) => insight.stockKey === stock.key);
     const value = ownInsights.reduce((sum, insight) => sum + insight.value, 0);
-    const available = sharesPerCompany - players.reduce((sum, seat) => sum
-      + (seat.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0), 0);
+    const available = sharesAvailable(players, stock.key);
     const myTurn = game.currentPlayerId === board.player._id;
 
     return (
@@ -51,7 +50,7 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
                             </span>
                         </div>
                         <Suspense fallback={<div className="stock-price-chart" role="status">Loading price chart…</div>}>
-                            <StockPriceChart game={game} stock={stock} />
+                            <StockPriceChart key={stock.key} game={game} stock={stock} trades={board.trades} />
                         </Suspense>
                     </section>
                     <div id="insights" className="d-grid gap-2">

@@ -78,7 +78,7 @@ export function RoundReveal({ board, preview, stock, insights, index }: {
             {!special && (
                 <div className="round-reveal-chart bg-white text-black rounded p-3">
                     <Suspense fallback={<p>Loading price chart…</p>}>
-                        <StockPriceChart game={preview.game} stock={stock} />
+                        <StockPriceChart key={stock.key} game={preview.game} stock={stock} trades={board.trades} />
                     </Suspense>
                 </div>
             )}

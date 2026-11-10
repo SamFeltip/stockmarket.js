@@ -15,6 +15,7 @@ export function websiteBoard(board: Board): DisplayBoard
             ...stock, display: true, imagePath: stockLogo(stock.key, stock.imagePath),
             secondaryImagePath: stockLogo(stock.key, stock.imagePath),
         })),
+        trades: reveal?.trades,
         insights: reveal?.insights ?? [],
         players: board.players.map(({ id, profileRoot, ...player }) => ({ ...player, _id: id,
             profileRoot: portrait(profileRoot), ranking: ranked.findIndex((item) => item.id === id) + 1 })),

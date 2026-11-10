@@ -3,7 +3,7 @@ import { stockCatalog } from "./catalog";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { fail, gameByCode, members, netWorth, normalizeCode, roundInsights, seedCatalog } from "./library";
+import { fail, gameByCode, members, tradeHistory, netWorth, normalizeCode, roundInsights, seedCatalog } from "./library";
 import { publicIdentity } from "./npc/identity";
 import { spectatorHost } from "./game/hosting";
 import { launchGame } from "./launch";
@@ -107,9 +107,10 @@ export const board = query({
             .toSorted((a, b) => a.variation - b.variation);
         const stocks = catalog.filter((stock) => stock.display);
         const canReveal = game.status === "closed" || game.status === "special_insights";
-        const revealed = canReveal ? await roundInsights(context, game) : [];
+        const [revealed, trades] = canReveal
+            ? await Promise.all([roundInsights(context, game), tradeHistory(context, game._id)]) : [[], []];
         const reveal = canReveal ? {
-            period: game.currentPeriod,
+            period: game.currentPeriod, trades,
             prices: game.prices.map((price) => ({ stockKey: price.stockKey, value: price.value })),
             suspended: game.suspended,
             suspensionPeriod: game.suspensionPeriod,
@@ -161,7 +162,10 @@ export const board = query({
                 held: players.reduce((sum, player) => sum + (player.holdings.find((holding) =>
                     holding.stockKey === stock.key)?.quantity ?? 0), 0) })),
             history: (game.priceHistory ?? []).map((entry) => ({ period: entry.period,
-                prices: entry.prices.filter((price) => stocks.some((stock) => stock.key === price.stockKey)) })),
+                prices: entry.prices.filter((price) => stocks.some((stock) => stock.key === price.stockKey)),
+                ...(entry.steps && {
+                    steps: entry.steps.filter((step) => stocks.some((stock) => stock.key === step.stockKey)),
+                }) })),
             players,
             feed: feed.map((item) => ({ id: item._id, at: item._creationTime, period: item.period,
                 title: item.title, message: item.message, imageRoot: item.imageRoot, colour: item.colour,

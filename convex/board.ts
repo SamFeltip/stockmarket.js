@@ -4,7 +4,7 @@ import { withRoleBonuses, companyRoles } from "../shared/company-roles";
 import { stockCatalog } from "./catalog";
 import { query } from "./_generated/server";
 import { v } from "convex/values";
-import { member, members, netWorth, roundInsights } from "./library";
+import { member, members, netWorth, roundInsights, tradeHistory } from "./library";
 
 import { phoneHost, spectatorHost } from "./game/hosting";
 import { publicIdentity } from "./npc/identity";
@@ -42,8 +42,10 @@ export const get = query({
                 netWorth: netWorth(seat, game) };
         }));
         const ranking = [...players].toSorted((a, b) => b.netWorth - a.netWorth);
-        const feed = await context.db.query("feed").withIndex("by_game", (q) => q.eq("gameId", game._id))
-            .order("desc").take(100);
+        const [feed, trades] = await Promise.all([
+            context.db.query("feed").withIndex("by_game", (q) => q.eq("gameId", game._id)).order("desc").take(100),
+            tradeHistory(context, game._id),
+        ]);
 
         return {
             game: { _id: game._id, _creationTime: game._creationTime, code: game.code, hostId: phoneHost(game, seats),
@@ -54,6 +56,7 @@ export const get = query({
                 suspended: game.suspended, suspensionPeriod: game.suspensionPeriod, rightsIssue: game.rightsIssue, npcDifficulty: game.npcDifficulty ?? "medium" },
             debentureOffers: claims,
             player, user: { _id: user._id, name: user.name, profileRoot: user.profileRoot }, stocks, feed,
+            trades,
             players: players.map((seat) => ({
                 ...seat, ranking: ranking.findIndex((item) => item._id === seat._id) + 1,
             })),

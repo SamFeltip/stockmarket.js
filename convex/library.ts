@@ -3,6 +3,7 @@ import { readEngine, runEngine, type Arguments } from "./engine";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError } from "convex/values";
 import type { MutationCtx as MutationContext, QueryCtx as QueryContext } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 
 export function fail(message: string): never
 {
@@ -77,3 +78,13 @@ export function feedItem(context: MutationContext, ...arguments_: Arguments<type
 }
 
 export const netWorth = engine.netWorth;
+
+/** Public trades outlive the rolling activity feed used by the interface. */
+export async function tradeHistory(context: QueryContext, gameId: Id<"games">)
+{
+    const trades = await context.db.query("feed").withIndex("by_game", (q) => q.eq("gameId", gameId))
+        .filter((q) => q.neq(q.field("quantity"), undefined)).collect();
+
+    return trades.flatMap(({ stockKey, period, title, imageRoot, quantity }) =>
+        stockKey !== undefined && quantity ? [{ stockKey, period, title, imageRoot, quantity }] : []);
+}

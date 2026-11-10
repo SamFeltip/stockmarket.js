@@ -1,7 +1,7 @@
 import { skipDealtSuspensions } from "./game-setup";
 import { describe, expect, it } from "vitest";
 import { api } from "../convex/_generated/api";
-import { priceSeries } from "../src/price-history";
+import { chartSeries, priceSeries } from "../src/price-history";
 import { setup } from "./game-setup";
 
 describe("Stock history and investors", () =>
@@ -60,6 +60,14 @@ describe("Stock history and investors", () =>
         const closed = await sam.query(api.board.get, { code: "test" });
 
         expect(closed.game.priceHistory).toEqual(initial.game.priceHistory);
+        const trade = { stockKey: 8, period: 0, title: closed.user.name,
+            imageRoot: closed.user.profileRoot, quantity: 1000 };
+
+        expect(closed.trades).toEqual([trade]);
+        expect((await sam.query(api.tv.board, { code: "test" }))?.reveal?.trades).toEqual([trade]);
+        expect(chartSeries(closed.game, 8, closed.trades).filter((point) => point.value !== null)).toEqual([
+            { round: 0, value: 2.5 }, { round: 0.25, value: 2.5, trade },
+        ]);
         await skipDealtSuspensions(sam, "test");
         await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
         const settled = await bob.query(api.board.get, { code: "test" });
