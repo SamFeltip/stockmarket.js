@@ -1,10 +1,14 @@
+/* Reserve the insight row on smaller desktop windows with scrollable reveals. */
+.player-round-end .round-reveal { grid-template-rows: 18rem auto; }
+.player-round-end .round-reveal:not(:has(.round-reveal-chart)) { grid-template-rows: 18rem; }
+
 /* Fit player reveals to laptop browser height. Touch-first tablet layouts keep
    their existing sizing; very short windows retain the scrollable fallback. */
 @media (min-width: 992px) and (min-height: 500px) and (hover: hover) and (pointer: fine) {
     .round-end.player-round-end:not(.suspension-round) {
         height: 100dvh;
         min-height: 0;
-        grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+        grid-template-rows: auto minmax(0, 1fr) auto auto;
         align-content: stretch;
         gap: clamp(0.375rem, 1dvh, 0.75rem) !important;
         padding: clamp(0.5rem, 1.5dvh, 1rem) !important;
@@ -15,6 +19,7 @@
     .player-round-end h2 { font-size: clamp(1rem, 2.5dvh, 1.35rem); margin: 0; }
     .player-round-end #insight-view { padding: clamp(0.4rem, 1dvh, 0.75rem) !important; border-width: 2px !important; overflow: auto; }
     .player-round-end .round-reveal { grid-template-rows: minmax(0, 1fr) minmax(5rem, 0.55fr); gap: 0.5rem !important; }
+    .player-round-end .round-reveal:not(:has(.round-reveal-chart)) { grid-template-rows: minmax(0, 1fr); }
     .player-round-end .round-reveal > :not(.round-reveal-chart) { padding: clamp(0.4rem, 1dvh, 0.75rem) !important; }
     .player-round-end .game-stock-view img { max-height: clamp(3rem, 10dvh, 6rem) !important; padding: 0.25rem !important; }
     .player-round-end .game-stock-view + div h1 { font-size: clamp(1.5rem, 4dvh, 2.25rem); margin: 0; }
@@ -29,10 +34,6 @@
     .player-round-end .round-reveal-chart > .visually-hidden { top: 0; left: 0; }
     .player-round-end .round-reveal-chart .stock-price-chart { height: 100%; min-height: 0; position: relative; }
     .player-round-end .round-reveal-chart .recharts-responsive-container { position: absolute; inset: 0; }
-    .player-round-end #stock-view { padding: 0.25rem 0.75rem !important; gap: 0.75rem; }
-    .player-round-end #stock-view h2 { font-size: 1rem; white-space: nowrap; }
-    .player-round-end #stock-view .game-stock { min-width: 0; flex: 1; }
-    .player-round-end #stock-view img { height: clamp(2rem, 6dvh, 3rem); padding: 0.25rem !important; }
     .player-round-end #player-view { padding: 0.4rem 0.75rem !important; }
     .player-round-end #player-view h2 { font-size: 1rem; margin-bottom: 0.25rem; }
     .player-round-end .round-wealth-players { gap: 0.5rem; }

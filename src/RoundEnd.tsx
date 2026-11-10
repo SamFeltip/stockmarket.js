@@ -139,21 +139,6 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
                                 )
                                 : <p className="text-center">All insights revealed</p>)}
                         </div>
-                        <div id="stock-view" className="card card-green px-5 py-4 rounded border-5 border-white flex-sm-row align-items-center">
-                            <h2>Stock Values:</h2>
-                            <div className="gap-3 flex-fill d-flex flex-nowrap flex-column flex-sm-row justify-content-between align-items-center">
-                                {stocks.filter((stock) => stock.display).map((stock) => (
-                                    <div className="game-stock d-flex flex-column align-items-center" key={stock.key}>
-                                        <img className="w-100 p-3 object-fit-contain" style={{ maxHeight: 100 }} src={stock.secondaryImagePath} alt={stock.name} />
-                                        <div>
-                                            £
-                                            {(preview.game.prices.find((price) =>
-                                                price.stockKey === stock.key)?.value ?? 0).toFixed(2)}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
                         <RoundWealth players={wealth.players} stock={activeStock} />
                     </>
                 )}
