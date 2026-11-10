@@ -38,7 +38,7 @@
     .player-round-end #player-view h2 { font-size: 1rem; margin-bottom: 0.25rem; }
     .player-round-end .round-wealth-players { gap: 0.5rem; }
     .player-round-end .round-wealth-players > div { min-width: 0; }
-    .player-round-end .round-wealth-players img { width: clamp(1.5rem, 4dvh, 2.25rem); }
+    .player-round-end .round-wealth-players img { width: clamp(2.25rem, 6dvh, 3.5rem); }
     .player-round-end .round-player-holdings { text-align: center; }
     .player-round-end #next-step-wrapper { position: static !important; padding: 0 !important; }
     .player-round-end .round-navigation .btn { font-size: 0.95rem; padding: 0.375rem 0.75rem; min-height: 2.5rem; }
