@@ -45,25 +45,75 @@
     .player-round-end .round-player-holdings { text-align: center; }
     .player-round-end #next-step-wrapper { position: static !important; padding: 0 !important; }
     .player-round-end .round-navigation .btn { font-size: 0.95rem; padding: 0.375rem 0.75rem; min-height: 2.5rem; }
-    .player-round-end:has(.round-overview) { grid-template-rows: auto minmax(0, 1fr) auto; }
-    .player-round-end .round-overview { grid-template-rows: auto minmax(min-content, 1fr) auto; gap: 0.5rem !important; }
-    .player-round-end .round-overview-stocks { gap: 0.5rem; grid-auto-rows: minmax(min-content, 1fr); grid-template-rows: none; }
-    .player-round-end .round-overview .stock-role-footer { gap: 0.25rem; padding-top: 0.3rem; margin-top: 0.3rem; flex-shrink: 0; }
-    .player-round-end .round-overview .stock-role-entry { gap: 0.4rem; }
-    .player-round-end .round-overview .stock-role-entry p { font-size: 0.75rem; line-height: 1.25; }
-    .player-round-end .round-overview .stock-role-footer .investor-photo { width: 1.75rem; height: 1.75rem; }
-    .player-round-end .round-overview .stock-role-footer .company-role-badge { width: 0.8rem; height: 0.8rem; top: -0.2rem; left: -0.2rem; }
-    .player-round-end .round-overview-stocks article { padding: 0.4rem !important; }
-    .player-round-end .round-overview-stocks article > img { height: clamp(1.5rem, 4dvh, 2.25rem); }
-    .player-round-end .round-overview-stocks h3 { font-size: 1rem; margin-block: 0.2rem; }
-    .player-round-end .round-overview-players { gap: 0.5rem; }
-    .player-round-end .round-overview-players h3, .player-round-end .round-overview-players h4 { font-size: 0.95rem; margin-block: 0.2rem; }
     .player-round-end .cash-reveal { height: 100%; min-height: 0; gap: 0.5rem; }
     .player-round-end .cash-reveal-total { padding: 0.75rem; }
     .player-round-end .cash-reveal-card { min-height: 0; padding: 0.75rem; }
     .player-round-end .cash-reveal-total h1 { font-size: clamp(2rem, 5dvh, 3rem); }
     .player-round-end .cash-reveal-identity img { width: clamp(4rem, 12dvh, 7rem); }
     .player-round-end .cash-reveal-percent span { font-size: inherit; }
+}
+
+.round-end.player-round-end:has(.round-overview-wide) {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+}
+.player-round-end .round-overview-wide {
+    grid-template-rows: auto minmax(min-content, 1fr) auto auto;
+    gap: 0.5rem !important;
+}
+.player-round-end .round-overview-wide > h2 { font-size: clamp(1rem, 2.5dvh, 1.35rem); margin: 0; }
+.round-overview-wide .round-overview-stocks {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: none;
+    grid-auto-rows: minmax(min-content, 1fr);
+    gap: 0.5rem;
+}
+.round-overview-wide .round-overview-stocks article { padding: 0.4rem !important; }
+.round-overview-wide .round-overview-stocks article > img { height: clamp(1.5rem, 4dvh, 2.25rem); }
+.round-overview-wide .round-overview-stocks h3 { font-size: 1rem; margin-block: 0.2rem; }
+.round-overview-wide .round-overview-suspension { font-size: 0.8rem; margin: 0; }
+.round-overview-wide .stock-role-footer { gap: 0.25rem; padding-top: 0.3rem; margin-top: 0.3rem; flex-shrink: 0; }
+.round-overview-wide .stock-role-entry { gap: 0.4rem; }
+.round-overview-wide .stock-role-entry p { font-size: 0.75rem; line-height: 1.25; margin: 0; }
+.round-overview-wide .stock-role-footer .role-portrait .investor-photo { width: 1.75rem; height: 1.75rem; }
+.round-overview-wide .stock-role-footer .role-portrait .company-role-badge { width: 0.8rem; height: 0.8rem; top: -0.2rem; left: -0.2rem; }
+.round-overview-wide .round-overview-players,
+.round-overview-charts { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.5rem; }
+.round-overview-wide .round-overview-players :is(h3, h4) { font-size: 0.95rem; margin-block: 0.2rem; }
+.round-overview-charts > div {
+    display: grid;
+    grid-template-columns: clamp(1.25rem, 4vw, 2.75rem) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(0.25rem, 0.6vw, 0.5rem);
+    padding: 0.35rem;
+    background: #f0f5ee;
+}
+.round-overview-charts :is(img, svg) { display: block; width: 100%; height: clamp(2rem, 6dvh, 3.5rem); object-fit: contain; }
+
+@media (min-height: 640px) {
+    .round-end.player-round-end:has(.round-overview-wide) {
+        height: 100dvh;
+        min-height: 0;
+        gap: 0.5rem !important;
+        padding: max(0.5rem, var(--app-safe-top, 0px)) max(0.5rem, var(--app-safe-right, 0px))
+            calc(0.5rem + var(--app-safe-bottom, 0px)) max(0.5rem, var(--app-safe-left, 0px)) !important;
+    }
+}
+
+@media (max-width: 991.98px), (pointer: coarse) {
+    .player-round-end:has(.round-overview-wide) > div:first-child h1 {
+        font-size: clamp(1.25rem, 4dvh, 1.65rem);
+        margin: 0;
+    }
+    .round-overview-wide .round-overview-stocks { grid-auto-rows: auto; }
+    .round-overview-wide .round-overview-suspension { line-height: 1.2; }
+    .player-round-end .round-overview-wide .stock-result {
+        padding: 0.25rem !important;
+        line-height: 1.2;
+    }
+    .player-round-end .round-overview-wide .stock-result :is(p, h2) { margin: 0; line-height: inherit; }
+    .player-round-end .round-overview-wide .stock-result h2 { font-size: 1.25rem; }
+    .round-overview-wide .round-overview-players article { padding: 0.4rem 0.2rem !important; }
+    .round-overview-wide .round-overview-players :is(h3, h4, p) { line-height: 1.2; }
 }
 
 @media (min-width: 992px) and (min-height: 360px) and (max-height: 439.98px) and (hover: hover) and (pointer: fine) {

@@ -13,7 +13,7 @@ export function HoldStock({ board, insight }: { board: Board; insight: Insight }
     const own = insight.playerId === board.player._id;
 
     return (
-        <div className="bg-white text-black rounded p-4">
+        <div className="hold-stock-decision bg-white text-black rounded p-4">
             <h2 className="text-black">{own ? "Would you like to suspend a share?" : `Waiting for ${player?.name} to suspend a share`}</h2>
             <Alert message={error} />
             <div className="d-grid gap-2" style={{ gridTemplateColumns: "1fr 1fr 1fr" }}>
