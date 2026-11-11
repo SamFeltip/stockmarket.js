@@ -78,8 +78,15 @@ describe("stock packs", () =>
         await sam.mutation(api.games.start, { code });
         const boards = await Promise.all(clients.map((client) => client.query(api.board.get, { code })));
 
+        const franticStocks = boards[0].stocks.filter((stock) => stock.display);
+        const tvStocks = (await t.query(api.tv.board, { code }))?.stocks;
+
         expect(boards[0].game.prices).toEqual(classic.game.prices.map((price) =>
             ({ ...price, value: price.value * 3 })));
+        expect(franticStocks.map((stock) => stock.key)).toEqual(classic.stocks.filter((stock) =>
+            stock.display).map((stock) => stock.key));
+        expect(tvStocks?.map((stock) => stock.key)).toEqual(franticStocks.map((stock) => stock.key));
+        expect(franticStocks[0].variation).toBe(franticStocks.at(-1)?.variation);
         expect(boards.every((board) => board.insights.length === 12
           && board.insights.filter((card) => card.chanceKind).length >= 2)).toBe(true);
         const catalog = await t.run((context) => context.db.query("gameCatalogs").first());

@@ -108,7 +108,7 @@ npcSuspensionTest("shows and resolves the %s NPC's suspension decision before th
     );
 
     expect(considering.game.suspended).toEqual([]);
-    expect(preview).toContain("Stock valuations, ordered by volatility");
+    expect(preview).toContain("aria-label=\"Stock valuations\"");
     expect(preview).not.toContain("suspension-holder-avatars");
     expect(preview).not.toContain("type=\"radio\"");
 

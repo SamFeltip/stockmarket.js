@@ -136,8 +136,7 @@ export function ShareSuspended({ board, card, own = false, spectator = false, bu
     const [confirmSkip, setConfirmSkip] = useState(false);
     const owner = board.players.find((player) => player._id === card.playerId);
     const showPreview = own || spectator || owner?.kind === "npc";
-    const stocks = board.stocks.filter((stock) => stock.display)
-        .toSorted((a, b) => (a.variation ?? 0) - (b.variation ?? 0));
+    const stocks = board.stocks.filter((stock) => stock.display);
     const preview = previewRound(board, board.insights, stocks.map((stock) => stock.key));
 
     return (
@@ -159,7 +158,7 @@ export function ShareSuspended({ board, card, own = false, spectator = false, bu
                 )}
             </div>
             {showPreview && (
-                <div className="suspension-stocks" role={own ? "radiogroup" : "group"} aria-label="Stock valuations, ordered by volatility">
+                <div className="suspension-stocks" role={own ? "radiogroup" : "group"} aria-label="Stock valuations">
                     {stocks.map((stock) => (
                         <SuspensionStock
                             key={stock.key}
