@@ -72,7 +72,7 @@ export function SpectatorScreen({ board }: { board: Board })
                         void run(() => nextSpectator({ code: game.code, expectedPeriod: game.currentPeriod }));
                     }}
                 />
-                <PlayAnimation key={`actions-${game.currentPeriod}`} board={display} />
+                <PlayAnimation key={`actions-${game.code}`} board={display} />
             </>
         );
     }
@@ -127,7 +127,7 @@ export function SpectatorScreen({ board }: { board: Board })
                     <span>Tab to navigate · Enter to select</span>
                 </footer>
             </main>
-            <PlayAnimation key={`actions-${game.currentPeriod}`} board={display} />
+            <PlayAnimation key={`actions-${game.code}`} board={display} />
         </>
     );
 }
