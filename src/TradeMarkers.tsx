@@ -65,7 +65,7 @@ export function TradeStack({ trades, x, y, layout }: {
     const { size, stride, levels } = layout;
 
     return (
-        <g data-trade-column="" data-trade-period={trades[0].period + 1}>
+        <g data-trade-column="" data-trade-period={trades[0].period + 1} data-trade-round={trades[0].bargainRound}>
             <title>{trades.map((trade) => tradeLabel(trade)).join("\n")}</title>
             {([true, false] as const).map((buy) =>
             {

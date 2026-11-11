@@ -54,7 +54,7 @@ describe("Stock history and investors", () =>
 
         for (let turn = 1; turn < 12; turn++)
         {
-            const quantity = turn === 1 ? 1000 : (turn === 4 ? -1000 : 0);
+            const quantity = turn === 2 ? 1000 : (turn === 8 ? -1000 : 0);
 
             await clients[turn % 4].mutation(api.trading.play, { code: "test", expectedTurn: turn, expectedPeriod: 0,
                 ...(quantity ? { stockKey: 8, quantity } : {}) });
@@ -65,8 +65,8 @@ describe("Stock history and investors", () =>
         expect(closed.game.priceHistory).toEqual(initial.game.priceHistory);
         const trade = { stockKey: 8, period: 0, bargainRound: 1, title: closed.user.name,
             imageRoot: closed.user.profileRoot, quantity: 1000 };
-        const otherBuy = { ...trade, title: "bob" };
-        const sale = { ...trade, bargainRound: 2, quantity: -1000 };
+        const otherBuy = { ...trade, title: "pat" };
+        const sale = { ...trade, bargainRound: 3, quantity: -1000 };
 
         expect(closed.trades).toEqual([trade, otherBuy, sale]);
         expect((await sam.query(api.tv.board, { code: "test" }))?.reveal?.trades).toEqual(closed.trades);
@@ -85,7 +85,8 @@ describe("Stock history and investors", () =>
         const width = 1 / (points.length - 1);
 
         expect(points.filter((point) => point.trades)).toEqual([
-            { round: width, value: 2.5, trades: [trade, otherBuy, sale] },
+            { round: width, value: 2.5, trades: [trade, otherBuy] },
+            { round: 2 * width, value: 2.5, trades: [sale] },
         ]);
         expect(points.map((point) => point.round)).toEqual(points.map((_, index) => index / (points.length - 1)));
 
