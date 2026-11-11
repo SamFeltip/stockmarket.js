@@ -1,41 +1,18 @@
 import { techRoundsPerBlock } from "../shared/packs";
 import type { Board } from "./display-types";
 
-export function chartRoundAxis(game: Pick<Board["game"], "pack" | "periodCount" | "currentPeriod">)
+export function chartRoundCount(game: Pick<Board["game"], "pack" | "currentPeriod" | "periodCount">)
 {
-    const totalRounds = game.periodCount + 1;
-    const tech = game.pack === "tech";
-    const roundCount = tech ? Math.min(totalRounds,
-        Math.ceil((game.currentPeriod + 1) / techRoundsPerBlock) * techRoundsPerBlock) : totalRounds;
-    const tickStep = tech ? Math.ceil(roundCount / 6) : 1;
-    const ticks = Array.from({ length: Math.floor(roundCount / tickStep) + 1 }, (_, tick) => tick * tickStep);
+    const total = game.periodCount + 1;
 
-    return { roundCount, tickStep, ticks };
-}
-
-export function priceSeries(game: Pick<Board["game"], "priceHistory" | "currentPeriod" | "prices" | "periodCount">,
-    stockKey: number, lastRound = game.periodCount + 1)
-{
-    const history = game.priceHistory ?? [{ period: game.currentPeriod, prices: game.prices }];
-
-    return Array.from({ length: lastRound + 1 }, (_, round) =>
-    {
-        const snapshot = history.find((item) => item.period === round);
-        const steps = snapshot?.steps?.find((item) => item.stockKey === stockKey);
-        if (steps && steps.count > 0)
-        {
-            return steps.values.map((value, index) => ({
-                round: round - 1 + (index + 1) / steps.count, value,
-            }));
-        }
-
-        return [{ round, value: snapshot?.prices.find((price) => price.stockKey === stockKey)?.value ?? null }];
-    }).flat();
+    return game.pack === "tech" ? Math.min(total,
+        Math.ceil((game.currentPeriod + 1) / techRoundsPerBlock) * techRoundsPerBlock) : total;
 }
 
 export interface ChartTrade {
     stockKey: number;
     period: number;
+    bargainRound?: number;
     title: string;
     imageRoot: string;
     quantity: number;
@@ -44,46 +21,68 @@ export interface ChartTrade {
 export interface ChartPoint {
     round: number;
     value: number | null;
-    trade?: ChartTrade;
+    trades?: ChartTrade[];
+}
+
+export function priceSeries(game: Pick<Board["game"], "priceHistory" | "currentPeriod" | "prices" | "periodCount">,
+    stockKey: number, tradesByPeriod: ReadonlyMap<number, ChartTrade[][]> = new Map(),
+    lastRound = game.periodCount + 1): ChartPoint[]
+{
+    const history = game.priceHistory ?? [{ period: game.currentPeriod, prices: game.prices }];
+
+    return Array.from({ length: lastRound + 1 }, (_, round) =>
+    {
+        const snapshot = history.find((item) => item.period === round);
+        const steps = snapshot?.steps?.find((item) => item.stockKey === stockKey);
+        const period = round - 1;
+        const groups = tradesByPeriod.get(period) ?? [];
+        const opening = groups.length > 0 ? history.find((item) => item.period === period)?.prices
+            .find((price) => price.stockKey === stockKey)?.value : undefined;
+        const tradeColumns = opening === undefined ? 0 : groups.length;
+        const count = (steps?.count || 1) + tradeColumns;
+        // Every occupied trade round and every insight gets one slot.
+        const points: ChartPoint[] = opening === undefined ? [] : groups.map((trades, index) => ({
+            round: period + (index + 1) / count, value: opening, trades,
+        }));
+        if (steps && steps.count > 0)
+        {
+            points.push(...steps.values.map((value, index) => ({
+                round: period + (tradeColumns + index + 1) / count, value,
+            })));
+        }
+        else
+        {
+            points.push({ round, value: snapshot?.prices.find((price) => price.stockKey === stockKey)?.value ?? null });
+        }
+
+        return points;
+    }).flat();
 }
 
 export function chartSeries(game: Board["game"], stockKey: number, trades: ChartTrade[]): ChartPoint[]
 {
-    const prices = priceSeries(game, stockKey, chartRoundAxis(game).roundCount);
-    const stockTrades = trades.filter((trade) => trade.stockKey === stockKey && trade.period >= 0
-      && trade.period <= game.currentPeriod);
-    const markers = new Map<number, ChartTrade[]>();
-    for (const trade of stockTrades)
+    const completedPeriods = game.currentPeriod + Number(game.status === "finished");
+    const tradesByPeriod = new Map<number, ChartTrade[][]>();
+    for (const trade of trades)
     {
-        const periodTrades = markers.get(trade.period) ?? [];
-
-        periodTrades.push(trade);
-        markers.set(trade.period, periodTrades);
-    }
-
-    const points: ChartPoint[] = prices.map((point) =>
-    {
-        const period = Math.ceil(point.round) - 1;
-        if (point.round % 1 === 0 || !markers.has(period))
+        if (trade.stockKey !== stockKey || trade.period < 0 || trade.period >= completedPeriods)
         {
-            return point;
+            continue;
         }
 
-        // Trades happen at the opening price before any insights are revealed.
-        return { ...point, round: period + 0.5 + (point.round - period) / 2 };
-    });
-    const history = game.priceHistory ?? [{ period: game.currentPeriod, prices: game.prices }];
-    for (const [period, events] of markers)
-    {
-        const opening = history.find((snapshot) => snapshot.period === period)?.prices
-            .find((price) => price.stockKey === stockKey)?.value;
-        if (opening !== undefined)
+        const groups = tradesByPeriod.get(trade.period) ?? [];
+        const round = groups.find((group) => group[0].bargainRound === trade.bargainRound);
+        if (round)
         {
-            points.push(...events.map((trade, index) => ({
-                round: period + (index + 1) / (2 * (events.length + 1)), value: opening, trade,
-            })));
+            round.push(trade);
         }
+        else
+        {
+            groups.push([trade]);
+        }
+
+        tradesByPeriod.set(trade.period, groups);
     }
 
-    return points.toSorted((a, b) => a.round - b.round);
+    return priceSeries(game, stockKey, tradesByPeriod, chartRoundCount(game));
 }

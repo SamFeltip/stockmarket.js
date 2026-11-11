@@ -21,6 +21,7 @@ export function DebentureModal({ board, insightId, used, onActivate }: {
 
         return stock ? [{ ...offer, stock }] : [];
     });
+    const tech = board.game.pack === "tech";
     const selected = offers.find((offer) => offer.stockKey === stockKey && !offer.unavailableReason);
     const myTurn = board.game.status === "playing" && board.game.currentPlayerId === board.player._id;
     const id = `chance-card-${insightId}`;
@@ -41,11 +42,11 @@ export function DebentureModal({ board, insightId, used, onActivate }: {
             <div className="modal-body loan-detail debenture-detail d-grid gap-3">
                 <h2 className="text-black mb-0">Debenture</h2>
                 <p>
-                    Choose one bankrupt company and sell all your stocks at the opening price
-                    from the start of the game.
+                    {tech ? "If a stock you already held drops by 10% or more in one round, sell at its price before the drop."
+                        : "Choose one bankrupt company and sell all your stocks at the opening price from the start of the game."}
                 </p>
-                <p>Single use. Stays in your hand for 2 trading periods.</p>
-                <div className="debenture-stock-list" role="radiogroup" aria-label="Bankrupt stocks you own">
+                <p>{tech ? "Single use. Stays in your hand for 2 trading rounds." : "Single use. Stays in your hand for 2 trading periods."}</p>
+                <div className="debenture-stock-list" role="radiogroup" aria-label={tech ? "Eligible stocks you own" : "Bankrupt stocks you own"}>
                     {offers.length > 0 ? offers.map((offer) => (
                         <DebentureStockChoice
                             key={offer.stockKey}
@@ -55,7 +56,7 @@ export function DebentureModal({ board, insightId, used, onActivate }: {
                             name={`${id}-stock`}
                             onSelect={() => setStockKey(offer.stockKey)}
                         />
-                    )) : <div className="debenture-empty">no bankrupt stocks to sell</div>}
+                    )) : <div className="debenture-empty">{tech ? "No eligible stocks to sell" : "no bankrupt stocks to sell"}</div>}
                 </div>
                 {offers.some((offer) => !offer.unavailableReason) && (
                     <h3 className="mb-0" aria-live="polite">

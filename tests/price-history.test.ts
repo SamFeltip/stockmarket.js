@@ -54,20 +54,23 @@ describe("Stock history and investors", () =>
 
         for (let turn = 1; turn < 12; turn++)
         {
-            await clients[turn % 4].mutation(api.trading.play, { code: "test", expectedTurn: turn, expectedPeriod: 0 });
+            const quantity = turn === 2 ? 1000 : (turn === 8 ? -1000 : 0);
+
+            await clients[turn % 4].mutation(api.trading.play, { code: "test", expectedTurn: turn, expectedPeriod: 0,
+                ...(quantity ? { stockKey: 8, quantity } : {}) });
         }
 
         const closed = await sam.query(api.board.get, { code: "test" });
 
         expect(closed.game.priceHistory).toEqual(initial.game.priceHistory);
-        const trade = { stockKey: 8, period: 0, title: closed.user.name,
+        const trade = { stockKey: 8, period: 0, bargainRound: 1, title: closed.user.name,
             imageRoot: closed.user.profileRoot, quantity: 1000 };
+        const otherBuy = { ...trade, title: "pat" };
+        const sale = { ...trade, bargainRound: 3, quantity: -1000 };
 
-        expect(closed.trades).toEqual([trade]);
-        expect((await sam.query(api.tv.board, { code: "test" }))?.reveal?.trades).toEqual([trade]);
-        expect(chartSeries(closed.game, 8, closed.trades).filter((point) => point.value !== null)).toEqual([
-            { round: 0, value: 2.5 }, { round: 0.25, value: 2.5, trade },
-        ]);
+        expect(closed.trades).toEqual([trade, otherBuy, sale]);
+        expect((await sam.query(api.tv.board, { code: "test" }))?.reveal?.trades).toEqual(closed.trades);
+        expect(chartSeries(closed.game, 8, closed.trades)).toEqual(priceSeries(closed.game, 8));
         await skipDealtSuspensions(sam, "test");
         await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
         const settled = await bob.query(api.board.get, { code: "test" });
@@ -76,6 +79,16 @@ describe("Stock history and investors", () =>
             { period: 0, prices: initial.game.prices },
             expect.objectContaining({ period: 1, prices: settled.game.prices }),
         ]);
+
+        const points = chartSeries(settled.game, 8, [...settled.trades, { ...trade, period: 1 }])
+            .filter((point) => point.round <= 1);
+        const width = 1 / (points.length - 1);
+
+        expect(points.filter((point) => point.trades)).toEqual([
+            { round: width, value: 2.5, trades: [trade, otherBuy] },
+            { round: 2 * width, value: 2.5, trades: [sale] },
+        ]);
+        expect(points.map((point) => point.round)).toEqual(points.map((_, index) => index / (points.length - 1)));
 
         for (const price of settled.game.prices)
         {

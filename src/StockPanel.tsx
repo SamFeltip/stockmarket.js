@@ -16,22 +16,15 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
         .find((item) => item.stockKey === stock.key)?.value ?? stock.startingValue;
     const priceChange = Math.round((price - startingPrice) * 100) / 100;
     const held = player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0;
-    const tech = game.pack === "tech";
     const ownInsights = insights.filter((insight) => insight.stockKey === stock.key);
     const value = ownInsights.reduce((sum, insight) => sum + insight.value, 0);
     const available = sharesAvailable(players, stock.key);
-    const stockInfo = [[money(available), "Shares available"]];
-    if (!tech)
-    {
-        stockInfo.unshift([`${stock.variation}/6`, "Volatility"]);
-    }
-
     const myTurn = game.currentPlayerId === board.player._id;
 
     return (
         <>
             <div id="game-stock-info" className={`flex-fill bg-white text-black rounded-bottom ${myTurn ? "" : "watching"}`}>
-                <div className={`stock-panel-sections${tech ? " stock-panel-forecasts" : ""}`}>
+                <div className="stock-panel-sections">
                     <section id="stocks" className="stock-holding" aria-label={`Your ${stock.name} shares`}>
                         <div className="stock-mobile-price"><StockPreview board={board} stock={stock} large /></div>
                         <div className="stock-holding-summary">
@@ -62,16 +55,15 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
                     </section>
                     <div id="insights" className="d-grid gap-2">
                         <div className="d-flex justify-content-between">
-                            <h4 className="text-black">{tech ? "Your Forecasts" : "Your Insights"}</h4>
-                            {!tech && <Change value={value} button />}
+                            <h4 className="text-black">Your Insights</h4>
+                            <Change value={value} button />
                         </div>
-                        {ownInsights.length === 0 && tech ? <p>No forecasts for this stock in this block.</p>
-                            : <Insights insights={ownInsights} stocks={stocks} />}
+                        <Insights insights={ownInsights} stocks={stocks} />
                     </div>
                     <div id="stock-info" className="d-flex flex-column gap-2">
                         <h4 className="text-black">Info</h4>
                         <div className="stock-info-cards">
-                            {stockInfo.map(([number, title]) => (
+                            {[[`${stock.variation}/6`, "Volatility"], [money(available), "Shares available"]].map(([number, title]) => (
                                 <div className="card flex-fill" key={title}>
                                     <div className="card-body text-center">
                                         <p>{number}</p>

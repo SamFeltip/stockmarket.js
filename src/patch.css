@@ -434,7 +434,6 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 
 /* On narrow panels, details scroll independently of the anchored trade actions. */
 .stock-panel-sections { grid-area: body; display: grid; min-width: 0; min-height: 0; overflow: auto; align-content: start; gap: clamp(0.75rem, 2vh, 1.5rem); grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(5, max-content); grid-template-areas: "stocks" "investors" "price-chart" "insights" "stock-info"; }
-.stock-panel-forecasts { grid-template-areas: "stocks" "insights" "investors" "price-chart" "stock-info"; }
 .stock-panel-sections > * { min-width: 0; min-height: 0; }
 #game-stock-info, #game-stock-info.watching { min-height: 0; grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: "body body" "actions actions"; }
 #game-stock-info.watching { grid-template-rows: minmax(0, 1fr); grid-template-areas: "body body"; }

@@ -23,8 +23,8 @@ export const get = query({
             .map((stock) => ({ ...stock,
                 variation: game.pack === "frantic" ? stock.variation
                     : stockCatalog.find((item) => item.key === stock.key)?.variation ?? stock.variation }))
-            .toSorted((a, b) => a.variation - b.variation);
-        const allInsights = game.pack === "tech" ? [] : await roundInsights(context, game);
+            .toSorted((a, b) => game.pack === "tech" ? 0 : a.variation - b.variation);
+        const allInsights = await roundInsights(context, game);
         const retained = (await context.db.query("playerInsights")
             .withIndex("by_player_period", (q) => q.eq("playerId", player._id)).collect())
             .filter((card) => card.chanceKind === "debenture" && card.period < game.currentPeriod
@@ -49,12 +49,12 @@ export const get = query({
         const ranking = [...players].toSorted((a, b) => b.netWorth - a.netWorth);
         const [feed, trades] = await Promise.all([
             context.db.query("feed").withIndex("by_game", (q) => q.eq("gameId", game._id)).order("desc").take(100),
-            tradeHistory(context, game._id),
+            tradeHistory(context, game._id, seats.length),
         ]);
 
         const insights: SettlementCard[] = reveal
             ? settlementInsights(game, allInsights, seats, stocks).concat(retained)
-            : allInsights.filter((insight) => insight.playerId === player._id).concat(retained,
+            : allInsights.filter((insight) => insight.playerId === player._id && !insight.forecast).concat(retained,
                 await privateForecasts(readEngine(context), game, player._id));
 
         return {

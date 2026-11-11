@@ -8,17 +8,21 @@ import { newPlayEvents } from "./play-events";
 export function PlayAnimation({ board, preview = false }: { board: Board; preview?: boolean })
 {
     const newest = board.feed[0];
+    const revealing = board.game.status === "closed" || board.game.status === "special_insights";
     const [state, setState] = useState(() => ({ id: newest?._id, at: newest?._creationTime ?? -Infinity,
         queue: preview && newest ? [newest] : [] as Board["feed"] }));
-    if (newest?._id !== state.id)
+    if (newest?._id !== state.id || (revealing && state.queue.length > 1))
     {
+        const queue = [...state.queue, ...newPlayEvents(board, state.id, state.at)];
+
         setState({ id: newest?._id, at: newest?._creationTime ?? -Infinity,
-            queue: [...state.queue, ...newPlayEvents(board, state.id, state.at)] });
+            queue: revealing ? queue.slice(-1) : queue });
     }
 
     const active = state.queue[0];
 
     const activeId = active?._id;
+    const expiresAt = revealing && active ? active._creationTime + actionAnimationMs : undefined;
 
     useEffect(() =>
     {
@@ -30,10 +34,10 @@ export function PlayAnimation({ board, preview = false }: { board: Board; previe
         const timer = globalThis.setTimeout(() =>
         {
             setState((old) => old.queue[0]?._id === activeId ? { ...old, queue: old.queue.slice(1) } : old);
-        }, actionAnimationMs);
+        }, expiresAt === undefined ? actionAnimationMs : Math.max(0, expiresAt - Date.now()));
 
         return () => globalThis.clearTimeout(timer);
-    }, [activeId]);
+    }, [activeId, expiresAt]);
 
     if (!active)
     {

@@ -10,12 +10,11 @@ export function StockPreview({ board, stock, large = false, active = false }: {
 })
 {
     const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
-    const tech = board.game.pack === "tech";
     const value = board.insights.filter((insight) => insight.stockKey === stock.key)
         .reduce((sum, insight) => sum + insight.value, 0);
     if (large)
     {
-        return <TradeStockSummary stock={stock} price={price} detail={tech ? undefined : <Change value={value} />} />;
+        return <TradeStockSummary stock={stock} price={price} detail={<Change value={value} />} />;
     }
 
     return (
@@ -36,7 +35,7 @@ export function StockPreview({ board, stock, large = false, active = false }: {
                     £
                     {price.toFixed(2)}
                 </p>
-                {!tech && <Change value={value} />}
+                <Change value={value} />
             </div>
         </div>
     );

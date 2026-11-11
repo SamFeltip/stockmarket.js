@@ -19,6 +19,7 @@ export function RightsIssueModal({ board, insightId, used, onActivate }: {
     const myTurn = board.game.status === "playing" && !board.game.rightsIssue
       && board.game.currentPlayerId === board.player._id;
     const frantic = board.game.pack === "frantic";
+    const tech = board.game.pack === "tech";
     const stocks = board.stocks.filter((stock) => stock.display && (frantic || board.players.some((player) =>
         player.holdings.some((holding) => holding.stockKey === stock.key && holding.quantity > 0))));
     const selectedStock = stocks.find((stock) => stock.key === selected);
@@ -40,7 +41,8 @@ export function RightsIssueModal({ board, insightId, used, onActivate }: {
                 <h2 className="text-black mb-0">Rights Issue</h2>
                 <p>
                     {frantic ? "Buy one extra share for each share you own at £1. The cardholder can buy at least 1,000."
-                        : "buy one extra share for every two you own at £1"}
+                        : (tech ? "Buy one extra share for every two you own at 20% off the market price."
+                            : "buy one extra share for every two you own at £1")}
                 </p>
                 <p>trading pauses while stakeholders purchase stock</p>
                 <div className="debenture-stock-list" role="radiogroup" aria-label="Rights Issue company">

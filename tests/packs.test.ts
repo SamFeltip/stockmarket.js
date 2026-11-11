@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { api } from "../convex/_generated/api";
 import { chooseTechStart, techPrices } from "../../stockmarket-shared/src/engine/techMarket";
 import { packRounds, techDefaultPeriods } from "../shared/packs";
-import { setup } from "./game-setup";
+import { setup, skipDealtSuspensions } from "./game-setup";
 import { buildNpcObservation } from "../convex/npc/observation";
 import { estimate } from "../../stockmarket-shared/src/packages/npc-engine/src/estimate";
 
@@ -26,7 +26,7 @@ describe("stock packs", () =>
         await expect(sam.mutation(api.games.setLength, { code, periodCount: 18 })).rejects.toThrow("Invalid game length");
         await sam.mutation(api.games.setLength, { code, periodCount: 17 });
         expect((await sam.query(api.board.get, { code })).game.periodCount).toBe(215);
-        expect(tech.stocks.map((stock) => stock.name)).toEqual(["ASML", "Facebook", "Nvidia", "Alibaba", "Apple", "Netflix"]);
+        expect(tech.stocks.filter((stock) => stock.display).map((stock) => stock.name)).toEqual(["ASML", "Facebook", "Nvidia", "Alibaba", "Apple", "Netflix"]);
         expect(tech.players.every((player) => player.cash === 3_000_000 && player.holdings.length === 6)).toBe(true);
         expect((await t.query(api.tv.board, { code }))?.game.pack).toBe("tech");
         await sam.mutation(api.games.setPack, { code, pack: "classic" });
@@ -64,7 +64,9 @@ describe("stock packs", () =>
         expect(game?.techStart).toBeTypeOf("number");
         expect(game?.prices).toEqual(techPrices(game!.techStart!, 0));
         expect(game?.priceHistory).toEqual([{ period: 0, prices: game?.prices }]);
-        expect(playing.insights).toHaveLength(12);
+        expect(playing.insights.filter((card) => card.forecast)).toHaveLength(12);
+        expect(playing.insights.filter((card) => card.chanceKind)).toHaveLength(1);
+        expect(playing.insights.filter((card) => card.stockKey === -1)).toHaveLength(1);
     });
 
     it("deals every Frantic player extra chance cards and equalizes Trusthouse and Natwest volatility", async () =>
@@ -109,9 +111,10 @@ describe("stock packs", () =>
 
         const boards = await Promise.all(clients.map((client) => client.query(api.board.get, { code: tvCode })));
 
-        expect(boards.every((board) => board.insights.length === 12
+        expect(boards.every((board) => board.insights.length === 14
           && board.insights.every((card) => card.playerId === board.player._id))).toBe(true);
-        const windows = boards.map((board) => new Set(board.insights.map((card) => card.description)));
+        const windows = boards.map((board) => new Set(board.insights.filter((card) => card.forecast)
+            .map((card) => card.description)));
 
         expect(windows.every((hand) => hand.size === 2)).toBe(true);
         expect(new Set(windows.flatMap((hand) => [...hand])).size).toBe(clients.length * 2);
@@ -129,10 +132,12 @@ describe("stock packs", () =>
             {
                 const reveal = (await t.query(api.tv.board, { code: tvCode }))?.reveal;
 
-                expect(reveal?.insights).toHaveLength(6);
-                expect(reveal?.insights.every((card) => card.description === "Historical market close")).toBe(true);
+                expect(reveal?.insights.filter((card) => card.description === "Historical market close")).toHaveLength(6);
+                expect(reveal?.insights.filter((card) => card.stockKey === -1)).toHaveLength(4);
+                expect(reveal?.insights.some((card) => card.description.includes(" – "))).toBe(false);
             }
 
+            await skipDealtSuspensions(sam, tvCode);
             await t.mutation(api.tv.next, { code: tvCode, token, expectedPeriod });
             const game = await t.run((context) => context.db.get(gameId));
 
@@ -145,7 +150,8 @@ describe("stock packs", () =>
 
         expect(result.game.status).toBe("finished");
         expect(result.game.priceHistory).toHaveLength(145);
-        expect(allForecasts).toHaveLength(12 * 4 * 12);
+        expect(allForecasts.filter((card) => card.forecast)).toHaveLength(12 * 4 * 12);
+        expect(allForecasts.filter((card) => card.chanceKind)).toHaveLength(144 * 4);
     });
 
     it("lets a hard NPC use its own forecasts without sampling opponents' historical cards", async () =>
@@ -165,7 +171,7 @@ describe("stock packs", () =>
             return buildNpcObservation(context, current, npc);
         });
 
-        expect(observation.catalog).toEqual([]);
+        expect(observation.catalog.every((card) => card.stockKey < 0)).toBe(true);
         expect(estimate(observation, true, "tech").map(({ stockKey }) => stockKey)).toEqual([106, 101, 102, 103, 104, 105]);
     });
 

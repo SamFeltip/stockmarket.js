@@ -110,7 +110,7 @@ function ConnectedGame({ code }: { code: string })
         <main className="position-relative overflow-x-hidden d-flex flex-column justify-content-center">
             {board.game.status === "playing" ? <Playing key={board.game.currentPeriod} board={board} />
                 : <RoundEnd key={`${board.game.currentPeriod}-${board.game.status}`} board={board} />}
-            {!board.game.rightsIssue && <PlayAnimation key={`actions-${board.game.currentPeriod}`} board={board} />}
+            {!board.game.rightsIssue && <PlayAnimation key={`actions-${board.game.code}`} board={board} />}
         </main>
     );
 }

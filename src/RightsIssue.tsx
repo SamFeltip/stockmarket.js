@@ -4,7 +4,7 @@ import { SpectatorHeader } from "./SpectatorHeader";
 import { TradeStockSummary } from "./TradeStockSummary";
 import { useState } from "react";
 import type { Board } from "./display-types";
-import { rightsIssueOrder, rightsIssuePrice, rightsPurchaseError, rightsAvailable } from "../shared/rights-issue";
+import { rightsIssueOrder, rightsPriceFor, rightsPurchaseError, rightsAvailable } from "../shared/rights-issue";
 import { floorTradeQuantity } from "../shared/rules";
 import { TradeInputs } from "./TradeInputs";
 import { TradePosition } from "./TradePosition";
@@ -27,6 +27,9 @@ export function RightsIssue({ board, playerId, spectator = false, onDecision }: 
     const own = !spectator && !issue.completed && playerId === current._id;
     const ordered = rightsIssueOrder(board.players, issue.actorPlayerId);
 
+    const marketPrice = board.game.prices.find((item) => item.stockKey === issue.stockKey)?.value ?? 0;
+    const purchasePrice = board.game.pack === "tech" ? `£${rightsPriceFor(board.game.pack, marketPrice).toFixed(2)}` : "£1";
+
     return (
         <>
             {spectator && <RightsIssueSpectatorDesktop board={board} onDecision={onDecision} />}
@@ -43,7 +46,7 @@ export function RightsIssue({ board, playerId, spectator = false, onDecision }: 
                         <header className="suspension-heading">
                             <p>Chance Card</p>
                             <h1>Rights Issue</h1>
-                            {own && <p>{`Optionally buy more ${stock.name} shares at £1 per extra share.`}</p>}
+                            {own && <p>{`Optionally buy more ${stock.name} shares at ${purchasePrice} per extra share.`}</p>}
                         </header>
                         {own ? (
                             <RightsPurchase key={`${issue.insightId}-${issue.index}`} board={board} onDecision={onDecision} />
@@ -117,13 +120,14 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
     const [draft, setDraft] = useState<TradeDraft>({ field: "shares", value: "0" });
     const { run, busy, error } = useAction();
     const available = rightsAvailable(board.players, issue.stockKey);
-    const limit = floorTradeQuantity(Math.min(offer.maximum, player.cash / rightsIssuePrice, available));
-    const { quantity, shares, cash } = resolveTradeDraft(draft, rightsIssuePrice, limit);
-    const reason = rightsPurchaseError(quantity, offer.maximum, player.cash, board.game.pack)
+    const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
+    const issuePrice = rightsPriceFor(board.game.pack, price);
+    const limit = floorTradeQuantity(Math.min(offer.maximum, player.cash / issuePrice, available));
+    const { quantity, shares, cash } = resolveTradeDraft(draft, issuePrice, limit);
+    const reason = rightsPurchaseError(quantity, offer.maximum, player.cash, board.game.pack, issuePrice)
       || (quantity > available ? "There aren't enough shares available. Try fewer shares." : "");
     const valid = !reason && quantity > 0;
     const projected = Number.isSafeInteger(quantity) && quantity >= 0 ? quantity : 0;
-    const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
     const setQuantity = (value: number) => setDraft({ field: "shares", value: String(value) });
 
     return (
@@ -145,11 +149,11 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
         >
             <TradeStockSummary
                 stock={stock}
-                price={rightsIssuePrice}
+                price={issuePrice}
                 priceLabel="Rights Issue price"
                 detail={(
                     <small className="text-secondary">
-                        {`${price >= rightsIssuePrice ? "−" : "+"}£${Math.abs(price - rightsIssuePrice).toFixed(2)}`}
+                        {`${price >= issuePrice ? "−" : "+"}£${Math.abs(price - issuePrice).toFixed(2)}`}
                     </small>
                 )}
             />
@@ -164,12 +168,12 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
                 feedbackId="rights-purchase-feedback"
                 setDraft={setDraft}
                 setQuantity={setQuantity}
-                resolve={(value) => resolveTradeDraft(value, rightsIssuePrice, limit).quantity}
+                resolve={(value) => resolveTradeDraft(value, issuePrice, limit).quantity}
                 increase={(value) => stepShares(value, 1)}
                 decrease={(value) => stepShares(value, -1)}
             >
                 <TradePosition
-                    cash={player.cash - projected}
+                    cash={player.cash - projected * issuePrice}
                     holding={offer.held + projected}
                     buying
                     assignedRoles={board.players.flatMap((seat) => (seat.roles ?? [])
