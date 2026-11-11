@@ -76,6 +76,10 @@
     animation-fill-mode: both;
 }
 
+.round-reveal .game-insight-card {
+    animation: glideInMini 360ms ease-out both;
+}
+
 .game-insight-card.sticky {
     animation-name: glideIn;
     animation-duration: 1s;

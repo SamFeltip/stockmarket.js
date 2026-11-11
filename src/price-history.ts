@@ -61,11 +61,13 @@ export function priceSeries(game: Pick<Board["game"], "priceHistory" | "currentP
 
 export function chartSeries(game: Board["game"], stockKey: number, trades: ChartTrade[]): ChartPoint[]
 {
-    const completedPeriods = game.currentPeriod + Number(game.status === "finished");
+    const revealingStock = game.priceHistory?.some((snapshot) => snapshot.period === game.currentPeriod + 1
+      && snapshot.prices.some((price) => price.stockKey === stockKey));
+    const visiblePeriods = game.currentPeriod + Number(game.status === "finished" || Boolean(revealingStock));
     const tradesByPeriod = new Map<number, ChartTrade[][]>();
     for (const trade of trades)
     {
-        if (trade.stockKey !== stockKey || trade.period < 0 || trade.period >= completedPeriods)
+        if (trade.stockKey !== stockKey || trade.period < 0 || trade.period >= visiblePeriods)
         {
             continue;
         }

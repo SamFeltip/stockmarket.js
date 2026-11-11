@@ -76,7 +76,7 @@
 .round-overview-wide .stock-role-entry p { font-size: 0.75rem; line-height: 1.25; margin: 0; }
 .round-overview-wide .stock-role-footer .role-portrait .investor-photo { width: 1.75rem; height: 1.75rem; }
 .round-overview-wide .stock-role-footer .role-portrait .company-role-badge { width: 0.8rem; height: 0.8rem; top: -0.2rem; left: -0.2rem; }
-.round-overview-wide .round-overview-players,
+.round-overview-wide .round-overview-players { gap: 0.5rem; }
 .round-overview-charts { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.5rem; }
 .round-overview-wide .round-overview-players :is(h3, h4) { font-size: 0.95rem; margin-block: 0.2rem; }
 .round-overview-charts > div {

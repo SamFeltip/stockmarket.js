@@ -15,7 +15,7 @@ const tooltipStyle = {
     fontSize: "0.8rem", maxWidth: "min(12rem, 55vw)", whiteSpace: "normal",
 } as const;
 
-function PeriodBands({ rounds, tickStep }: { rounds: number; tickStep: number })
+function PeriodBands({ rounds }: { rounds: number })
 {
     const plot = usePlotArea();
     if (!plot)
@@ -23,11 +23,11 @@ function PeriodBands({ rounds, tickStep }: { rounds: number; tickStep: number })
         return null;
     }
 
-    const width = plot.width / rounds * tickStep;
+    const width = plot.width / rounds;
 
     return (
         <ZIndexLayer zIndex={-110}>
-            {Array.from({ length: Math.ceil(rounds / (2 * tickStep)) }, (_, index) => (
+            {Array.from({ length: Math.ceil(rounds / 2) }, (_, index) => (
                 <rect key={index} x={plot.x + index * 2 * width} y={plot.y} width={width} height={plot.height} fill="#f3f4f3" />
             ))}
         </ZIndexLayer>
@@ -109,7 +109,8 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
     const known = data.filter((point) => point.value !== null);
     const roundCount = chartRoundCount(game);
     const tickStep = Math.max(1, Math.ceil(roundCount / 10));
-    const ticks = Array.from({ length: Math.floor(roundCount / tickStep) + 1 }, (_, round) => round * tickStep);
+    const ticks = Array.from({ length: Math.ceil(roundCount / tickStep) + 1 }, (_, index) =>
+        Math.min(index * tickStep, roundCount));
     const plotWidth = chartSize.width - priceAxisWidth - chartMargin.right;
     const markers = tradeMarkerLayout(data, plotWidth, chartSize.height, roundCount);
     const tooltipHeight = Math.max(36, chartSize.height - 12);
@@ -152,7 +153,7 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
                     onResize={(width, height) => setChartSize({ width, height })}
                 >
                     <LineChart data={data} margin={chartMargin}>
-                        <PeriodBands rounds={roundCount} tickStep={tickStep} />
+                        <PeriodBands rounds={roundCount} />
                         <CartesianGrid strokeDasharray="2 3" vertical={false} stroke="#b8c1b7" />
                         <XAxis
                             dataKey="round"

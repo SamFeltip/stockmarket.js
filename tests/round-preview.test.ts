@@ -2,7 +2,7 @@ import { skipDealtSuspensions } from "./game-setup";
 import { expect, it } from "vitest";
 import { api } from "../convex/_generated/api";
 import { previewRound, roundProgress } from "../src/round-preview";
-import { priceSeries } from "../src/price-history";
+import { chartSeries, priceSeries } from "../src/price-history";
 import { setup } from "./game-setup";
 
 it("updates revealed wealth and charts before advancing, matching settled stock and currency values", async () =>
@@ -94,4 +94,16 @@ it("adds only revealed card segments and reserves the remaining round width", as
         { round: 2 / 3, value: 3 }, { round: 1, value: 3.25 },
     ]);
     expect(priceSeries(partial.game, 9).filter((point) => point.value !== null)).toHaveLength(1);
+
+    const trade = { stockKey: 8, period: 0, bargainRound: 1, title: "Sam", imageRoot: "", quantity: 1000 };
+    const futureTrade = { ...trade, period: 1 };
+
+    expect(chartSeries(board.game, 8, [trade]).some((point) => point.trades)).toBe(false);
+    expect(chartSeries(partial.game, 8, [trade, futureTrade]).filter((point) => point.value !== null)).toEqual([
+        { round: 0, value: 2.5 }, { round: 0.25, value: 2.5, trades: [trade] }, { round: 0.5, value: 3.5 },
+    ]);
+    expect(chartSeries(complete.game, 8, [trade]).filter((point) => point.value !== null)).toEqual([
+        { round: 0, value: 2.5 }, { round: 0.25, value: 2.5, trades: [trade] },
+        { round: 0.5, value: 3.5 }, { round: 0.75, value: 3 }, { round: 1, value: 3.25 },
+    ]);
 });
