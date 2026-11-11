@@ -98,6 +98,32 @@ describe("stock packs", () =>
         await expect(sam.mutation(api.games.setPack, { code, pack: "classic" })).rejects.toThrow("lobby host");
     });
 
+    it("rejects a Frantic catalog that cannot cover the base hands and reserved chance cards", async () =>
+    {
+        const { t, sam } = await setup();
+
+        await sam.mutation(api.games.setPack, { code, pack: "frantic" });
+        await t.run(async (context) =>
+        {
+            const cards = await context.db.query("insights").collect();
+            const retained = new Set(cards.filter((card) => card.stockKey !== 7 && card.stockKey !== 12)
+                .slice(0, 12).map((card) => card._id));
+            for (const card of cards)
+            {
+                if (!retained.has(card._id))
+                {
+                    await context.db.delete(card._id);
+                }
+            }
+        });
+
+        await expect(sam.mutation(api.games.start, { code })).rejects.toThrow("Not enough insights for all players");
+        const board = await sam.query(api.board.get, { code });
+
+        expect(board.game.status).toBe("waiting");
+        expect(board.insights).toEqual([]);
+    });
+
     it("deals exclusive Tech windows and settles all 144 rounds to cached historical prices", async () =>
     {
         const { t, sam, clients } = await setup();

@@ -1,10 +1,9 @@
 import { packStocks, packStartingCash, validPackLength } from "../../stockmarket-shared/src/engine/packRules";
 import { techTradingDates } from "../../stockmarket-shared/src/engine/techMarket";
-import { packPeriods, packRounds, techDefaultPeriods, type Pack } from "../../stockmarket-shared/src/shared/packs";
+import { packDefaultPeriods, packPeriods, packRounds, type Pack } from "../../stockmarket-shared/src/shared/packs";
 import type { Doc as Document_ } from "./_generated/dataModel";
 import type { MutationCtx as MutationContext } from "./_generated/server";
 import { readEngine } from "./engine";
-import { gameLengths } from "../shared/rules";
 import { fail, seedCatalog } from "./library";
 
 export async function openingMarket(context: MutationContext, pack: Pack | undefined, periodCount: number)
@@ -39,9 +38,9 @@ export async function changeLobbyPack(context: MutationContext, game: Document_<
     }
 
     const wasTech = game.pack === "tech";
-    const standardPeriodCount = wasTech ? game.standardPeriodCount ?? gameLengths[0] - 1 : game.periodCount;
+    const standardPeriodCount = wasTech ? game.standardPeriodCount ?? packDefaultPeriods() - 1 : game.periodCount;
     const techPeriodCount = wasTech ? packPeriods(game.pack, game.periodCount + 1) - 1 : game.techPeriodCount;
-    const periodCount = pack === "tech" ? techPeriodCount ?? techDefaultPeriods - 1 : standardPeriodCount;
+    const periodCount = pack === "tech" ? techPeriodCount ?? packDefaultPeriods(pack) - 1 : standardPeriodCount;
     const market = await openingMarket(context, pack, periodCount);
 
     await context.db.patch(game._id, { ...market, standardPeriodCount, techPeriodCount });

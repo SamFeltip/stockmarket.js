@@ -1,4 +1,3 @@
-import { debentureInHand } from "../shared/debenture";
 import { debentureOffers } from "./game/debenture";
 import { companyRoles } from "../shared/company-roles";
 import { query } from "./_generated/server";
@@ -9,7 +8,7 @@ import { phoneHost, spectatorHost } from "./game/hosting";
 import { publicIdentity } from "./npc/identity";
 import { displayGameStocks, settlementInsights, type SettlementCard } from "../../stockmarket-shared/src/engine/packRules";
 import { readEngine } from "./engine";
-import { privateForecasts } from "../../stockmarket-shared/src/engine/library";
+import { privateForecasts, retainedDebentures } from "../../stockmarket-shared/src/engine/dealing";
 import { publicTradingDates } from "./packSettings";
 
 export const get = query({
@@ -20,10 +19,7 @@ export const get = query({
         const seats = await members(context, game._id);
         const stocks = await displayGameStocks(readEngine(context), game);
         const allInsights = await roundInsights(context, game);
-        const retained = (await context.db.query("playerInsights")
-            .withIndex("by_player_period", (q) => q.eq("playerId", player._id)).collect())
-            .filter((card) => card.chanceKind === "debenture" && card.period < game.currentPeriod
-              && debentureInHand(card, game.currentPeriod));
+        const retained = await retainedDebentures(readEngine(context), game, player._id);
         const debentures = allInsights.some((card) => card.playerId === player._id && card.chanceKind === "debenture"
           && !card.used) || retained.length > 0;
         const claims = debentures ? await debentureOffers(context, game, player) : [];

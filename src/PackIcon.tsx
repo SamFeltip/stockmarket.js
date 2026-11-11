@@ -1,4 +1,5 @@
-import { packs, type Pack } from "../shared/packs";
+import type { Pack } from "../shared/packs";
+import { packPresentation } from "./pack-presentation";
 import { asset } from "./spectator/assets";
 
 export function PackIcon({ pack = "classic" }: { pack?: Pack })
@@ -22,7 +23,7 @@ export function PackIcon({ pack = "classic" }: { pack?: Pack })
             aria-hidden="true"
             focusable="false"
         >
-            <path d={packs[pack].icon} />
+            <path d={packPresentation[pack].icon} />
         </svg>
     );
 }

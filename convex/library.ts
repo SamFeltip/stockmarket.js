@@ -67,11 +67,6 @@ export function roundInsights(context: QueryContext, ...arguments_: Arguments<ty
     return engine.roundInsights(readEngine(context), ...arguments_);
 }
 
-export function deal(context: MutationContext, ...arguments_: Arguments<typeof engine.deal>)
-{
-    return runEngine(context, (runtime) => engine.deal(runtime, ...arguments_));
-}
-
 export function feedItem(context: MutationContext, ...arguments_: Arguments<typeof engine.feedItem>)
 {
     return runEngine(context, (runtime) => engine.feedItem(runtime, ...arguments_));

@@ -1,4 +1,5 @@
-import { packIds, packs, type Pack } from "../shared/packs";
+import { packIds, type Pack } from "../shared/packs";
+import { packPresentation } from "./pack-presentation";
 import { PackIcon } from "./PackIcon";
 import "./pack-control.css";
 
@@ -20,17 +21,17 @@ export function PackControl({ pack = "classic", busy, onChange }: {
                             onClick={() => onChange(id)}
                         >
                             <PackIcon pack={id} />
-                            <span>{packs[id].name}</span>
+                            <span>{packPresentation[id].name}</span>
                         </button>
                     ))}
                 </div>
             ) : (
                 <div className="pack-current bg-dark rounded">
                     <PackIcon pack={pack} />
-                    <strong>{packs[pack].name}</strong>
+                    <strong>{packPresentation[pack].name}</strong>
                 </div>
             )}
-            <p className="pack-summary" aria-live="polite">{packs[pack].summary}</p>
+            <p className="pack-summary" aria-live="polite">{packPresentation[pack].summary}</p>
         </section>
     );
 }

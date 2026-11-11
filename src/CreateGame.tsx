@@ -1,6 +1,5 @@
 import { PackControl } from "./PackControl";
-import { techDefaultPeriods, type Pack } from "../shared/packs";
-import { gameLengths } from "../shared/rules";
+import { packDefaultPeriods, type Pack } from "../shared/packs";
 import { useState } from "react";
 import { GameLengthControl } from "./GameLengthControl";
 import { useMutation } from "convex/react";
@@ -11,8 +10,8 @@ import { LobbyCard } from "./LobbyCard";
 
 export function CreateGame()
 {
-    const [periods, setPeriods] = useState(gameLengths[0]);
-    const [techPeriods, setTechPeriods] = useState(techDefaultPeriods);
+    const [periods, setPeriods] = useState(packDefaultPeriods());
+    const [techPeriods, setTechPeriods] = useState(packDefaultPeriods("tech"));
     const [pack, setPack] = useState<Pack>("classic");
     const selectedPeriods = pack === "tech" ? techPeriods : periods;
     const create = useMutation(api.games.create);

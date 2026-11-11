@@ -1,4 +1,5 @@
-import { packs, type Pack } from "../shared/packs";
+import type { Pack } from "../shared/packs";
+import { packPresentation } from "./pack-presentation";
 import { PackIcon } from "./PackIcon";
 import "./play-style-card.css";
 import { chartRoundCount, priceSeries } from "./price-history";
@@ -119,7 +120,7 @@ export function PlayStyleCard({ pack = "classic" }: { pack?: Pack })
             <PackIcon pack={pack} />
             <div>
                 <h3>Play style</h3>
-                <strong>{packs[pack].name}</strong>
+                <strong>{packPresentation[pack].name}</strong>
             </div>
         </article>
     );

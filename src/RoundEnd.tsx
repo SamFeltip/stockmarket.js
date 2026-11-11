@@ -1,4 +1,4 @@
-import { nextRoundLabel } from "../shared/packs";
+import { nextRoundLabel } from "./pack-presentation";
 import "./round-desktop.css";
 import { pendingSuspensions } from "../shared/suspensions";
 import { ShareSuspended } from "./ShareSuspended";
