@@ -26,7 +26,7 @@ async function tokenHash(token: string)
     return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-// A device is never a player. Its capability authorizes lobby launch only.
+// A device is never a player. Its capability authorizes TV host actions.
 export const create = mutation({
     args: { code: v.string(), periodCount: v.number(), token: v.string(), pack: v.optional(packValidator) },
     handler: async (context, arguments_) =>

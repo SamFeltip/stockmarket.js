@@ -16,7 +16,6 @@ export function SpectatorHeader({ board, paused = false }: { board: HeaderBoard;
     return (
         <header className="spectator-desktop-header" aria-label="Spectator game header">
             <div className="spectator-header-lobby">
-                <img src="/static/imgs/icons/Stock.svg" alt="" />
                 <div>
                     <h2>Spectator view</h2>
                     <p>{`Lobby: ${board.game.code.toUpperCase()}`}</p>

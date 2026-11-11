@@ -1,4 +1,5 @@
 import { packIds, packs, type Pack } from "../shared/packs";
+import { PackIcon } from "./PackIcon";
 import "./pack-control.css";
 
 export function PackControl({ pack = "classic", busy, onChange }: {
@@ -31,25 +32,5 @@ export function PackControl({ pack = "classic", busy, onChange }: {
             )}
             <p className="pack-summary" aria-live="polite">{packs[pack].summary}</p>
         </section>
-    );
-}
-
-function PackIcon({ pack }: { pack: Pack })
-{
-    return (
-        <svg
-            viewBox="0 0 24 24"
-            width="23"
-            height="23"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            focusable="false"
-        >
-            <path d={packs[pack].icon} />
-        </svg>
     );
 }

@@ -110,7 +110,6 @@ export function SpectatorScreen({ board }: { board: Board })
                 <SpectatorHeader board={display} />
                 <header className="game-header legacy-spectator-header">
                     <div className="card card-green spectator-heading">
-                        <img src="/static/imgs/icons/Stock.svg" alt="" />
                         <div>
                             <h2>Spectator view</h2>
                             <p>{`Lobby: ${game.code.toUpperCase()}`}</p>
@@ -129,7 +128,6 @@ export function SpectatorScreen({ board }: { board: Board })
                     <Dashboard board={board} phoneUrl={phoneUrl} />
                     <div className="sidebar">
                         <Feed board={board} />
-                        <div className="spectator-note"><p>Private insights stay on your phone.</p></div>
                         <Link className="btn btn-secondary" to="/">Back</Link>
                     </div>
                 </div>

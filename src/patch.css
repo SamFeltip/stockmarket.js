@@ -559,7 +559,9 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 /* Anchor both animated cards to the same centred stack. */
 .profile-toggle { position: relative; justify-self: center; margin: 5px 0 15px 10px; }
 .profile-toggle > button { position: absolute; inset: 0; width: 60px; height: 60px; }
-.profile-toggle img { top: 0; left: 0; }
+.profile-toggle img, .profile-toggle #show-stocks { top: 0; left: 0; }
+.profile-toggle #show-stocks { display: grid; place-items: center; width: 60px; height: 60px; color: #111; }
+.profile-toggle #show-stocks > .pack-icon { width: 100%; height: 100%; }
 #game-stock-info > .trade-actions { grid-area: actions; display: flex; align-items: center; gap: 0.5rem; align-self: end; }
 .trade-actions > #buy-button, .trade-actions > #sell-button { flex: 1; min-height: 2.75rem; text-transform: uppercase; font-size: 0.9rem; }
 .trade-actions > #pass-button { flex: 0 0 auto; min-height: 2.75rem; font-size: 0.75rem; padding: 0.35rem 0.65rem; }

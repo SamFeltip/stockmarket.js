@@ -1,0 +1,15 @@
+.bottom-row > .play-style-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    color: #111;
+}
+
+.play-style-card > .pack-icon {
+    flex: none;
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.play-style-card > div { min-width: 0; }

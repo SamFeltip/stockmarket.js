@@ -1,4 +1,6 @@
 import { packs, type Pack } from "../shared/packs";
+import { PackIcon } from "./PackIcon";
+import "./play-style-card.css";
 import { priceSeries } from "./price-history";
 import { RolePortrait } from "./RolePortrait";
 import { TradeRoleLabel } from "./TradeRole";
@@ -115,9 +117,12 @@ export function Feed({ board }: { board: Board })
 export function PlayStyleCard({ pack = "classic" }: { pack?: Pack })
 {
     return (
-        <article className="card bg-white">
-            <h3>Play style</h3>
-            <strong>{packs[pack].name}</strong>
+        <article className="card bg-white play-style-card">
+            <PackIcon pack={pack} />
+            <div>
+                <h3>Play style</h3>
+                <strong>{packs[pack].name}</strong>
+            </div>
         </article>
     );
 }
@@ -131,8 +136,10 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
     const stocks = board.game.pack && board.game.pack !== "classic" ? board.stocks : board.stocks.toSorted((a, b) =>
         (volatilityOrder.indexOf(a.key) + 1 || Infinity) - (volatilityOrder.indexOf(b.key) + 1 || Infinity));
     const ranked = board.players.toSorted((a, b) => b.netWorth - a.netWorth);
-    const latest = board.latestPurchase;
     const finished = board.game.status === "finished";
+    const current = board.game.status === "playing" && !board.game.rightsIssue
+        ? board.players.find((player) => player.id === board.game.currentPlayerId)
+        : undefined;
 
     return (
         <div className="dashboard">
@@ -200,11 +207,15 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
                         <p>{money(ranked[0]?.netWorth ?? 0)}</p>
                     </article>
                 )}
-                <article className="latest card">
-                    <h3>Latest purchase</h3>
-                    <strong>{latest ? latest.title : "No purchases yet"}</strong>
-                    <p>{latest ? latest.message : "Purchases appear here as they happen."}</p>
-                </article>
+                {current && (
+                    <article className="current-player card" role="status">
+                        <img src={portrait(current.profileRoot)} alt="" />
+                        <div>
+                            <h3>Current player</h3>
+                            <strong>{current.name}</strong>
+                        </div>
+                    </article>
+                )}
                 {!finished && <PlayStyleCard pack={board.game.pack} />}
             </section>
         </div>

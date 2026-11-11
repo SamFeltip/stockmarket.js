@@ -44,6 +44,33 @@ describe("TV spectator integration", () =>
         await expect(t.mutation(api.tv.start, { code: "tv-night", token })).rejects.toThrow("already started");
     });
 
+    it("lets the controlling TV resize an open lobby before or after players join", async () =>
+    {
+        const t = convexTest(schema, modules);
+        const code = "tv-length";
+
+        await t.mutation(api.tv.create, { code, periodCount: 5, token });
+        await t.mutation(api.tv.setLength, { code, periodCount: 7, token });
+        await expect(t.mutation(api.tv.setLength, { code, periodCount: 9, token: "b".repeat(64) }))
+            .rejects.toThrow("Only the controlling TV");
+        await expect(t.mutation(api.tv.setLength, { code, periodCount: 10, token }))
+            .rejects.toThrow("Invalid game length");
+        expect((await t.query(api.tv.board, { code }))?.game.periodCount).toBe(7);
+
+        const ids = await t.run(async (context) => Promise.all(["Sam", "Alex", "Pat", "Robin"].map((name) =>
+            context.db.insert("users", { name, profileRoot: "" }))));
+        for (const id of ids)
+        {
+            await t.withIdentity({ subject: `${id}|session` }).mutation(api.games.join, { code });
+        }
+
+        await t.mutation(api.tv.setLength, { code, periodCount: 6, token });
+        await t.mutation(api.tv.start, { code, token });
+        await expect(t.mutation(api.tv.setLength, { code, periodCount: 8, token }))
+            .rejects.toThrow("Only the controlling TV");
+        expect((await t.query(api.tv.board, { code }))?.game.periodCount).toBe(6);
+    });
+
     it("reveals cards only after trading closes, while keeping account fields and capabilities private", async () =>
     {
         const { t, sam } = await setup();

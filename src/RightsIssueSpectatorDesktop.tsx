@@ -47,7 +47,6 @@ export function RightsIssueSpectatorDesktop({ board, onDecision }: {
                     />
                     <div className="sidebar">
                         <Feed board={publicBoard} />
-                        <div className="spectator-note"><p>Private insights stay on your phone.</p></div>
                         {!issue.completed && <SpectatorSkip key={`${issue.insightId}-${issue.index}`} onDecision={onDecision} />}
                     </div>
                 </div>
