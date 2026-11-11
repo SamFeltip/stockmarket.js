@@ -118,7 +118,6 @@ export function SpectatorScreen({ board }: { board: Board })
                     <Dashboard board={board} phoneUrl={phoneUrl} />
                     <div className="sidebar">
                         <Feed board={board} />
-                        <div className="spectator-note"><p>Private insights stay on your phone.</p></div>
                         <Link className="btn btn-secondary" to="/">Back</Link>
                     </div>
                 </div>

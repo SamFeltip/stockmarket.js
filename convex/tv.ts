@@ -22,7 +22,7 @@ async function tokenHash(token: string)
     return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-// A device is never a player. Its capability authorizes lobby launch only.
+// A device is never a player. Its capability authorizes TV host actions.
 export const create = mutation({
     args: { code: v.string(), periodCount: v.number(), token: v.string() },
     handler: async (context, arguments_) =>
@@ -56,6 +56,25 @@ export const create = mutation({
         });
 
         return code;
+    },
+});
+
+export const setLength = mutation({
+    args: { code: v.string(), token: v.string(), periodCount: v.number() },
+    handler: async (context, { code, token, periodCount }) =>
+    {
+        const game = await gameByCode(context, code);
+        if (!game.tvTokenHash || await tokenHash(token) !== game.tvTokenHash || game.status !== "waiting")
+        {
+            fail("Only the controlling TV can change the length of an open lobby");
+        }
+
+        if (!validGameLength(periodCount))
+        {
+            fail("Invalid game length");
+        }
+
+        await context.db.patch(game._id, { periodCount });
     },
 });
 

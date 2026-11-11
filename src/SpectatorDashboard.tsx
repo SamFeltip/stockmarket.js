@@ -118,10 +118,12 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
     const stocks = board.stocks.toSorted((a, b) =>
         (volatilityOrder.indexOf(a.key) + 1 || Infinity) - (volatilityOrder.indexOf(b.key) + 1 || Infinity));
     const ranked = board.players.toSorted((a, b) => b.netWorth - a.netWorth);
-    const latest = board.latestPurchase;
     const total = board.players.reduce((sum, player) => sum + player.netWorth, 0);
     const invested = board.players.reduce((sum, player) => sum + player.netWorth - player.cash, 0);
     const finished = board.game.status === "finished";
+    const current = board.game.status === "playing" && !board.game.rightsIssue
+        ? board.players.find((player) => player.id === board.game.currentPlayerId)
+        : undefined;
 
     return (
         <div className="dashboard">
@@ -187,11 +189,15 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
                     <strong>{finished ? ranked[0]?.name ?? "—" : money(total)}</strong>
                     <p>{finished ? money(ranked[0]?.netWorth ?? 0) : `${money(invested)} in shares`}</p>
                 </article>
-                <article className="latest card">
-                    <h3>Latest purchase</h3>
-                    <strong>{latest ? latest.title : "No purchases yet"}</strong>
-                    <p>{latest ? latest.message : "Purchases appear here as they happen."}</p>
-                </article>
+                {current && (
+                    <article className="current-player card" role="status">
+                        <img src={portrait(current.profileRoot)} alt="" />
+                        <div>
+                            <h3>Current player</h3>
+                            <strong>{current.name}</strong>
+                        </div>
+                    </article>
+                )}
             </section>
         </div>
     );
