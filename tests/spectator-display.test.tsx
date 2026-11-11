@@ -65,7 +65,7 @@ describe("TV spectator display parity", () =>
         const playing = (await sam.query(api.tv.board, { code: "test" }))!;
         const html = render(playing);
         for (const text of ["Spectator view", "turn · 1 / 12", "Period 1 / 6", "Stocks", "Player portfolios",
-            "Cash", "Net worth", "Combined wealth", "Latest purchase", "Feed", "Join on your phone",
+            "Cash", "Net worth", "Play style", "Latest purchase", "Feed", "Join on your phone",
             "History appears after each period", "Private insights stay on your phone."])
         {
             expect(html).toContain(text);
@@ -77,6 +77,7 @@ describe("TV spectator display parity", () =>
             expect(html).toContain(stock.name.replaceAll("&", "&amp;"));
         }
 
+        expect(html).toContain("<h3>Play style</h3><strong>Classic</strong>");
         expect(html).not.toContain("End of round");
         expect(websiteBoard(playing).insights).toEqual([]);
         expect(websiteBoard(playing).players).toHaveLength(board.players.length);
