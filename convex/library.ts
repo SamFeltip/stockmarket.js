@@ -80,11 +80,43 @@ export function feedItem(context: MutationContext, ...arguments_: Arguments<type
 export const netWorth = engine.netWorth;
 
 /** Public trades outlive the rolling activity feed used by the interface. */
-export async function tradeHistory(context: QueryContext, gameId: Id<"games">)
+export async function tradeHistory(context: QueryContext, gameId: Id<"games">, seatCount: number)
 {
-    const trades = await context.db.query("feed").withIndex("by_game", (q) => q.eq("gameId", gameId))
+    const feed = await context.db.query("feed").withIndex("by_game", (q) => q.eq("gameId", gameId))
         .filter((q) => q.neq(q.field("quantity"), undefined)).collect();
+    const trades = feed.flatMap(({ stockKey, period, title, imageRoot, quantity, debenturePayout }) =>
+        stockKey !== undefined && quantity ? [{ stockKey, period, title, imageRoot, quantity, debenturePayout }] : []);
+    if (trades.length === 0)
+    {
+        return [];
+    }
 
-    return trades.flatMap(({ stockKey, period, title, imageRoot, quantity }) =>
-        stockKey !== undefined && quantity ? [{ stockKey, period, title, imageRoot, quantity }] : []);
+    const actions = await context.db.query("gameActions")
+        .withIndex("by_game_period_turn", (q) => q.eq("gameId", gameId)).collect();
+    const periods = new Set(trades.map((trade) => trade.period));
+
+    return [...periods].flatMap((period) =>
+    {
+        const events = trades.filter((trade) => trade.period === period);
+        const recorded = actions.filter((entry) => entry.period === period
+          && (entry.action.kind === "buy" || entry.action.kind === "sell" || entry.action.kind === "debenture"));
+        // Keep the original public names and portraits. Older records with incomplete logs
+        // retain their trades without guessing which round they belonged to.
+        const matched = seatCount > 0 && recorded.length === events.length && events.every((trade, index) =>
+        {
+            const { action, turn } = recorded[index];
+            if (!("stockKey" in action) || action.stockKey !== trade.stockKey || turn < 0 || turn >= seatCount * 3)
+            {
+                return false;
+            }
+
+            return action.kind === "debenture" ? trade.debenturePayout !== undefined
+                : trade.debenturePayout === undefined && trade.quantity === (action.kind === "buy" ? 1 : -1) * action.quantity;
+        });
+
+        return events.map(({ stockKey, title, imageRoot, quantity }, index) => ({
+            stockKey, period, title, imageRoot, quantity,
+            bargainRound: matched ? Math.floor(recorded[index].turn / seatCount) + 1 : undefined,
+        }));
+    });
 }

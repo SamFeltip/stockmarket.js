@@ -108,7 +108,8 @@ export const board = query({
         const stocks = catalog.filter((stock) => stock.display);
         const canReveal = game.status === "closed" || game.status === "special_insights";
         const [revealed, trades] = canReveal
-            ? await Promise.all([roundInsights(context, game), tradeHistory(context, game._id)]) : [[], []];
+            ? await Promise.all([roundInsights(context, game), tradeHistory(context, game._id, seats.length)])
+            : [[], []];
         const reveal = canReveal ? {
             period: game.currentPeriod, trades,
             prices: game.prices.map((price) => ({ stockKey: price.stockKey, value: price.value })),

@@ -44,7 +44,7 @@ export const get = query({
         const ranking = [...players].toSorted((a, b) => b.netWorth - a.netWorth);
         const [feed, trades] = await Promise.all([
             context.db.query("feed").withIndex("by_game", (q) => q.eq("gameId", game._id)).order("desc").take(100),
-            tradeHistory(context, game._id),
+            tradeHistory(context, game._id, seats.length),
         ]);
 
         return {

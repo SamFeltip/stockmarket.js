@@ -1,32 +1,37 @@
-import { CartesianGrid, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, usePlotArea, XAxis, YAxis, ZIndexLayer } from "recharts";
+import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, usePlotArea, XAxis, YAxis, ZIndexLayer } from "recharts";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { chartSeries } from "./price-history";
 import type { ChartPoint, ChartTrade } from "./price-history";
 import type { Board, Stock } from "./display-types";
+import { periodLabel, tooltipLabel, tradeLabel, tradeMarkerLayout, TradeStack } from "./TradeMarkers";
 
-const chartMargin = { top: 24, right: 12, bottom: 0, left: 0 };
+const chartMargin = { top: 8, right: 12, bottom: 0, left: 0 };
+const priceAxisWidth = 48;
 const emptyTrades: ChartTrade[] = [];
 const priceLabel = (value: number) => `£${value.toFixed(2)}`;
-const roundLabel = (round: number) => round === 0 ? "Start" : `Round ${Math.ceil(round)}`;
-const tradeLabel = (trade: ChartTrade) =>
-    `${trade.title} ${trade.quantity > 0 ? "bought" : "sold"} ${Math.abs(trade.quantity).toLocaleString("en-GB")} shares`;
-
 const tooltipStyle = {
     background: "white", color: "#17251c", border: "1px solid #adb5aa", padding: "0.4rem",
     fontSize: "0.8rem", maxWidth: "min(12rem, 55vw)", whiteSpace: "normal",
 } as const;
 
-function tooltipLabel(round: number, trade?: ChartTrade)
+function PeriodBands({ rounds }: { rounds: number })
 {
-    return trade ? (
-        <>
-            {roundLabel(round)}
-            <br />
-            <img className="me-1 rounded" src={trade.imageRoot} width={20} height={20} alt="" />
-            {tradeLabel(trade)}
-        </>
-    ) : roundLabel(round);
+    const plot = usePlotArea();
+    if (!plot)
+    {
+        return null;
+    }
+
+    const width = plot.width / rounds;
+
+    return (
+        <ZIndexLayer zIndex={-110}>
+            {Array.from({ length: Math.ceil(rounds / 2) }, (_, index) => (
+                <rect key={index} x={plot.x + index * 2 * width} y={plot.y} width={width} height={plot.height} fill="#f3f4f3" />
+            ))}
+        </ZIndexLayer>
+    );
 }
 
 interface TouchSelection { point: ChartPoint; left: number }
@@ -98,10 +103,14 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
 })
 {
     const chart = useRef<HTMLDivElement>(null);
+    const [chartSize, setChartSize] = useState({ width: 0, height: 0 });
     const [touch, setTouch] = useState<TouchSelection | null>();
     const data = useMemo(() => chartSeries(game, stock.key, trades), [game, stock.key, trades]);
     const known = data.filter((point) => point.value !== null);
     const roundCount = game.periodCount + 1;
+    const plotWidth = chartSize.width - priceAxisWidth - chartMargin.right;
+    const markers = tradeMarkerLayout(data, plotWidth, chartSize.height, roundCount);
+    const tooltipHeight = Math.max(36, chartSize.height - 12);
 
     useEffect(() =>
     {
@@ -123,7 +132,7 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
             <div
                 ref={chart}
                 className="stock-price-chart"
-                aria-label={`${stock.name} price per share by round`}
+                aria-label={`${stock.name} price per share by period`}
                 style={{ position: "relative", touchAction: "pan-y" }}
                 onFocus={() => setTouch(undefined)}
                 onPointerMove={(event) =>
@@ -134,20 +143,14 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
                     }
                 }}
             >
-                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <ResponsiveContainer
+                    width="100%"
+                    height="100%"
+                    minWidth={0}
+                    onResize={(width, height) => setChartSize({ width, height })}
+                >
                     <LineChart data={data} margin={chartMargin}>
-                        {Array.from({ length: roundCount }, (_, period) => period).filter((period) => period % 2 === 0)
-                            .map((period) => (
-                                <ReferenceArea
-                                    key={period}
-                                    x1={period}
-                                    x2={period + 1}
-                                    fill="#f3f4f3"
-                                    fillOpacity={1}
-                                    stroke="none"
-                                    zIndex={-110}
-                                />
-                            ))}
+                        <PeriodBands rounds={roundCount} />
                         <CartesianGrid strokeDasharray="2 3" vertical={false} stroke="#b8c1b7" />
                         <XAxis
                             dataKey="round"
@@ -165,18 +168,20 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
                             tickFormatter={priceLabel}
                             tickLine={false}
                             axisLine={false}
-                            width={48}
+                            width={priceAxisWidth}
+                            padding={markers.padding}
                             tick={{ fontSize: 10 }}
                         />
                         <Tooltip
                             active={touch === undefined ? undefined : false}
                             isAnimationActive={false}
-                            contentStyle={tooltipStyle}
+                            contentStyle={{ ...tooltipStyle, maxHeight: tooltipHeight, overflowY: "auto", overscrollBehavior: "contain" }}
+                            wrapperStyle={{ pointerEvents: "auto" }}
                             labelFormatter={(label) =>
                             {
                                 const round = Number(label);
 
-                                return tooltipLabel(round, data.find((point) => point.round === round)?.trade);
+                                return tooltipLabel(round, data.find((point) => point.round === round)?.trades);
                             }}
                             formatter={(value) => [priceLabel(Number(value)), "Share price"]}
                         />
@@ -193,31 +198,9 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
                                     return null;
                                 }
 
-                                const trade = point?.trade;
-                                if (!trade)
-                                {
-                                    return <circle cx={cx} cy={cy} r={known.length === 1 ? 4 : 2} fill="#56a8f5" />;
-                                }
-
-                                const colour = trade.quantity > 0 ? "#198754" : "#c5283d";
-
-                                return (
-                                    <g>
-                                        <title>{tradeLabel(trade)}</title>
-                                        <image href={trade.imageRoot} x={cx - 8} y={cy - 20} width={16} height={16} />
-                                        <rect
-                                            x={cx - 8}
-                                            y={cy - 20}
-                                            width={16}
-                                            height={16}
-                                            rx={2}
-                                            fill="none"
-                                            stroke={colour}
-                                            strokeWidth={2}
-                                        />
-                                        <path d={`M${cx} ${cy - 4}v4`} stroke={colour} />
-                                    </g>
-                                );
+                                return point?.trades
+                                    ? <TradeStack trades={point.trades} x={cx} y={cy} layout={markers} />
+                                    : <circle cx={cx} cy={cy} r={known.length === 1 ? 4 : 2} fill="#56a8f5" />;
                             }}
                             activeDot={touch === undefined ? { r: 5 } : false}
                             connectNulls={false}
@@ -232,11 +215,12 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
                         className="stock-chart-touch-tooltip"
                         role="status"
                         style={{
-                            ...tooltipStyle, position: "absolute", top: "0.25rem", pointerEvents: "none",
+                            ...tooltipStyle, position: "absolute", top: "0.25rem", maxHeight: tooltipHeight,
+                            overflowY: "auto", overscrollBehavior: "contain", touchAction: "pan-y",
                             left: `clamp(0.25rem, ${touch.left + 8}px, calc(100% - min(12rem, 55vw) - 0.25rem))`,
                         }}
                     >
-                        {tooltipLabel(touch.point.round, touch.point.trade)}
+                        {tooltipLabel(touch.point.round, touch.point.trades)}
                         <div>{`Share price: ${priceLabel(touch.point.value)}`}</div>
                     </div>
                 )}
@@ -247,17 +231,17 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
                     <caption>{`${stock.name} price history`}</caption>
                     <thead>
                         <tr>
-                            <th scope="col">Round</th>
+                            <th scope="col">Period</th>
                             <th scope="col">Price per share</th>
-                            <th scope="col">Trade</th>
+                            <th scope="col">Trades</th>
                         </tr>
                     </thead>
                     <tbody>
                         {known.map((point) => (
                             <tr key={point.round}>
-                                <th scope="row">{roundLabel(point.round)}</th>
+                                <th scope="row">{periodLabel(point.round)}</th>
                                 <td>{priceLabel(point.value ?? 0)}</td>
-                                <td>{point.trade && tradeLabel(point.trade)}</td>
+                                <td>{point.trades?.map((trade) => tradeLabel(trade)).join("; ")}</td>
                             </tr>
                         ))}
                     </tbody>

@@ -1,28 +1,9 @@
 import type { Board } from "./display-types";
 
-export function priceSeries(game: Pick<Board["game"], "priceHistory" | "currentPeriod" | "prices" | "periodCount">,
-    stockKey: number)
-{
-    const history = game.priceHistory ?? [{ period: game.currentPeriod, prices: game.prices }];
-
-    return Array.from({ length: game.periodCount + 2 }, (_, round) =>
-    {
-        const snapshot = history.find((item) => item.period === round);
-        const steps = snapshot?.steps?.find((item) => item.stockKey === stockKey);
-        if (steps && steps.count > 0)
-        {
-            return steps.values.map((value, index) => ({
-                round: round - 1 + (index + 1) / steps.count, value,
-            }));
-        }
-
-        return [{ round, value: snapshot?.prices.find((price) => price.stockKey === stockKey)?.value ?? null }];
-    }).flat();
-}
-
 export interface ChartTrade {
     stockKey: number;
     period: number;
+    bargainRound?: number;
     title: string;
     imageRoot: string;
     quantity: number;
@@ -31,46 +12,58 @@ export interface ChartTrade {
 export interface ChartPoint {
     round: number;
     value: number | null;
-    trade?: ChartTrade;
+    trades?: ChartTrade[];
+}
+
+export function priceSeries(game: Pick<Board["game"], "priceHistory" | "currentPeriod" | "prices" | "periodCount">,
+    stockKey: number, tradesByPeriod: ReadonlyMap<number, ChartTrade[]> = new Map()): ChartPoint[]
+{
+    const history = game.priceHistory ?? [{ period: game.currentPeriod, prices: game.prices }];
+
+    return Array.from({ length: game.periodCount + 2 }, (_, round) =>
+    {
+        const snapshot = history.find((item) => item.period === round);
+        const steps = snapshot?.steps?.find((item) => item.stockKey === stockKey);
+        const period = round - 1;
+        const trades = tradesByPeriod.get(period);
+        const opening = trades && history.find((item) => item.period === period)?.prices
+            .find((price) => price.stockKey === stockKey)?.value;
+        const hasTrades = trades && opening !== undefined;
+        const tradeColumns = hasTrades ? 1 : 0;
+        const count = (steps?.count || 1) + tradeColumns;
+        // Each insight gets one slot. A period with trades uses one extra slot for the whole stack.
+        const points: ChartPoint[] = hasTrades ? [{ round: period + 1 / count, value: opening, trades }] : [];
+        if (steps && steps.count > 0)
+        {
+            points.push(...steps.values.map((value, index) => ({
+                round: period + (tradeColumns + index + 1) / count, value,
+            })));
+        }
+        else
+        {
+            points.push({ round, value: snapshot?.prices.find((price) => price.stockKey === stockKey)?.value ?? null });
+        }
+
+        return points;
+    }).flat();
 }
 
 export function chartSeries(game: Board["game"], stockKey: number, trades: ChartTrade[]): ChartPoint[]
 {
-    const prices = priceSeries(game, stockKey);
-    const stockTrades = trades.filter((trade) => trade.stockKey === stockKey && trade.period >= 0
-      && trade.period <= game.currentPeriod);
-    const markers = new Map<number, ChartTrade[]>();
-    for (const trade of stockTrades)
+    const completedPeriods = game.currentPeriod + Number(game.status === "finished");
+    const tradesByPeriod = new Map<number, ChartTrade[]>();
+    for (const trade of trades)
     {
-        const periodTrades = markers.get(trade.period) ?? [];
-
-        periodTrades.push(trade);
-        markers.set(trade.period, periodTrades);
-    }
-
-    const points: ChartPoint[] = prices.map((point) =>
-    {
-        const period = Math.ceil(point.round) - 1;
-        if (point.round % 1 === 0 || !markers.has(period))
+        if (trade.stockKey !== stockKey || trade.period < 0 || trade.period >= completedPeriods)
         {
-            return point;
+            continue;
         }
 
-        // Trades happen at the opening price before any insights are revealed.
-        return { ...point, round: period + 0.5 + (point.round - period) / 2 };
-    });
-    const history = game.priceHistory ?? [{ period: game.currentPeriod, prices: game.prices }];
-    for (const [period, events] of markers)
-    {
-        const opening = history.find((snapshot) => snapshot.period === period)?.prices
-            .find((price) => price.stockKey === stockKey)?.value;
-        if (opening !== undefined)
-        {
-            points.push(...events.map((trade, index) => ({
-                round: period + (index + 1) / (2 * (events.length + 1)), value: opening, trade,
-            })));
-        }
+        const group = tradesByPeriod.get(trade.period) ?? [];
+
+        group.push(trade);
+        tradesByPeriod.set(trade.period, group);
     }
 
-    return points.toSorted((a, b) => a.round - b.round);
+    return priceSeries(game, stockKey, tradesByPeriod);
 }
