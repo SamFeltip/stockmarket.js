@@ -42,7 +42,7 @@ export function RoundReveal({ board, preview, stock, insights, index }: {
     const after = preview.game.prices.find((price) => price.stockKey === stock.key)?.value ?? before;
 
     return (
-        <div className="round-reveal gap-3 h-100 d-grid">
+        <div className={`round-reveal gap-3 h-100 d-grid${special ? "" : " round-reveal-stock"}`}>
             <div className="p-4 gap-2 rounded d-flex flex-column flex-sm-row justify-content-around align-items-center" style={{ backgroundColor: "#3C5F2F" }}>
                 <div className="game-stock-view d-flex flex-column align-items-center">
                     <img className="w-100 p-3" style={{ maxHeight: 180, objectFit: "contain" }} src={stock.imagePath} alt={stock.name} />

@@ -3,7 +3,7 @@ import "./round-desktop.css";
 import { pendingSuspensions } from "../shared/suspensions";
 import { ShareSuspended } from "./ShareSuspended";
 import { cashStockKey } from "../shared/chance-cards";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Alert, useAction } from "./shared";
@@ -17,6 +17,19 @@ import { useRevealReady } from "./use-reveal-ready";
 import { HoldStock } from "./HoldStock";
 import type { Board } from "./types";
 
+const wideOverviewQuery = "(min-width: 992px) and (pointer: fine), (min-width: 768px) and (min-height: 720px)";
+
+function subscribeToWideOverview(onChange: () => void)
+{
+    const query = matchMedia(wideOverviewQuery);
+
+    query.addEventListener("change", onChange);
+
+    return () => query.removeEventListener("change", onChange);
+}
+
+const isWideOverview = () => matchMedia(wideOverviewQuery).matches;
+
 export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
     board: Board; onBeginSuspensions?: () => Promise<void>;
     onSuspensionDecision?: (insightId: Board["insights"][number]["_id"], stockKey?: number) => Promise<void>;
@@ -29,6 +42,7 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
     const { run, busy, error } = useAction();
     const [step, setStep] = useState(0);
     const [index, setIndex] = useState(0);
+    const wideOverview = useSyncExternalStore(subscribeToWideOverview, isWideOverview, () => false);
     const groups = revealGroups(stocks, insights);
     const activeStock = groups[step];
     const cash = activeStock?.key === cashStockKey;
@@ -93,7 +107,7 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
         const card = suspensions[0];
 
         return (
-            <div className="round-end suspension-round p-4">
+            <div className="round-end suspension-round player-suspension-round p-4">
                 <ShareSuspended
                     key={card._id}
                     board={board}
@@ -125,7 +139,7 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
                     <h1>End of round</h1>
                     {special && <h2>Additional insights</h2>}
                 </div>
-                {reviewed ? <RoundOverview before={board} after={preview} /> : (
+                {reviewed ? <RoundOverview before={board} after={preview} layout={wideOverview ? "wide" : "compact"} /> : (
                     <>
                         <div id="insight-view" className="card card-green p-4 rounded border border-5 border-white">
                             {unresolved ? <HoldStock board={board} insight={unresolved} /> : (activeStock
