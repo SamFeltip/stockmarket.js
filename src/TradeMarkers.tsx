@@ -44,25 +44,31 @@ export function tradeMarkerLayout(data: ChartPoint[], plotWidth: number, height:
         }
     }
 
-    const horizontalLimit = gap === Infinity ? 16 : Math.floor(gap * plotWidth / rounds) - 2;
+    const columnWidth = gap === Infinity ? 18 : gap * plotWidth / rounds;
+    const horizontalLimit = columnWidth - Math.min(2, columnWidth / 4);
     // Leave room for the price movement even when one period has many trades.
     const markerBudget = Math.max(0, (height - 38) * 0.65);
-    const stackHeight = Math.max(maxBuys, maxSells, 1);
-    const verticalLimit = Math.floor(markerBudget / (2 * stackHeight)) - 3;
-    const size = Math.max(1, Math.min(16, horizontalLimit, Math.floor((height - 52) / 2) - 4,
-        Math.max(10, verticalLimit)));
-    const stride = size + 3;
-    const levels = size < 10 ? 1 : Math.max(1, Math.floor(markerBudget / (2 * stride)));
-    const padding = { top: Math.min(levels, maxBuys) * stride, bottom: Math.min(levels, maxSells) * stride };
+    const verticalLimit = markerBudget / Math.max(1, maxBuys + maxSells);
+    const size = Math.max(0, Math.min(16, horizontalLimit, verticalLimit * 0.8));
+    const spacing = Math.min(3, size / 4);
+    const stride = size + spacing;
+    const padding = { top: maxBuys * stride, bottom: maxSells * stride };
 
-    return { size, stride, levels, padding };
+    return { size, spacing, stride, padding };
 }
 
 export function TradeStack({ trades, x, y, layout }: {
     trades: ChartTrade[]; x: number; y: number; layout: ReturnType<typeof tradeMarkerLayout>;
 })
 {
-    const { size, stride, levels } = layout;
+    const { size, spacing, stride } = layout;
+    if (size === 0)
+    {
+        return null;
+    }
+
+    const strokeWidth = Math.min(1, size / 6);
+    const inset = strokeWidth / 2;
 
     return (
         <g data-trade-column="" data-trade-period={trades[0].period + 1} data-trade-round={trades[0].bargainRound}>
@@ -72,31 +78,24 @@ export function TradeStack({ trades, x, y, layout }: {
                 const side = trades.filter((trade) => (trade.quantity > 0) === buy);
                 const colour = buy ? "#198754" : "#c5283d";
 
-                return side.slice(0, levels).map((trade, index) =>
+                return side.map((trade, index) =>
                 {
-                    const remaining = side.length - index;
-                    const compact = size < 10 || (index === levels - 1 && remaining > 1);
                     const left = x - size / 2;
-                    const top = buy ? y - stride * (index + 1) : y + 3 + stride * index;
+                    const top = buy ? y - stride * (index + 1) : y + spacing + stride * index;
 
                     return (
                         <g data-trade-side={buy ? "buy" : "sell"} key={`${buy}:${index}`}>
-                            {!compact && <image href={trade.imageRoot} x={left} y={top} width={size} height={size} />}
+                            <image href={trade.imageRoot} x={left} y={top} width={size} height={size} />
                             <rect
-                                x={left}
-                                y={top}
-                                width={size}
-                                height={size}
-                                rx={2}
-                                fill={compact ? colour : "none"}
+                                x={left + inset}
+                                y={top + inset}
+                                width={size - strokeWidth}
+                                height={size - strokeWidth}
+                                rx={Math.min(2, size / 4)}
+                                fill="none"
                                 stroke={colour}
-                                strokeWidth={1}
+                                strokeWidth={strokeWidth}
                             />
-                            {compact && (
-                                <text x={x} y={top + size * 0.72} textAnchor="middle" fill="white" fontSize={size * 0.7}>
-                                    {index > 0 ? `+${remaining}` : remaining}
-                                </text>
-                            )}
                         </g>
                     );
                 });
