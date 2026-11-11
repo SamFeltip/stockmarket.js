@@ -119,7 +119,7 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
     const available = rightsAvailable(board.players, issue.stockKey);
     const limit = floorTradeQuantity(Math.min(offer.maximum, player.cash / rightsIssuePrice, available));
     const { quantity, shares, cash } = resolveTradeDraft(draft, rightsIssuePrice, limit);
-    const reason = rightsPurchaseError(quantity, offer.maximum, player.cash)
+    const reason = rightsPurchaseError(quantity, offer.maximum, player.cash, board.game.pack)
       || (quantity > available ? "There aren't enough shares available. Try fewer shares." : "");
     const valid = !reason && quantity > 0;
     const projected = Number.isSafeInteger(quantity) && quantity >= 0 ? quantity : 0;

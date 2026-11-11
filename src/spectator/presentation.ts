@@ -13,7 +13,7 @@ export function websiteBoard(board: Board): DisplayBoard
         suspended: reveal?.suspended ?? [], suspensionPeriod: reveal?.suspensionPeriod, priceHistory: board.history },
         stocks: reveal?.stocks ?? board.stocks.map((stock) => ({
             ...stock, display: true, imagePath: stockLogo(stock.key, stock.imagePath),
-            secondaryImagePath: stockLogo(stock.key, stock.imagePath),
+            secondaryImagePath: stockLogo(stock.key, stock.secondaryImagePath),
         })),
         trades: reveal?.trades,
         insights: reveal?.insights ?? [],

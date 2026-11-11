@@ -1,11 +1,24 @@
+import { techRoundsPerBlock } from "../shared/packs";
 import type { Board } from "./display-types";
 
+export function chartRoundAxis(game: Pick<Board["game"], "pack" | "periodCount" | "currentPeriod">)
+{
+    const totalRounds = game.periodCount + 1;
+    const tech = game.pack === "tech";
+    const roundCount = tech ? Math.min(totalRounds,
+        Math.ceil((game.currentPeriod + 1) / techRoundsPerBlock) * techRoundsPerBlock) : totalRounds;
+    const tickStep = tech ? Math.ceil(roundCount / 6) : 1;
+    const ticks = Array.from({ length: Math.floor(roundCount / tickStep) + 1 }, (_, tick) => tick * tickStep);
+
+    return { roundCount, tickStep, ticks };
+}
+
 export function priceSeries(game: Pick<Board["game"], "priceHistory" | "currentPeriod" | "prices" | "periodCount">,
-    stockKey: number)
+    stockKey: number, lastRound = game.periodCount + 1)
 {
     const history = game.priceHistory ?? [{ period: game.currentPeriod, prices: game.prices }];
 
-    return Array.from({ length: game.periodCount + 2 }, (_, round) =>
+    return Array.from({ length: lastRound + 1 }, (_, round) =>
     {
         const snapshot = history.find((item) => item.period === round);
         const steps = snapshot?.steps?.find((item) => item.stockKey === stockKey);
@@ -36,7 +49,7 @@ export interface ChartPoint {
 
 export function chartSeries(game: Board["game"], stockKey: number, trades: ChartTrade[]): ChartPoint[]
 {
-    const prices = priceSeries(game, stockKey);
+    const prices = priceSeries(game, stockKey, chartRoundAxis(game).roundCount);
     const stockTrades = trades.filter((trade) => trade.stockKey === stockKey && trade.period >= 0
       && trade.period <= game.currentPeriod);
     const markers = new Map<number, ChartTrade[]>();

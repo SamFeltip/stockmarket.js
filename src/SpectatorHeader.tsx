@@ -1,8 +1,11 @@
+import type { Pack } from "../shared/packs";
 import { GameMetrics } from "./GameMetrics";
 import "./spectator-header.css";
 
 interface HeaderBoard {
-    game: { code: string; turn?: number; currentPlayerId?: string; currentPeriod: number; periodCount: number };
+    game: { code: string; turn?: number; currentPlayerId?: string; currentPeriod: number;
+        periodCount: number; pack?: Pack;
+        tradingDates?: { from: string; to: string } };
     players: { _id: string; name: string }[];
 }
 

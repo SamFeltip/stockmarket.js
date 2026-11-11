@@ -1,5 +1,10 @@
+import { packs, type Pack } from "../shared/packs";
+
+const dateLabel = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+
 export function GameMetrics({ board }: { board: {
-    game: { turn: number; currentPlayerId?: string; currentPeriod: number; periodCount: number };
+    game: { turn: number; currentPlayerId?: string; currentPeriod: number; periodCount: number; pack?: Pack;
+        tradingDates?: { from: string; to: string } };
     players: { _id: string; name: string }[]; player?: { _id: string };
 } })
 {
@@ -29,12 +34,14 @@ export function GameMetrics({ board }: { board: {
                 </div>
             </div>
             <div className="game-metric">
-                <span className="game-metric-label">Period</span>
+                <span className="game-metric-label">{game.pack && game.pack !== "classic" ? `${packs[game.pack].name} period` : "Period"}</span>
                 <div className="game-metric-value">
                     <strong>{game.currentPeriod + 1}</strong>
                     <span>{`of ${game.periodCount + 1}`}</span>
                 </div>
-                <progress aria-label="Period progress" value={game.currentPeriod + 1} max={game.periodCount + 1} />
+                {game.tradingDates ? (
+                    <small className="text-nowrap">{dateLabel.format(new Date(game.tradingDates.to))}</small>
+                ) : <progress aria-label="Period progress" value={game.currentPeriod + 1} max={game.periodCount + 1} />}
             </div>
         </div>
     );

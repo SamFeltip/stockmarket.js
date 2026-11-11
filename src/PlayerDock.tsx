@@ -4,7 +4,7 @@ import type { DebentureActivation } from "./DebentureModal";
 import { GovernmentLoanModal } from "./GovernmentLoanModal";
 import type { LoanActivation } from "./GovernmentLoanModal";
 import { Modal, money } from "./shared";
-import { chanceCards, chanceStockKey, privateCashPercent } from "../shared/chance-cards";
+import { chanceCards, chanceStockKey, loanAmount, privateCashPercent } from "../shared/chance-cards";
 import type { Board } from "./types";
 import "./player-dock.css";
 
@@ -19,8 +19,16 @@ export function PlayerDock({ board, onActivateLoan, onRedeemDebenture, onActivat
         .flatMap((card) =>
         {
             const definition = chanceCards.find((item) => item.kind === card.chanceKind);
+            if (!definition)
+            {
+                return [];
+            }
 
-            return definition ? [{ ...definition, id: card._id, used: Boolean(card.used) }] : [];
+            const franticLoan = definition.kind === "loan" && board.game.pack === "frantic";
+
+            return [{ ...definition, id: card._id, used: Boolean(card.used),
+                effect: franticLoan ? `Collect £${money(loanAmount(board.game.pack))}` : definition.effect,
+                icon: franticLoan ? "£30k" : definition.icon }];
         });
     const granted = cards.filter((card) => !card.used);
     const cashPercent = privateCashPercent(ownCards, board.player._id);
@@ -34,17 +42,19 @@ export function PlayerDock({ board, onActivateLoan, onRedeemDebenture, onActivat
                     {money(board.player.cash)}
                 </strong>
                 <span className="dock-cash-label">cash</span>
-                <div className="dock-cash-insight card text-black text-center" aria-label={`Cash insight: ${cashPercent >= 0 ? "+" : "−"}${Math.abs(cashPercent)}%`}>
-                    <div className={`total-insight text-${cashTone} d-flex justify-content-center align-items-center`}>
-                        {cashPercent !== 0 && (
-                            <picture>
-                                <img className="pe-2" height={16} src={`/static/imgs/icons/stock_${cashPercent > 0 ? "up" : "down"}.svg`} alt={`Cash ${cashPercent > 0 ? "rising" : "falling"}`} />
-                            </picture>
-                        )}
-                        <span>{`${cashPercent >= 0 ? "+" : "−"}${Math.abs(cashPercent)}%`}</span>
+                {board.game.pack !== "tech" && (
+                    <div className="dock-cash-insight card text-black text-center" aria-label={`Cash insight: ${cashPercent >= 0 ? "+" : "−"}${Math.abs(cashPercent)}%`}>
+                        <div className={`total-insight text-${cashTone} d-flex justify-content-center align-items-center`}>
+                            {cashPercent !== 0 && (
+                                <picture>
+                                    <img className="pe-2" height={16} src={`/static/imgs/icons/stock_${cashPercent > 0 ? "up" : "down"}.svg`} alt={`Cash ${cashPercent > 0 ? "rising" : "falling"}`} />
+                                </picture>
+                            )}
+                            <span>{`${cashPercent >= 0 ? "+" : "−"}${Math.abs(cashPercent)}%`}</span>
+                        </div>
+                        <p>Cash insight</p>
                     </div>
-                    <p>Cash insight</p>
-                </div>
+                )}
             </div>
             {granted.length > 0 ? (
                 <div className="dock-powers">
@@ -61,11 +71,13 @@ export function PlayerDock({ board, onActivateLoan, onRedeemDebenture, onActivat
                         ))}
                     </div>
                 </div>
-            ) : (
-                <div className="dock-empty-cards">
-                    <p>No Chance Cards</p>
-                    <p>Chance cards may appear here each round</p>
-                </div>
+            ) : (board.game.pack !== "tech"
+              && (
+                  <div className="dock-empty-cards">
+                      <p>No Chance Cards</p>
+                      <p>Chance cards may appear here each round</p>
+                  </div>
+              )
             )}
             {cards.map((card) =>
             {

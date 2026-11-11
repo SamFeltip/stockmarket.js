@@ -3,7 +3,8 @@ import { mutation } from "../_generated/server";
 import type { MutationCtx as MutationContext } from "../_generated/server";
 import { currentUser, gameByCode, fail, members } from "../library";
 import type { Doc as Document_ } from "../_generated/dataModel";
-import { maximumPlayers, minimumPlayers, startingCash } from "../../shared/rules";
+import { packStartingCash } from "../../../stockmarket-shared/src/engine/packRules";
+import { maximumPlayers, minimumPlayers } from "../../shared/rules";
 import { difficultyValidator, personalityValidator } from "../schema";
 import { createNpcGameConfig, prepareNpcState, roster } from "../../../stockmarket-shared/src/npc";
 import { phoneHost, spectatorHost } from "../game/hosting";
@@ -67,7 +68,7 @@ async function addSeats(
             controller: { kind: "npc", personality },
             npcDifficulty: game.npcDifficulty ?? "medium",
             seatOrder: seatOrder++,
-            cash: startingCash,
+            cash: packStartingCash(game.pack),
             active: true,
             holdings: game.prices.map((price) => ({ stockKey: price.stockKey, quantity: 0 })),
         });

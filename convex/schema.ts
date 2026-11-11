@@ -22,6 +22,10 @@ export const actionValidator = v.union(v.object({ kind: v.literal("pass") }), v.
     kind: v.union(v.literal("buy"), v.literal("sell")), stockKey: v.number(), quantity: v.number(),
 }));
 
+export const packValidator = v.union(v.literal("classic"), v.literal("frantic"), v.literal("tech"), v.literal("crashing"));
+
+const forecast = v.optional(v.object({ from: v.number(), to: v.number() }));
+
 export const chanceKindValidator = v.union(v.literal("rights"), v.literal("hold"), v.literal("loan"), v.literal("debenture"), v.literal("option"));
 
 const pricesValidator = v.array(v.object({ stockKey: v.number(), value: v.number() }));
@@ -42,6 +46,7 @@ export default defineSchema({
         rulesVersion: v.optional(v.number()), rosterRevision: v.optional(v.number()),
         catalogVersion: v.optional(v.string()),
         periodCount: v.number(), currentPeriod: v.number(), turn: v.number(),
+        pack: v.optional(packValidator), techStart: v.optional(v.number()), standardPeriodCount: v.optional(v.number()),
         status: v.union(v.literal("waiting"), v.literal("playing"), v.literal("closed"),
             v.literal("special_insights"), v.literal("finished")),
         prices: v.array(v.object({ stockKey: v.number(), value: v.number() })),
@@ -76,11 +81,11 @@ export default defineSchema({
         gameId: v.id("games"), playerId: v.id("players"), period: v.number(),
         stockKey: v.number(), description: v.string(), value: v.number(), resolved: v.boolean(),
         used: v.optional(v.boolean()), catalogCardId: v.optional(v.string()),
-        chanceKind: v.optional(chanceKindValidator),
+        chanceKind: v.optional(chanceKindValidator), forecast,
     }).index("by_game_period", ["gameId", "period"]).index("by_player_period", ["playerId", "period"]),
     gameCatalogs: defineTable({ gameId: v.id("games"), version: v.string(), cards: v.array(v.object({
         id: v.string(), stockKey: v.number(), value: v.number(), description: v.string(),
-        chanceKind: v.optional(chanceKindValidator),
+        chanceKind: v.optional(chanceKindValidator), forecast,
     })) }).index("by_game", ["gameId"]),
     gameActions: defineTable({ gameId: v.id("games"), period: v.number(), turn: v.number(),
         actorPlayerId: v.id("players"), action: v.union(actionValidator, v.object({

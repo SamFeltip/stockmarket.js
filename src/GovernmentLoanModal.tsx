@@ -1,6 +1,6 @@
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { governmentLoanAmount } from "../shared/chance-cards";
+import { loanAmount } from "../shared/chance-cards";
 import { hideModal } from "./bootstrap";
 import { Alert, Modal, money, useAction } from "./shared";
 import type { Board } from "./types";
@@ -31,7 +31,7 @@ export function GovernmentLoanModal({ board, insightId, used, onActivate }: {
                 <h2 className="text-black mb-0">Government Loan</h2>
                 <div className="government-loan-content">
                     <img src="/static/imgs/icons/cash.svg" alt="" className="government-loan-icon" />
-                    <h3>{`Receive £${money(governmentLoanAmount)}`}</h3>
+                    <h3>{`Receive £${money(loanAmount(board.game.pack))}`}</h3>
                     <p className="government-loan-instructions">
                         You can use this card once.
                         <br />

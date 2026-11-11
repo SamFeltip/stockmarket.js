@@ -1,7 +1,7 @@
 import { CartesianGrid, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, usePlotArea, XAxis, YAxis, ZIndexLayer } from "recharts";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
-import { chartSeries } from "./price-history";
+import { chartRoundAxis, chartSeries } from "./price-history";
 import type { ChartPoint, ChartTrade } from "./price-history";
 import type { Board, Stock } from "./display-types";
 
@@ -101,7 +101,7 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
     const [touch, setTouch] = useState<TouchSelection | null>();
     const data = useMemo(() => chartSeries(game, stock.key, trades), [game, stock.key, trades]);
     const known = data.filter((point) => point.value !== null);
-    const roundCount = game.periodCount + 1;
+    const { roundCount, tickStep, ticks } = chartRoundAxis(game);
 
     useEffect(() =>
     {
@@ -136,12 +136,12 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
             >
                 <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                     <LineChart data={data} margin={chartMargin}>
-                        {Array.from({ length: roundCount }, (_, period) => period).filter((period) => period % 2 === 0)
+                        {ticks.slice(0, -1).filter((_, index) => index % 2 === 0)
                             .map((period) => (
                                 <ReferenceArea
                                     key={period}
                                     x1={period}
-                                    x2={period + 1}
+                                    x2={Math.min(roundCount, period + tickStep)}
                                     fill="#f3f4f3"
                                     fillOpacity={1}
                                     stroke="none"
@@ -153,7 +153,7 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
                             dataKey="round"
                             type="number"
                             domain={[0, roundCount]}
-                            ticks={Array.from({ length: roundCount + 1 }, (_, round) => round)}
+                            ticks={ticks}
                             interval={0}
                             tickFormatter={(round: number) => round === 0 ? "Start" : String(round)}
                             tickLine={false}

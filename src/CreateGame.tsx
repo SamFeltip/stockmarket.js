@@ -1,3 +1,5 @@
+import { PackControl } from "./PackControl";
+import { packRounds, type Pack } from "../shared/packs";
 import { gameLengths } from "../shared/rules";
 import { useState } from "react";
 import { GameLengthControl } from "./GameLengthControl";
@@ -10,6 +12,7 @@ import { LobbyCard } from "./LobbyCard";
 export function CreateGame()
 {
     const [periods, setPeriods] = useState(gameLengths[0]);
+    const [pack, setPack] = useState<Pack>("classic");
     const create = useMutation(api.games.create);
     const navigate = useNavigate();
     const { run, busy, error } = useAction();
@@ -27,7 +30,7 @@ export function CreateGame()
                     void run(async () =>
                     {
                         const code = await create({
-                            code: formText(form, "code"), periodCount: periods - 1,
+                            code: formText(form, "code"), periodCount: periods - 1, pack,
                             spectate: form.get("spectate") === "on",
                         });
 
@@ -56,9 +59,10 @@ export function CreateGame()
                         Share with friends. Use letters, numbers, hyphens or underscores.
                     </p>
                 </div>
+                <PackControl pack={pack} busy={busy} onChange={setPack} />
                 <fieldset disabled={busy}>
                     <legend className="form-label fs-5">Game length</legend>
-                    <GameLengthControl periods={periods} busy={busy} onChange={setPeriods} />
+                    <GameLengthControl periods={packRounds(pack, periods)} busy={busy} onChange={pack === "tech" ? undefined : setPeriods} />
                 </fieldset>
                 <div className="spectate-option">
                     <div className="form-check form-switch spectate-toggle">

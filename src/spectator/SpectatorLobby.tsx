@@ -1,11 +1,13 @@
+import { PackControl } from "../PackControl";
+import type { Pack } from "../../shared/packs";
 import { Link } from "react-router-dom";
 import { Alert } from "../shared";
 import { JoinCard } from "./Dashboard";
 import { NpcLobbyControls } from "../npc/NpcLobbyControls";
 import type { Board } from "./types";
 
-export function SpectatorLobby({ board, phoneUrl, busy, error, onStart }: {
-    board: Board; phoneUrl: string; busy: boolean; error: string; onStart: () => void;
+export function SpectatorLobby({ board, phoneUrl, busy, error, onStart, onPack }: {
+    board: Board; phoneUrl: string; busy: boolean; error: string; onStart: () => void; onPack: (pack: Pack) => void;
 })
 {
     const { game } = board;
@@ -25,6 +27,7 @@ export function SpectatorLobby({ board, phoneUrl, busy, error, onStart }: {
                         }}
                     />
                     {board.players.length === 0 && <p className="lobby-hint">Scan to join the game or add NPCs.</p>}
+                    <PackControl pack={game.pack} busy={busy} onChange={board.canControl ? onPack : undefined} />
                     <div className="game-length">
                         <p>Game length</p>
                         <span className="length-value bg-dark rounded">{`${game.periodCount + 1} periods`}</span>

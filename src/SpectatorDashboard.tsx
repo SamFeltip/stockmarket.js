@@ -28,8 +28,10 @@ function PriceLine({ board, stockKey }: { board: Board; stockKey: number })
     }
 
     const min = Math.min(...values), max = Math.max(...values);
+    const roundSpan = board.game.pack === "tech"
+        ? Math.max(1, ...history.map((point) => point.round)) : board.game.periodCount + 1;
     const points = history.map((point) =>
-        `${2 + point.round / (board.game.periodCount + 1) * 176},${38 - ((point.value ?? 0) - min) / (max - min || 1) * 32}`)
+        `${2 + point.round / roundSpan * 176},${38 - ((point.value ?? 0) - min) / (max - min || 1) * 32}`)
         .join(" ");
 
     return (
@@ -99,7 +101,7 @@ export function Feed({ board }: { board: Board })
                                 item={{ ...item, _id: item.id, _creationTime: item.at }}
                                 stocks={board.stocks.map((stock) => ({ ...stock, display: true,
                                     imagePath: stockLogo(stock.key, stock.imagePath),
-                                    secondaryImagePath: stockLogo(stock.key, stock.imagePath) }))}
+                                    secondaryImagePath: stockLogo(stock.key, stock.secondaryImagePath) }))}
                             />
                         </div>
                     </article>
@@ -115,7 +117,7 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
 })
 {
     const volatilityOrder = [7, 8, 9, 10, 11, 12];
-    const stocks = board.stocks.toSorted((a, b) =>
+    const stocks = board.game.pack && board.game.pack !== "classic" ? board.stocks : board.stocks.toSorted((a, b) =>
         (volatilityOrder.indexOf(a.key) + 1 || Infinity) - (volatilityOrder.indexOf(b.key) + 1 || Infinity));
     const ranked = board.players.toSorted((a, b) => b.netWorth - a.netWorth);
     const latest = board.latestPurchase;
@@ -128,7 +130,7 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
             <section className="market-section">
                 <div className="section-heading">
                     <h2>Stocks</h2>
-                    <span>Price per share · GBP</span>
+                    <span>{board.game.pack === "tech" ? "Historical close · game £" : "Price per share · GBP"}</span>
                 </div>
                 <div className="stocks">
                     {stocks.map((stock) =>

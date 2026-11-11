@@ -14,6 +14,7 @@ export function spectatorBoard(board: Board)
         players: board.players.map((player) => ({ ...player, id: player._id, roles: player.roles ?? [],
             kind: "human" as const, npcDifficulty: undefined, npcPersonality: undefined, tagline: "" })),
         stocks: board.stocks.filter((stock) => stock.display).map((stock) => ({ ...stock,
+            secondaryImagePath: stock.secondaryImagePath,
             startingValue: stock.startingValue ?? board.game.priceHistory?.[0]?.prices.find((price) =>
                 price.stockKey === stock.key)?.value ?? 0,
             value: board.game.prices.find((price) => price.stockKey === stock.key)?.value ?? 0,

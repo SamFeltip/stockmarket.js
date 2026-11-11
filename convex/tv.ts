@@ -1,14 +1,18 @@
-import { withRoleBonuses, companyRoles } from "../shared/company-roles";
+import { companyRoles } from "../shared/company-roles";
 import { stockCatalog } from "./catalog";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { fail, gameByCode, members, tradeHistory, netWorth, normalizeCode, roundInsights, seedCatalog } from "./library";
+import { fail, gameByCode, members, tradeHistory, netWorth, normalizeCode, roundInsights } from "./library";
 import { publicIdentity } from "./npc/identity";
 import { spectatorHost } from "./game/hosting";
 import { launchGame } from "./launch";
 import { advancePeriod } from "./advancePeriod";
 import { validGameLength } from "../shared/rules";
+import { gameStocks, settlementInsights } from "../../stockmarket-shared/src/engine/packRules";
+import { readEngine } from "./engine";
+import { changeLobbyPack, openingMarket, publicTradingDates } from "./packSettings";
+import { packValidator } from "./schema";
 
 async function tokenHash(token: string)
 {
@@ -24,7 +28,7 @@ async function tokenHash(token: string)
 
 // A device is never a player. Its capability authorizes lobby launch only.
 export const create = mutation({
-    args: { code: v.string(), periodCount: v.number(), token: v.string() },
+    args: { code: v.string(), periodCount: v.number(), token: v.string(), pack: v.optional(packValidator) },
     handler: async (context, arguments_) =>
     {
         const code = normalizeCode(arguments_.code);
@@ -45,17 +49,29 @@ export const create = mutation({
             fail("Lobby code already exists; choose another code");
         }
 
-        await seedCatalog(context);
-        const stocks = (await context.db.query("stocks").collect()).filter((stock) => stock.display);
-        const prices = stocks.map((stock) => ({ stockKey: stock.key, value: stock.startingValue }));
+        const market = await openingMarket(context, arguments_.pack, arguments_.periodCount);
 
         await context.db.insert("games", {
-            code, tvTokenHash: hash, periodCount: arguments_.periodCount, currentPeriod: 0,
-            turn: 0, status: "waiting", suspended: [], prices, priceHistory: [{ period: 0, prices }],
+            code, tvTokenHash: hash, ...market, currentPeriod: 0,
+            turn: 0, status: "waiting", suspended: [],
             rulesVersion: 2, npcDifficulty: "medium", rosterRevision: 0,
         });
 
         return code;
+    },
+});
+
+export const setPack = mutation({
+    args: { code: v.string(), token: v.string(), pack: packValidator },
+    handler: async (context, { code, token, pack }) =>
+    {
+        const game = await gameByCode(context, code);
+        if (game.status !== "waiting" || !game.tvTokenHash || await tokenHash(token) !== game.tvTokenHash)
+        {
+            fail("Only the controlling TV can change the stock pack");
+        }
+
+        await changeLobbyPack(context, game, await members(context, game._id), pack);
     },
 });
 
@@ -101,9 +117,10 @@ export const board = query({
         }
 
         const seats = await members(context, game._id);
-        const catalog = (await context.db.query("stocks").collect())
+        const catalog = (await gameStocks(readEngine(context), game))
             .map((stock) => ({ ...stock,
-                variation: stockCatalog.find((item) => item.key === stock.key)?.variation ?? stock.variation }))
+                variation: game.pack === "frantic" ? stock.variation
+                    : stockCatalog.find((item) => item.key === stock.key)?.variation ?? stock.variation }))
             .toSorted((a, b) => a.variation - b.variation);
         const stocks = catalog.filter((stock) => stock.display);
         const canReveal = game.status === "closed" || game.status === "special_insights";
@@ -117,7 +134,7 @@ export const board = query({
             stocks: catalog.map((stock) => ({ key: stock.key, name: stock.name, display: stock.display,
                 imagePath: stock.imagePath,
                 secondaryImagePath: stock.secondaryImagePath, variation: stock.variation })),
-            insights: withRoleBonuses(revealed, seats, catalog).map((insight) => ({
+            insights: settlementInsights(game, revealed, seats, catalog).map((insight) => ({
                 _id: insight._id, playerId: insight.playerId,
                 stockKey: insight.stockKey, value: insight.value, description: insight.description,
                 resolved: insight.resolved, chanceKind: insight.chanceKind, used: insight.used,
@@ -151,13 +168,14 @@ export const board = query({
             canControl: Boolean(viewerId && viewerId === (displayHost ?? game.hostId) && !game.tvTokenHash),
             reveal,
             latestPurchase: purchase ? { title: purchase.title, message: purchase.message } : null,
-            game: { code: game.code, status: game.status, currentPeriod: game.currentPeriod,
+            game: { code: game.code, pack: game.pack, tradingDates: publicTradingDates(game),
+                status: game.status, currentPeriod: game.currentPeriod,
                 tvControlled: Boolean(game.tvTokenHash), spectatorControlled: Boolean(displayHost),
                 periodCount: game.periodCount, turn: game.turn, rightsIssue: game.rightsIssue,
                 currentPlayerId: game.currentPlayerId
                   ?? seats.find((seat) => seat.userId === game.currentUserId)?._id },
             stocks: stocks.map((stock) => ({ key: stock.key, name: stock.name, imagePath: stock.imagePath,
-                startingValue: stock.startingValue,
+                secondaryImagePath: stock.secondaryImagePath, startingValue: stock.startingValue,
                 value: game.prices.find((price) => price.stockKey === stock.key)?.value ?? stock.startingValue,
                 held: players.reduce((sum, player) => sum + (player.holdings.find((holding) =>
                     holding.stockKey === stock.key)?.quantity ?? 0), 0) })),

@@ -17,6 +17,7 @@ import "./tv-display.css";
 export function SpectatorScreen({ board }: { board: Board })
 {
     const skipRights = useMutation(api.rightsIssue.skip);
+    const setPack = useMutation(api.games.setPack);
     const start = useMutation(api.games.start);
     const nextSpectator = useMutation(api.rounds.nextSpectator);
     const beginSuspensions = useMutation(api.rounds.beginSuspensions);
@@ -85,6 +86,10 @@ export function SpectatorScreen({ board }: { board: Board })
                 phoneUrl={phoneUrl}
                 busy={busy}
                 error={error}
+                onPack={(pack) =>
+                {
+                    void run(() => setPack({ code: game.code, pack }));
+                }}
                 onStart={() =>
                 {
                     void run(() => start({ code: game.code }));
