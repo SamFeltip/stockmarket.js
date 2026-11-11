@@ -108,7 +108,7 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
     const data = useMemo(() => chartSeries(game, stock.key, trades), [game, stock.key, trades]);
     const known = data.filter((point) => point.value !== null);
     const roundCount = chartRoundCount(game);
-    const tickStep = game.pack === "tech" ? Math.ceil(roundCount / 6) : 1;
+    const tickStep = Math.max(1, Math.ceil(roundCount / 10));
     const ticks = Array.from({ length: Math.floor(roundCount / tickStep) + 1 }, (_, round) => round * tickStep);
     const plotWidth = chartSize.width - priceAxisWidth - chartMargin.right;
     const markers = tradeMarkerLayout(data, plotWidth, chartSize.height, roundCount);

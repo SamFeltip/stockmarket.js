@@ -37,7 +37,7 @@ describe("TV spectator display parity", () =>
     {
         const { board } = await fixture();
         const populated = render(board);
-        for (const text of ["Lobby code:", "Waiting for players to join (4 / 6)", "Game length", "6 periods",
+        for (const text of ["Lobby code:", "Waiting for players to join (4 / 6)", "Game length", "<strong>6</strong><span>periods</span>",
             "Launch Game", "Minimum 4 players required", "Scan the QR code", "Stockmarket!"])
         {
             expect(populated).toContain(text);
@@ -54,7 +54,11 @@ describe("TV spectator display parity", () =>
         expect(empty).toContain("Scan to join the game");
         expect(empty).toContain("Add NPC");
         expect(empty).toContain("disabled=\"\">Launch Game");
-        expect(render({ ...board, canControl: false })).not.toContain(">Launch Game</button>");
+
+        const watching = render({ ...board, canControl: false });
+
+        expect(watching).toContain("6 periods");
+        expect(watching).not.toContain(">Launch Game</button>");
     });
 
     it("shows all stock, portfolio, turn, QR, history and trade panels while keeping cards private", async () =>
@@ -64,8 +68,8 @@ describe("TV spectator display parity", () =>
         await sam.mutation(api.games.start, { code: "test" });
         const playing = (await sam.query(api.tv.board, { code: "test" }))!;
         const html = render(playing);
-        for (const text of ["Spectator view", "turn · 1 / 12", "Period 1 / 6", "Stocks", "Player portfolios",
-            "Cash", "Net worth", "Play style", "Current player", "Feed", "Join on your phone",
+        for (const text of ["Spectator view", "Turn", "Period progress", "Stocks", "Player portfolios",
+            "Cash", "Net worth", "Total net worth", "Play style", "Current player", "Feed", "Join on your phone",
             "History appears after each period"])
         {
             expect(html).toContain(text);
@@ -77,6 +81,11 @@ describe("TV spectator display parity", () =>
             expect(html).toContain(stock.name.replaceAll("&", "&amp;"));
         }
 
+        const header = html.match(/<header.*?<\/header>/)?.[0];
+        const current = playing.players.find((player) => player.id === playing.game.currentPlayerId);
+
+        expect(header).toContain(`<p>Current player</p><strong>${current?.name}</strong>`);
+        expect(html).toContain("<h3>Total net worth</h3><strong>£240,000</strong><p>£0 in shares</p>");
         expect(html).toContain("<h3>Play style</h3><strong>Classic</strong>");
         expect(html).not.toContain("Combined wealth");
         expect(html).not.toContain("Latest purchase");

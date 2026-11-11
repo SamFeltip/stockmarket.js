@@ -29,4 +29,22 @@ describe("mobile remaining goes", () =>
             }
         }
     });
+
+    it("shows the same Turn and Period trackers for each stock pack", () =>
+    {
+        const players = [{ _id: "sam", name: "Sam" }];
+        for (const pack of ["classic", "frantic", "tech", "crashing"] as const)
+        {
+            const html = renderToStaticMarkup(
+                <GameMetrics board={{ players, game: { pack, currentPlayerId: "sam", turn: 1,
+                    currentPeriod: pack === "tech" ? 12 : 1, periodCount: pack === "tech" ? 143 : 5 } }}
+                />,
+            );
+
+            expect(html).toContain(">Turn</span>");
+            expect(html).toContain(">Period</span>");
+            expect(html).toContain(`<progress aria-label="Period progress" value="2" max="${pack === "tech" ? 12 : 6}">`);
+            expect(html).toContain("turn-goes");
+        }
+    });
 });

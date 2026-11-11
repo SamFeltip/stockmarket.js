@@ -1,35 +1,37 @@
-.spectator-desktop-header { display: none; }
-@media (min-width: 1000px) {
-    .legacy-spectator-header { display: none !important; }
-    .spectator-desktop-header {
-        display: grid;
-        grid-template-columns: 1.1fr 2.2fr 1.1fr;
-        gap: 1rem;
-        width: 100%;
-        flex-shrink: 0;
-        color: white;
-    }
-    .spectator-desktop-header > div {
-        display: flex;
-        justify-content: center;
-        background: var(--bs-card-bg, #204712);
-        border-radius: 0.375rem;
-        padding: 0.65rem 1rem;
-        min-width: 0;
-    }
-    .spectator-desktop-header .spectator-header-lobby { flex-direction: row; align-items: center; gap: 0.8rem; }
-    .spectator-header-lobby img { width: 3rem; height: 3rem; padding: 0.5rem; background: #fff284; border-radius: 0.375rem; }
-    .spectator-desktop-header .spectator-header-lobby h2 { font-size: 1.2rem; color: white; margin: 0; }
-    .spectator-header-lobby p { font-size: 0.7rem; margin: 0.3rem 0 0; overflow-wrap: anywhere; }
-    .spectator-desktop-header .spectator-header-progress { flex-direction: column; align-items: center; gap: 0.75rem; color: #fff284; }
-    .spectator-header-progress .game-metrics { width: 100%; max-width: 24rem; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; }
-    .spectator-header-progress small { width: 100%; text-align: center; font-size: 0.7rem; }
-    .spectator-desktop-header .spectator-header-brand { align-items: center; }
-    .spectator-desktop-header .spectator-header-brand h1 {
-        font-family: "Big Caslon", serif;
-        font-size: 2.1rem;
-        letter-spacing: 0.08em;
-        color: white;
-        margin: 0;
-    }
+.spectator-desktop-header {
+    display: grid;
+    grid-template-columns: 1.1fr 2.2fr 1.1fr;
+    gap: 1rem;
+    width: 100%;
+    min-height: 5.8rem;
+    flex-shrink: 0;
+    color: white;
+}
+.spectator-desktop-header > div {
+    display: flex;
+    justify-content: center;
+    background: var(--bs-card-bg, #204712);
+    border-radius: 0.375rem;
+    padding: 0.65rem 1rem;
+    min-width: 0;
+}
+.spectator-desktop-header .spectator-header-player { justify-content: flex-start; align-items: center; gap: 0.65rem; }
+.spectator-header-player img { width: 3rem; aspect-ratio: 1; object-fit: cover; border-radius: 0.4rem; flex-shrink: 0; }
+.spectator-header-player > div { min-width: 0; overflow-wrap: anywhere; }
+.spectator-header-player p { margin: 0; font-size: 0.7rem; }
+.spectator-header-player strong { font-size: 1.2rem; }
+.spectator-desktop-header .spectator-header-progress { flex-direction: column; align-items: center; gap: 0.75rem; color: #fff284; }
+.spectator-header-progress .game-metrics { gap: 2rem; }
+.spectator-header-progress small { width: 100%; text-align: center; font-size: 0.7rem; }
+.spectator-desktop-header .spectator-header-brand { align-items: center; }
+.spectator-header-brand h1 {
+    font-family: "Big Caslon", "Stockmarket Caslon", serif;
+    font-size: 2.1rem;
+    letter-spacing: 0.08em;
+    color: white;
+    margin: 0;
+}
+@media (max-width: 999px) {
+    .spectator-desktop-header:not(.spectator-live-header) { display: none; }
+    .web-spectator:not(.tv-spectator) .spectator-live-header { grid-template-columns: 1fr; }
 }

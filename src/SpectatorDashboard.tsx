@@ -1,7 +1,7 @@
 import { packs, type Pack } from "../shared/packs";
 import { PackIcon } from "./PackIcon";
 import "./play-style-card.css";
-import { priceSeries } from "./price-history";
+import { chartRoundCount, priceSeries } from "./price-history";
 import { RolePortrait } from "./RolePortrait";
 import { TradeRoleLabel } from "./TradeRole";
 /* eslint-disable jsx-a11y/no-noninteractive-tabindex -- The feed is a native keyboard scroll region. */
@@ -31,8 +31,7 @@ function PriceLine({ board, stockKey }: { board: Board; stockKey: number })
     }
 
     const min = Math.min(...values), max = Math.max(...values);
-    const roundSpan = board.game.pack === "tech"
-        ? Math.max(1, ...history.map((point) => point.round)) : board.game.periodCount + 1;
+    const roundSpan = chartRoundCount(board.game);
     const points = history.map((point) =>
         `${2 + point.round / roundSpan * 176},${38 - ((point.value ?? 0) - min) / (max - min || 1) * 32}`)
         .join(" ");
@@ -77,7 +76,6 @@ export function Feed({ board }: { board: Board })
                 className="feed-entries"
                 tabIndex={0}
                 aria-label="Game feed entries"
-
             >
                 {board.feed.length > 0 ? board.feed.map((item) => (
                     <article key={item.id}>
@@ -133,20 +131,19 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
 })
 {
     const volatilityOrder = [7, 8, 9, 10, 11, 12];
-    const stocks = board.game.pack && board.game.pack !== "classic" ? board.stocks : board.stocks.toSorted((a, b) =>
-        (volatilityOrder.indexOf(a.key) + 1 || Infinity) - (volatilityOrder.indexOf(b.key) + 1 || Infinity));
+    const stockPosition = (key: number) => volatilityOrder.indexOf(key) + 1 || volatilityOrder.length + 1;
+    const stocks = board.stocks.toSorted((a, b) => stockPosition(a.key) - stockPosition(b.key));
     const ranked = board.players.toSorted((a, b) => b.netWorth - a.netWorth);
     const finished = board.game.status === "finished";
-    const current = board.game.status === "playing" && !board.game.rightsIssue
-        ? board.players.find((player) => player.id === board.game.currentPlayerId)
-        : undefined;
+    const total = ranked.reduce((sum, player) => sum + player.netWorth, 0);
+    const invested = ranked.reduce((sum, player) => sum + player.netWorth - player.cash, 0);
 
     return (
         <div className="dashboard">
             <section className="market-section">
                 <div className="section-heading">
                     <h2>Stocks</h2>
-                    <span>{board.game.pack === "tech" ? "Historical close · game £" : "Price per share · GBP"}</span>
+                    <span>Price per share · GBP</span>
                 </div>
                 <div className="stocks">
                     {stocks.map((stock) =>
@@ -207,16 +204,16 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
                         <p>{money(ranked[0]?.netWorth ?? 0)}</p>
                     </article>
                 )}
-                {current && (
-                    <article className="current-player card" role="status">
-                        <img src={portrait(current.profileRoot)} alt="" />
-                        <div>
-                            <h3>Current player</h3>
-                            <strong>{current.name}</strong>
-                        </div>
-                    </article>
+                {!finished && (
+                    <>
+                        <article className="stat card">
+                            <h3>Total net worth</h3>
+                            <strong>{money(total)}</strong>
+                            <p>{`${money(invested)} in shares`}</p>
+                        </article>
+                        <PlayStyleCard pack={board.game.pack} />
+                    </>
                 )}
-                {!finished && <PlayStyleCard pack={board.game.pack} />}
             </section>
         </div>
     );

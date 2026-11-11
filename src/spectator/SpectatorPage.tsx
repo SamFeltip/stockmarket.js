@@ -1,4 +1,3 @@
-import { packPeriods } from "../../shared/packs";
 import { SpectatorHeader } from "../SpectatorHeader";
 import { RightsIssue } from "../RightsIssue";
 import { useConvexAuth, useConvexConnectionState, useMutation, useQuery } from "convex/react";
@@ -27,18 +26,12 @@ export function SpectatorScreen({ board }: { board: Board })
     const { run, busy, error } = useAction();
     const { game } = board;
     const phoneUrl = globalThis.location.origin;
-    const current = board.players.find((player) => player.id === game.currentPlayerId);
     const display = websiteBoard(board);
 
     const back = () =>
     {
         globalThis.location.assign("/");
     };
-
-    const totalTurns = board.players.length * 3;
-    const status = game.status === "playing"
-        ? `${current?.name ?? "Next investor"}’s turn · ${Math.min(game.turn + 1, totalTurns)} / ${totalTurns}`
-        : "Market closed · host continues on their display";
     if (game.rightsIssue)
     {
         const issue = game.rightsIssue;
@@ -108,22 +101,6 @@ export function SpectatorScreen({ board }: { board: Board })
         <>
             <main className="game-screen">
                 <SpectatorHeader board={display} />
-                <header className="game-header legacy-spectator-header">
-                    <div className="card card-green spectator-heading">
-                        <div>
-                            <h2>Spectator view</h2>
-                            <p>{`Lobby: ${game.code.toUpperCase()}`}</p>
-                        </div>
-                    </div>
-                    <div className="card card-green turn-heading">
-                        <h3 className="primary">{status}</h3>
-                        <p>Public portfolios and market prices</p>
-                    </div>
-                    <div className="card card-green title-heading">
-                        <h1 id="stockmarket-header">Stockmarket!</h1>
-                        <p>{`Period ${packPeriods(game.pack, game.currentPeriod + 1)} / ${packPeriods(game.pack, game.periodCount + 1)}`}</p>
-                    </div>
-                </header>
                 <div className="game-layout">
                     <Dashboard board={board} phoneUrl={phoneUrl} />
                     <div className="sidebar">

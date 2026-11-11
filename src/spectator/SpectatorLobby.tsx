@@ -32,7 +32,7 @@ export function SpectatorLobby({ board, phoneUrl, busy, error, onStart, onPack, 
                     <PackControl pack={game.pack} busy={busy} onChange={board.canControl ? onPack : undefined} />
                     <div className="game-length">
                         <p>Game length</p>
-                        {game.pack === "tech" && board.canControl ? (
+                        {board.canControl ? (
                             <GameLengthControl
                                 pack={game.pack}
                                 periods={packPeriods(game.pack, game.periodCount + 1)}
