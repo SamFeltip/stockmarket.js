@@ -13,7 +13,7 @@ export function PackControl({ pack = "classic", busy, onChange }: {
                         <button
                             key={id}
                             type="button"
-                            className={`pack-option pack-${id}`}
+                            className={`btn btn-${id === pack ? "primary" : "secondary"} pack-option`}
                             aria-pressed={id === pack}
                             disabled={busy}
                             onClick={() => onChange(id)}
@@ -24,7 +24,7 @@ export function PackControl({ pack = "classic", busy, onChange }: {
                     ))}
                 </div>
             ) : (
-                <div className={`pack-current pack-${pack}`}>
+                <div className="pack-current bg-dark rounded">
                     <PackIcon pack={pack} />
                     <strong>{packs[pack].name}</strong>
                 </div>
