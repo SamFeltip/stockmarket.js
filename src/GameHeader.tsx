@@ -55,7 +55,7 @@ export function Profile({ board, view, setView }: { board: Board; view: "stocks"
                 >
                     <img
                         id="show-users"
-                        className={`rounded border border-primary border-2 ${view === "stocks" ? "infront" : "behind"}`}
+                        className={`rounded ${view === "stocks" ? "infront" : "behind"}`}
                         height={60}
                         width={60}
                         src={user.profileRoot}
@@ -73,7 +73,8 @@ export function Profile({ board, view, setView }: { board: Board; view: "stocks"
                 >
                     <span
                         id="show-stocks"
-                        className={`bg-primary rounded border border-primary border-2 p-2 ${view === "players" ? "infront" : "behind"}`}
+                        className={`rounded border border-primary border-2 p-2 ${view === "players" ? "infront" : "behind"}`}
+                        style={{ backgroundColor: "var(--bs-primary)" }}
                     >
                         <PackIcon pack={board.game.pack} />
                     </span>

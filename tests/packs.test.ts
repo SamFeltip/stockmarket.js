@@ -132,7 +132,20 @@ describe("stock packs", () =>
             {
                 const reveal = (await t.query(api.tv.board, { code: tvCode }))?.reveal;
 
-                expect(reveal?.insights.filter((card) => card.description === "Historical market close")).toHaveLength(6);
+                const phone = await sam.query(api.board.get, { code: tvCode });
+                for (const { stockKey, value } of techPrices(start, 1))
+                {
+                    const cards = reveal!.insights.filter((card) => card.stockKey === stockKey);
+                    const opening = reveal!.prices.find((price) => price.stockKey === stockKey)!.value;
+
+                    expect(cards.length).toBeGreaterThan(1);
+                    expect(cards.every((card) => card.description.startsWith("Historical close · "))).toBe(true);
+                    expect(new Set(cards.map((card) => card._id)).size).toBe(cards.length);
+                    expect(phone.insights.filter((card) => card.stockKey === stockKey).map((card) => card._id))
+                        .toEqual(cards.map((card) => card._id));
+                    expect(opening + cards.reduce((sum, card) => sum + card.value, 0)).toBeCloseTo(value, 2);
+                }
+
                 expect(reveal?.insights.filter((card) => card.stockKey === -1)).toHaveLength(4);
                 expect(reveal?.insights.some((card) => card.description.includes(" – "))).toBe(false);
             }

@@ -20,7 +20,7 @@ export function CreateGame()
     const { run, busy, error } = useAction();
 
     return (
-        <LobbyCard title="Create a game">
+        <LobbyCard>
             <form
                 className="create-game-form bg-dark text-white rounded d-grid"
                 aria-busy={busy}
