@@ -46,7 +46,7 @@ button,input{font:inherit}button{cursor:pointer;border:1px solid transparent;bor
 .website-presentation #stock-view .game-stock img{height:3.5rem;max-height:none;padding:.5rem!important}
 .website-presentation #stock-view .game-stock{min-width:0;flex:1}
 .website-presentation #stock-view .game-stock>div{font-size:.9rem}
-.website-presentation #player-view{padding:.5rem 1rem!important}.website-presentation #player-view h2{font-size:1rem}
+.website-presentation #player-view h2{font-size:1rem}
 .website-presentation .round-wealth-players{gap:.6rem}.website-presentation .round-wealth-players img{width:2.5rem}
 .website-presentation .round-navigation{position:static!important;padding:0!important;justify-self:end}
 .website-presentation .hold-stock-options{grid-template-columns:repeat(3,1fr)}.hold-stock-options img{height:3rem;object-fit:contain;max-width:100%}

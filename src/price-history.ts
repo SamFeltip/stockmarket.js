@@ -1,12 +1,13 @@
-import { techRoundsPerBlock } from "../shared/packs";
+import { packRoundsPerPeriod } from "../shared/packs";
 import type { Board } from "./display-types";
 
 export function chartRoundCount(game: Pick<Board["game"], "pack" | "currentPeriod" | "periodCount">)
 {
     const total = game.periodCount + 1;
+    const roundsPerPeriod = packRoundsPerPeriod(game.pack);
 
-    return game.pack === "tech" ? Math.min(total,
-        Math.ceil((game.currentPeriod + 1) / techRoundsPerBlock) * techRoundsPerBlock) : total;
+    return roundsPerPeriod > 1 ? Math.min(total,
+        Math.ceil((game.currentPeriod + 1) / roundsPerPeriod) * roundsPerPeriod) : total;
 }
 
 export interface ChartTrade {

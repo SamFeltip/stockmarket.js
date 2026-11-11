@@ -82,7 +82,35 @@
 @media (max-width: 999px) {
     :where(.web-spectator) .lobby-surface { grid-template-columns: 1fr; }
     :where(.web-spectator) .lobby-footer { position: static; flex-wrap: wrap; }
-    :where(.web-spectator) .website-presentation { padding-block: 1rem; }
     :where(.web-spectator) .hold-stock-options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     :where(.web-spectator) .hold-stock-options img { width: 100%; height: 3rem; object-fit: contain; }
+}
+
+@media (min-width: 1000px) and (min-height: 720px) {
+    .web-spectator .website-presentation .round-reveal-stock {
+        grid-template-rows: fit-content(min(14rem, 40%)) minmax(0, 1fr);
+    }
+
+    .web-spectator .website-presentation .round-reveal-stock > :not(.round-reveal-chart) {
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    .web-spectator .website-presentation .round-reveal-stock .game-insight-card {
+        justify-content: safe center !important;
+    }
+}
+
+@media (min-width: 1000px) and (720px <= height < 900px) {
+    .web-spectator .website-presentation .round-reveal-stock {
+        & .game-stock-view img { max-height: 3.5rem !important; }
+        & .game-insight-card > img { height: 2rem; }
+        & .game-insight-card .investor-photo { width: 2rem; height: 2rem; }
+        & .game-insight-card { gap: 0.2rem !important; padding: 0.4rem !important; }
+        & .game-insight-card p { font-size: 0.85rem; }
+        & .stock-result { padding: 0.25rem !important; }
+        & .stock-result :is(h2, p) { margin: 0; line-height: 1.15; }
+        & .stock-result h2 { font-size: 1.5rem; }
+        & .stock-result-change { font-size: 1rem; }
+    }
 }

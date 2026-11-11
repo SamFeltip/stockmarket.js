@@ -1,5 +1,4 @@
 import { companyRoles } from "../shared/company-roles";
-import { stockCatalog } from "./catalog";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
@@ -9,7 +8,7 @@ import { spectatorHost } from "./game/hosting";
 import { launchGame } from "./launch";
 import { advancePeriod } from "./advancePeriod";
 
-import { gameStocks, settlementInsights, validPackLength } from "../../stockmarket-shared/src/engine/packRules";
+import { displayGameStocks, settlementInsights, validPackLength } from "../../stockmarket-shared/src/engine/packRules";
 import { readEngine } from "./engine";
 import { changeLobbyPack, openingMarket, publicTradingDates, setLobbyLength } from "./packSettings";
 import { packValidator } from "./schema";
@@ -131,11 +130,7 @@ export const board = query({
         }
 
         const seats = await members(context, game._id);
-        const catalog = (await gameStocks(readEngine(context), game))
-            .map((stock) => ({ ...stock,
-                variation: game.pack === "frantic" ? stock.variation
-                    : stockCatalog.find((item) => item.key === stock.key)?.variation ?? stock.variation }))
-            .toSorted((a, b) => game.pack === "tech" ? 0 : a.variation - b.variation);
+        const catalog = await displayGameStocks(readEngine(context), game);
         const stocks = catalog.filter((stock) => stock.display);
         const canReveal = game.status === "closed" || game.status === "special_insights";
         const [revealed, trades] = canReveal

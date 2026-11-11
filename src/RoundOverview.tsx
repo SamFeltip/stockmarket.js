@@ -31,7 +31,7 @@ function OverviewStock({ before, after, stock, mobile }: { before: Board; after:
                 </>
             )}
             {after.game.suspended.includes(stock.key) && <p className="round-overview-suspension">Share Suspended · Stock price held</p>}
-            <StockRoleFooter board={before} stock={stock} />
+            <StockRoleFooter board={before} stock={stock} compact={mobile} />
         </article>
     );
 }
@@ -48,8 +48,8 @@ export function RoundOverview({ before, after, layout }: { before: Board; after:
         <section className={`round-overview d-grid gap-3${layout ? ` round-overview-${layout}` : ""}`} aria-label="Round overview">
             <h2>{mobile ? "Stock results" : "Round overview"}</h2>
             <div className="round-overview-stocks">
-                {mobile && cards.length > 0
-                    ? <Marquee label="Stock results. Swipe or use arrow keys to browse">{cards}</Marquee>
+                {mobile
+                    ? <Marquee label="Stock graphs. Swipe or use the arrow keys to browse">{cards}</Marquee>
                     : cards}
             </div>
             {layout === "wide" && (

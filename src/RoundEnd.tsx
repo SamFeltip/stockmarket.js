@@ -3,7 +3,7 @@ import "./round-desktop.css";
 import { pendingSuspensions } from "../shared/suspensions";
 import { ShareSuspended } from "./ShareSuspended";
 import { cashStockKey } from "../shared/chance-cards";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Alert, useAction } from "./shared";
@@ -13,22 +13,10 @@ import { RoundOverview } from "./RoundOverview";
 import { RoundWealth } from "./RoundWealth";
 import { roundProgress } from "./round-preview";
 import { RoundReveal } from "./RoundReveal";
+import { useWideRoundOverview } from "./use-wide-round-overview";
 import { useRevealReady } from "./use-reveal-ready";
 import { HoldStock } from "./HoldStock";
 import type { Board } from "./types";
-
-const wideOverviewQuery = "(min-width: 992px) and (pointer: fine), (min-width: 768px) and (min-height: 720px)";
-
-function subscribeToWideOverview(onChange: () => void)
-{
-    const query = matchMedia(wideOverviewQuery);
-
-    query.addEventListener("change", onChange);
-
-    return () => query.removeEventListener("change", onChange);
-}
-
-const isWideOverview = () => matchMedia(wideOverviewQuery).matches;
 
 export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
     board: Board; onBeginSuspensions?: () => Promise<void>;
@@ -42,7 +30,7 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
     const { run, busy, error } = useAction();
     const [step, setStep] = useState(0);
     const [index, setIndex] = useState(0);
-    const wideOverview = useSyncExternalStore(subscribeToWideOverview, isWideOverview, () => false);
+    const wideOverview = useWideRoundOverview();
     const groups = revealGroups(stocks, insights);
     const activeStock = groups[step];
     const cash = activeStock?.key === cashStockKey;

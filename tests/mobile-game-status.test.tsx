@@ -43,8 +43,22 @@ describe("mobile remaining goes", () =>
 
             expect(html).toContain(">Turn</span>");
             expect(html).toContain(">Period</span>");
-            expect(html).toContain(`<progress aria-label="Period progress" value="2" max="${pack === "tech" ? 12 : 6}">`);
+            expect(html).toContain(pack === "tech" ? "value=\"13\" max=\"144\"" : "value=\"2\" max=\"6\"");
             expect(html).toContain("turn-goes");
+        }
+    });
+
+    it("advances Tech rounds within a period and rolls over after round twelve", () =>
+    {
+        for (const [currentPeriod, period, round] of [[0, 1, 1], [1, 1, 2], [11, 1, 12], [12, 2, 1], [143, 12, 12]])
+        {
+            const html = renderToStaticMarkup(
+                <GameMetrics board={{ players: [], game: { pack: "tech", turn: 0, currentPeriod, periodCount: 143 } }} />,
+            );
+
+            expect(html).toContain(`aria-valuetext="Period ${period} of 12, Round ${round} of 12"`);
+            expect(html).toContain(`value="${currentPeriod + 1}" max="144"`);
+            expect(html).toContain(`<small class="game-metric-round">Round ${round} of 12</small>`);
         }
     });
 });

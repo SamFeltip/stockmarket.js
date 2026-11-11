@@ -24,8 +24,11 @@ describe("round presentation", () =>
             holdings: [{ stockKey: stock.key, quantity: index === 0 ? 2000 : 0 }] }));
         const html = renderToStaticMarkup(<RoundWealth players={players} stock={stock} />);
 
-        expect(html).toContain(`2,000 ${stock.name} shares`);
-        expect(html).toContain(`0 ${stock.name} shares`);
+        const text = html.replaceAll(/<[^>]+>/g, "");
+
+        expect(text).toContain(`2,000 ${stock.name} shares`);
+        expect(text).toContain(`0 ${stock.name} shares`);
+        expect(html.match(/class="round-wealth-card /g)).toHaveLength(players.length);
         expect(renderToStaticMarkup(<RoundWealth players={players} stock={{ ...stock, display: false }} />))
             .not.toContain("round-player-holdings");
         const cashHtml = renderToStaticMarkup(<RoundWealth players={players} stock={cashStock} />);

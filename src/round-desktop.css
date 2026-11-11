@@ -37,7 +37,6 @@
     .player-round-end .round-reveal-chart > .visually-hidden { top: 0; left: 0; }
     .player-round-end .round-reveal-chart .stock-price-chart { height: 100%; min-height: 0; position: relative; }
     .player-round-end .round-reveal-chart .recharts-responsive-container { position: absolute; inset: 0; }
-    .player-round-end #player-view { padding: 0.4rem 0.75rem !important; }
     .player-round-end #player-view h2 { font-size: 1rem; margin-bottom: 0.25rem; }
     .player-round-end .round-wealth-players { gap: 0.5rem; }
     .player-round-end .round-wealth-players > div { min-width: 0; }

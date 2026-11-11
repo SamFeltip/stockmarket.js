@@ -1,14 +1,13 @@
 import { debentureInHand } from "../shared/debenture";
 import { debentureOffers } from "./game/debenture";
 import { companyRoles } from "../shared/company-roles";
-import { stockCatalog } from "./catalog";
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { member, members, netWorth, roundInsights, tradeHistory } from "./library";
 
 import { phoneHost, spectatorHost } from "./game/hosting";
 import { publicIdentity } from "./npc/identity";
-import { gameStocks, settlementInsights, type SettlementCard } from "../../stockmarket-shared/src/engine/packRules";
+import { displayGameStocks, settlementInsights, type SettlementCard } from "../../stockmarket-shared/src/engine/packRules";
 import { readEngine } from "./engine";
 import { privateForecasts } from "../../stockmarket-shared/src/engine/library";
 import { publicTradingDates } from "./packSettings";
@@ -19,11 +18,7 @@ export const get = query({
     {
         const { game, player, user } = await member(context, code);
         const seats = await members(context, game._id);
-        const stocks = (await gameStocks(readEngine(context), game))
-            .map((stock) => ({ ...stock,
-                variation: game.pack === "frantic" ? stock.variation
-                    : stockCatalog.find((item) => item.key === stock.key)?.variation ?? stock.variation }))
-            .toSorted((a, b) => game.pack === "tech" ? 0 : a.variation - b.variation);
+        const stocks = await displayGameStocks(readEngine(context), game);
         const allInsights = await roundInsights(context, game);
         const retained = (await context.db.query("playerInsights")
             .withIndex("by_player_period", (q) => q.eq("playerId", player._id)).collect())
