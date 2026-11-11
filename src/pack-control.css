@@ -25,17 +25,17 @@
 }
 .pack-options .pack-option-idle {
     --bs-btn-color: #fff;
-    --bs-btn-bg: #284b25;
-    --bs-btn-border-color: #081f0b;
+    --bs-btn-bg: var(--bs-body-bg);
+    --bs-btn-border-color: #041007;
     --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: #365e33;
-    --bs-btn-hover-border-color: #081f0b;
+    --bs-btn-hover-bg: #183a1b;
+    --bs-btn-hover-border-color: var(--bs-btn-border-color);
     --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: #284b25;
-    --bs-btn-active-border-color: #081f0b;
+    --bs-btn-active-bg: var(--bs-btn-bg);
+    --bs-btn-active-border-color: var(--bs-btn-border-color);
     --bs-btn-disabled-color: #fff;
-    --bs-btn-disabled-bg: #284b25;
-    --bs-btn-disabled-border-color: #081f0b;
+    --bs-btn-disabled-bg: var(--bs-btn-bg);
+    --bs-btn-disabled-border-color: var(--bs-btn-border-color);
 }
 .pack-option span { font-size: inherit; }
 .pack-option svg, .pack-current svg { flex: none; width: 1.1rem; height: 1.1rem; }
