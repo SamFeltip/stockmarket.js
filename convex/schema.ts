@@ -47,6 +47,7 @@ export default defineSchema({
         catalogVersion: v.optional(v.string()),
         periodCount: v.number(), currentPeriod: v.number(), turn: v.number(),
         pack: v.optional(packValidator), techStart: v.optional(v.number()), standardPeriodCount: v.optional(v.number()),
+        techPeriodCount: v.optional(v.number()),
         status: v.union(v.literal("waiting"), v.literal("playing"), v.literal("closed"),
             v.literal("special_insights"), v.literal("finished")),
         prices: v.array(v.object({ stockKey: v.number(), value: v.number() })),

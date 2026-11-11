@@ -1,3 +1,4 @@
+import { packPeriods } from "../shared/packs";
 import { PackControl } from "./PackControl";
 import { GameLengthControl } from "./GameLengthControl";
 import { maximumPlayers, minimumPlayers } from "../shared/rules";
@@ -50,9 +51,10 @@ export function Waiting({ board }: { board: Board })
                 <div className="py-3">
                     <p className="pb-2">Game length</p>
                     <GameLengthControl
-                        periods={game.periodCount + 1}
+                        periods={packPeriods(game.pack, game.periodCount + 1)}
+                        pack={game.pack}
                         busy={busy}
-                        onChange={host && game.pack !== "tech" ? (periods) =>
+                        onChange={host ? (periods) =>
                         {
                             void run(() => setLength({ code: game.code, periodCount: periods - 1 }));
                         } : undefined}

@@ -1,3 +1,4 @@
+import { nextRoundLabel } from "../shared/packs";
 import "./round-desktop.css";
 import { pendingSuspensions } from "../shared/suspensions";
 import { ShareSuspended } from "./ShareSuspended";
@@ -155,7 +156,7 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
                                     void run(() => next({ code: game.code, expectedPeriod: game.currentPeriod }));
                                 }}
                             >
-                                {game.currentPeriod >= game.periodCount ? "Finish Game" : "Next Period"}
+                                {nextRoundLabel(game)}
                                 {" →"}
                             </button>
                         </>

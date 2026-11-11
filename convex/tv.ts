@@ -8,10 +8,10 @@ import { publicIdentity } from "./npc/identity";
 import { spectatorHost } from "./game/hosting";
 import { launchGame } from "./launch";
 import { advancePeriod } from "./advancePeriod";
-import { validGameLength } from "../shared/rules";
-import { gameStocks, settlementInsights } from "../../stockmarket-shared/src/engine/packRules";
+
+import { gameStocks, settlementInsights, validPackLength } from "../../stockmarket-shared/src/engine/packRules";
 import { readEngine } from "./engine";
-import { changeLobbyPack, openingMarket, publicTradingDates } from "./packSettings";
+import { changeLobbyPack, openingMarket, publicTradingDates, setLobbyLength } from "./packSettings";
 import { packValidator } from "./schema";
 
 async function tokenHash(token: string)
@@ -33,7 +33,7 @@ export const create = mutation({
     {
         const code = normalizeCode(arguments_.code);
         const hash = await tokenHash(arguments_.token);
-        if (!validGameLength(arguments_.periodCount))
+        if (!validPackLength(arguments_.pack, arguments_.periodCount))
         {
             fail("Invalid game length");
         }
@@ -72,6 +72,20 @@ export const setPack = mutation({
         }
 
         await changeLobbyPack(context, game, await members(context, game._id), pack);
+    },
+});
+
+export const setLength = mutation({
+    args: { code: v.string(), token: v.string(), periodCount: v.number() },
+    handler: async (context, { code, token, periodCount }) =>
+    {
+        const game = await gameByCode(context, code);
+        if (game.status !== "waiting" || !game.tvTokenHash || await tokenHash(token) !== game.tvTokenHash)
+        {
+            fail("Only the controlling TV can change game length");
+        }
+
+        await setLobbyLength(context, game, periodCount);
     },
 });
 

@@ -1,3 +1,4 @@
+import { nextRoundLabel } from "../../shared/packs";
 import { pendingSuspensions } from "../../shared/suspensions";
 import { ShareSuspended } from "../ShareSuspended";
 import { useAction } from "../shared";
@@ -170,7 +171,7 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
                         <>
                             {pendingHolds && <p>Waiting for players to resolve their hold-stock insights.</p>}
                             <button className="btn btn-primary" disabled={busy || pendingHolds} onClick={onNext}>
-                                {busy ? "Starting…" : (board.game.currentPeriod >= board.game.periodCount ? "Finish Game" : "Next Period")}
+                                {busy ? "Starting…" : nextRoundLabel(board.game)}
                                 {" "}
                                 →
                             </button>

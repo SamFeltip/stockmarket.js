@@ -1,10 +1,12 @@
-import { gameLengths } from "../shared/rules";
+import { packLengths, type Pack } from "../shared/packs";
+import "./game-length.css";
 
-export function GameLengthControl({ periods, busy, onChange }: {
-    periods: number; busy: boolean; onChange?: (periods: number) => void;
+export function GameLengthControl({ periods, pack, busy, onChange }: {
+    periods: number; pack?: Pack; busy: boolean; onChange?: (periods: number) => void;
 })
 {
-    const index = gameLengths.indexOf(periods);
+    const lengths = packLengths(pack);
+    const index = lengths.indexOf(periods);
 
     return (
         <div className="game-length-control" role="group" aria-label="Game length">
@@ -14,7 +16,7 @@ export function GameLengthControl({ periods, busy, onChange }: {
                     className="btn bg-dark"
                     aria-label="Fewer periods"
                     disabled={busy || index <= 0}
-                    onClick={() => onChange(gameLengths[index - 1])}
+                    onClick={() => onChange(lengths[index - 1])}
                 >
                     −
                 </button>
@@ -28,8 +30,8 @@ export function GameLengthControl({ periods, busy, onChange }: {
                     type="button"
                     className="btn bg-dark"
                     aria-label="More periods"
-                    disabled={busy || index < 0 || index >= gameLengths.length - 1}
-                    onClick={() => onChange(gameLengths[index + 1])}
+                    disabled={busy || index < 0 || index >= lengths.length - 1}
+                    onClick={() => onChange(lengths[index + 1])}
                 >
                     +
                 </button>

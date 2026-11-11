@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../convex/_generated/api";
 import { chooseTechStart, techPrices } from "../../stockmarket-shared/src/engine/techMarket";
-import { techRoundCount } from "../shared/packs";
+import { packRounds, techDefaultPeriods } from "../shared/packs";
 import { setup } from "./game-setup";
 import { buildNpcObservation } from "../convex/npc/observation";
 import { estimate } from "../../stockmarket-shared/src/packages/npc-engine/src/estimate";
 
 const code = "test";
+const techRoundCount = packRounds("tech", techDefaultPeriods);
 
 describe("stock packs", () =>
 {
@@ -20,6 +21,11 @@ describe("stock packs", () =>
         const tech = await bob.query(api.board.get, { code });
 
         expect(tech.game.periodCount).toBe(143);
+        expect(tech.game.prices.every((price) => price.value === 0)).toBe(true);
+        await expect(sam.mutation(api.games.setLength, { code, periodCount: 2 })).rejects.toThrow("Invalid game length");
+        await expect(sam.mutation(api.games.setLength, { code, periodCount: 18 })).rejects.toThrow("Invalid game length");
+        await sam.mutation(api.games.setLength, { code, periodCount: 17 });
+        expect((await sam.query(api.board.get, { code })).game.periodCount).toBe(215);
         expect(tech.stocks.map((stock) => stock.name)).toEqual(["ASML", "Facebook", "Nvidia", "Alibaba", "Apple", "Netflix"]);
         expect(tech.players.every((player) => player.cash === 3_000_000 && player.holdings.length === 6)).toBe(true);
         expect((await t.query(api.tv.board, { code }))?.game.pack).toBe("tech");
@@ -30,6 +36,35 @@ describe("stock packs", () =>
         expect(restored.game.prices).toEqual(classic.game.prices);
         expect(restored.players.map((player) => [player.cash, player.holdings]))
             .toEqual(classic.players.map((player) => [player.cash, player.holdings]));
+
+        await sam.mutation(api.games.setPack, { code, pack: "tech" });
+        expect((await sam.query(api.board.get, { code })).game.periodCount).toBe(215);
+    });
+
+    it("launches a four-period Tech game with a new eight-month market", async () =>
+    {
+        const { t, sam, clients } = await setup();
+        const shortCode = "eight-months";
+
+        await sam.mutation(api.games.create, { code: shortCode, pack: "tech", periodCount: 3 });
+
+        for (const client of clients.slice(1))
+        {
+            await client.mutation(api.games.join, { code: shortCode });
+        }
+
+        const waiting = await sam.query(api.board.get, { code: shortCode });
+
+        expect((await t.run((context) => context.db.get(waiting.game._id)))?.techStart).toBeUndefined();
+        await sam.mutation(api.games.start, { code: shortCode });
+        const playing = await sam.query(api.board.get, { code: shortCode });
+        const game = await t.run((context) => context.db.get(playing.game._id));
+
+        expect(playing.game.periodCount).toBe(47);
+        expect(game?.techStart).toBeTypeOf("number");
+        expect(game?.prices).toEqual(techPrices(game!.techStart!, 0));
+        expect(game?.priceHistory).toEqual([{ period: 0, prices: game?.prices }]);
+        expect(playing.insights).toHaveLength(12);
     });
 
     it("deals every Frantic player extra chance cards and equalizes Trusthouse and Natwest volatility", async () =>
@@ -84,7 +119,7 @@ describe("stock packs", () =>
         const gameId = boards[0].game._id;
         const start = (await t.run((context) => context.db.get(gameId)))!.techStart!;
 
-        expect(techPrices(chooseTechStart(0.999_999), techRoundCount)).toHaveLength(6);
+        expect(techPrices(chooseTechStart(0.999_999, 18), packRounds("tech", 18))).toHaveLength(6);
 
         for (let expectedPeriod = 0; expectedPeriod < techRoundCount; expectedPeriod++)
         {

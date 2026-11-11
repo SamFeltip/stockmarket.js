@@ -1,13 +1,13 @@
-import { maximumPlayers, validGameLength } from "../shared/rules";
+import { maximumPlayers } from "../shared/rules";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { currentUser, fail, gameByCode, member, members, normalizeCode } from "./library";
 
 import { phoneHost, spectatorHost } from "./game/hosting";
 import { launchGame } from "./launch";
-import { packStartingCash } from "../../stockmarket-shared/src/engine/packRules";
+import { packStartingCash, validPackLength } from "../../stockmarket-shared/src/engine/packRules";
 import { packValidator } from "./schema";
-import { changeLobbyPack, openingMarket } from "./packSettings";
+import { changeLobbyPack, openingMarket, setLobbyLength } from "./packSettings";
 
 export const create = mutation({
     args: { code: v.string(), periodCount: v.number(),
@@ -16,7 +16,7 @@ export const create = mutation({
     {
         const user = await currentUser(context);
         const code = normalizeCode(arguments_.code);
-        if (!validGameLength(arguments_.periodCount))
+        if (!validPackLength(arguments_.pack, arguments_.periodCount))
         {
             fail("Invalid game length");
         }
@@ -154,12 +154,7 @@ export const setLength = mutation({
             fail("Only the lobby host can change game length");
         }
 
-        if (game.pack === "tech" || !validGameLength(periodCount))
-        {
-            fail("Invalid game length");
-        }
-
-        await context.db.patch(game._id, { periodCount });
+        await setLobbyLength(context, game, periodCount);
     },
 });
 

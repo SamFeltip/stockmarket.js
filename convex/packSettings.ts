@@ -1,24 +1,34 @@
-import { packStocks, packStartingCash } from "../../stockmarket-shared/src/engine/packRules";
-import { chooseTechStart, techTradingDates } from "../../stockmarket-shared/src/engine/techMarket";
-import { packRounds, type Pack } from "../../stockmarket-shared/src/shared/packs";
+import { packStocks, packStartingCash, validPackLength } from "../../stockmarket-shared/src/engine/packRules";
+import { techTradingDates } from "../../stockmarket-shared/src/engine/techMarket";
+import { packPeriods, packRounds, techDefaultPeriods, type Pack } from "../../stockmarket-shared/src/shared/packs";
 import type { Doc as Document_ } from "./_generated/dataModel";
 import type { MutationCtx as MutationContext } from "./_generated/server";
 import { readEngine } from "./engine";
-import { seedCatalog } from "./library";
+import { gameLengths } from "../shared/rules";
+import { fail, seedCatalog } from "./library";
 
-export async function openingMarket(context: MutationContext, pack: Pack | undefined, standardPeriodCount: number)
+export async function openingMarket(context: MutationContext, pack: Pack | undefined, periodCount: number)
 {
     await seedCatalog(context);
-    const techStart = pack === "tech" ? chooseTechStart(Math.random()) : undefined;
-    const stocks = await packStocks(readEngine(context), pack, techStart);
+    const stocks = await packStocks(readEngine(context), pack);
     const prices = stocks.filter((stock) => stock.display)
         .map((stock) => ({ stockKey: stock.key, value: stock.startingValue }));
 
     return {
-        pack, techStart, standardPeriodCount: pack === "tech" ? standardPeriodCount : undefined,
-        periodCount: packRounds(pack, standardPeriodCount + 1) - 1,
+        pack, techStart: undefined,
+        periodCount: packRounds(pack, periodCount + 1) - 1,
         prices, priceHistory: [{ period: 0, prices }],
     };
+}
+
+export async function setLobbyLength(context: MutationContext, game: Document_<"games">, periodCount: number)
+{
+    if (!validPackLength(game.pack, periodCount))
+    {
+        fail("Invalid game length");
+    }
+
+    await context.db.patch(game._id, { periodCount: packRounds(game.pack, periodCount + 1) - 1 });
 }
 
 export async function changeLobbyPack(context: MutationContext, game: Document_<"games">, seats: Document_<"players">[], pack: Pack)
@@ -28,9 +38,13 @@ export async function changeLobbyPack(context: MutationContext, game: Document_<
         return;
     }
 
-    const market = await openingMarket(context, pack, game.standardPeriodCount ?? game.periodCount);
+    const wasTech = game.pack === "tech";
+    const standardPeriodCount = wasTech ? game.standardPeriodCount ?? gameLengths[0] - 1 : game.periodCount;
+    const techPeriodCount = wasTech ? packPeriods(game.pack, game.periodCount + 1) - 1 : game.techPeriodCount;
+    const periodCount = pack === "tech" ? techPeriodCount ?? techDefaultPeriods - 1 : standardPeriodCount;
+    const market = await openingMarket(context, pack, periodCount);
 
-    await context.db.patch(game._id, market);
+    await context.db.patch(game._id, { ...market, standardPeriodCount, techPeriodCount });
 
     for (const seat of seats)
     {

@@ -1,3 +1,4 @@
+import { packPeriods } from "../../shared/packs";
 import { SpectatorHeader } from "../SpectatorHeader";
 import { RightsIssue } from "../RightsIssue";
 import { useConvexAuth, useConvexConnectionState, useMutation, useQuery } from "convex/react";
@@ -17,6 +18,7 @@ import "./tv-display.css";
 export function SpectatorScreen({ board }: { board: Board })
 {
     const skipRights = useMutation(api.rightsIssue.skip);
+    const setLength = useMutation(api.games.setLength);
     const setPack = useMutation(api.games.setPack);
     const start = useMutation(api.games.start);
     const nextSpectator = useMutation(api.rounds.nextSpectator);
@@ -90,6 +92,10 @@ export function SpectatorScreen({ board }: { board: Board })
                 {
                     void run(() => setPack({ code: game.code, pack }));
                 }}
+                onLength={(periods) =>
+                {
+                    void run(() => setLength({ code: game.code, periodCount: periods - 1 }));
+                }}
                 onStart={() =>
                 {
                     void run(() => start({ code: game.code }));
@@ -116,7 +122,7 @@ export function SpectatorScreen({ board }: { board: Board })
                     </div>
                     <div className="card card-green title-heading">
                         <h1 id="stockmarket-header">Stockmarket!</h1>
-                        <p>{`Period ${game.currentPeriod + 1} / ${game.periodCount + 1}`}</p>
+                        <p>{`Period ${packPeriods(game.pack, game.currentPeriod + 1)} / ${packPeriods(game.pack, game.periodCount + 1)}`}</p>
                     </div>
                 </header>
                 <div className="game-layout">

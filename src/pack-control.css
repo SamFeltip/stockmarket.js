@@ -23,6 +23,20 @@
     font-size: clamp(0.72rem, 2.5vw, 0.88rem);
     white-space: nowrap;
 }
+.pack-options .pack-option-idle {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #284b25;
+    --bs-btn-border-color: #081f0b;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #365e33;
+    --bs-btn-hover-border-color: #081f0b;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #284b25;
+    --bs-btn-active-border-color: #081f0b;
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: #284b25;
+    --bs-btn-disabled-border-color: #081f0b;
+}
 .pack-option span { font-size: inherit; }
 .pack-option svg, .pack-current svg { flex: none; width: 1.1rem; height: 1.1rem; }
 .pack-current { justify-self: center; padding: 0.45rem 0.75rem; }

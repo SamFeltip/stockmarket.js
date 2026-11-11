@@ -1,13 +1,15 @@
 import { PackControl } from "../PackControl";
-import type { Pack } from "../../shared/packs";
+import { GameLengthControl } from "../GameLengthControl";
+import { packPeriods, type Pack } from "../../shared/packs";
 import { Link } from "react-router-dom";
 import { Alert } from "../shared";
 import { JoinCard } from "./Dashboard";
 import { NpcLobbyControls } from "../npc/NpcLobbyControls";
 import type { Board } from "./types";
 
-export function SpectatorLobby({ board, phoneUrl, busy, error, onStart, onPack }: {
+export function SpectatorLobby({ board, phoneUrl, busy, error, onStart, onPack, onLength }: {
     board: Board; phoneUrl: string; busy: boolean; error: string; onStart: () => void; onPack: (pack: Pack) => void;
+    onLength: (periods: number) => void;
 })
 {
     const { game } = board;
@@ -30,7 +32,16 @@ export function SpectatorLobby({ board, phoneUrl, busy, error, onStart, onPack }
                     <PackControl pack={game.pack} busy={busy} onChange={board.canControl ? onPack : undefined} />
                     <div className="game-length">
                         <p>Game length</p>
-                        <span className="length-value bg-dark rounded">{`${game.periodCount + 1} periods`}</span>
+                        {game.pack === "tech" && board.canControl ? (
+                            <GameLengthControl
+                                pack={game.pack}
+                                periods={packPeriods(game.pack, game.periodCount + 1)}
+                                busy={busy}
+                                onChange={onLength}
+                            />
+                        ) : (
+                            <span className="length-value bg-dark rounded">{`${packPeriods(game.pack, game.periodCount + 1)} periods`}</span>
+                        )}
                     </div>
                     <Alert message={error} />
                     <div className="lobby-actions">

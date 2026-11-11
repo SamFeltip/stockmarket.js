@@ -574,6 +574,7 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 .game-metric-value { display: flex; align-items: baseline; gap: 0.35rem; line-height: 1.15; font-variant-numeric: tabular-nums; }
 .game-metric-value strong { font-size: 1.1rem; font-weight: 600; color: #fff284; }
 .game-metric-value > span { color: #c6d7c3; font-size: 0.7rem; white-space: nowrap; }
+.game-metric-date { color: #c6d7c3; font-size: 0.65rem; white-space: nowrap; }
 .game-metric progress { appearance: none; width: 100%; height: 5px; margin-top: 0.15rem; border: 0; border-radius: 2px; overflow: hidden; background: #4b6b40; color: #fff284; }
 .game-metric progress::-webkit-progress-bar { background: #4b6b40; }
 .game-metric progress::-webkit-progress-value { background: #fff284; border-radius: 2px; }
@@ -656,12 +657,6 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 .cash-reveal-delta.text-secondary { color: #c1c8be !important; }
 
 .round-player-cash .net-worth-number, .round-player-cash .wealth-delta { font-size: inherit; }
-
-.game-length-control { display: flex; justify-content: center; align-items: stretch; gap: 0.5rem; }
-.game-length-control > button { width: 2.75rem; min-height: 2.75rem; padding: 0.25rem; font-size: 1.25rem; }
-.game-length-value { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 6rem; padding: 0.25rem 1rem; line-height: 1.2; }
-.game-length-value strong { font-size: 1.1rem; }
-.game-length-value span { font-size: 0.75rem; }
 
 .lobby-empty-seat { display: none; }
 
