@@ -153,6 +153,29 @@
 .spectator-round-end .round-reveal-stock { grid-template-rows: clamp(8rem, 28vh, 16.5rem) minmax(7rem, 1fr); }
 .spectator-round-end .round-reveal:not(.round-reveal-stock) { grid-template-rows: minmax(min-content, 1fr); }
 .spectator-round-end .round-reveal > :not(.round-reveal-chart) { padding: 0.5rem !important; }
+.spectator-round-end .round-reveal-stock .round-result {
+    min-height: 0;
+    overflow: auto;
+    justify-content: safe center !important;
+}
+.spectator-round-end .round-result .stock-result {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas: "was now" "before after" "change change";
+    gap: 0.125rem 0.5rem;
+    padding: 0.25rem !important;
+}
+.spectator-round-end .round-result .stock-result > :is(p, h2) {
+    margin: 0;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+.spectator-round-end .round-result .stock-result > h2 { font-size: clamp(1rem, 3vh, 1.6rem); }
+.spectator-round-end .round-result .stock-result > p:first-child { grid-area: was; }
+.spectator-round-end .round-result .stock-result > h2:nth-child(2) { grid-area: before; }
+.spectator-round-end .round-result .stock-result-change { grid-area: change; font-size: 1rem; }
+.spectator-round-end .round-result .stock-result > p:nth-child(4) { grid-area: now; }
+.spectator-round-end .round-result .stock-result > h2:last-child { grid-area: after; }
 .spectator-round-end .game-stock-view img { max-height: clamp(3rem, 10vh, 6rem) !important; padding: 0.25rem !important; }
 .spectator-round-end .game-insight-card > img { max-height: clamp(2rem, 7vh, 4rem); object-fit: contain; }
 .spectator-round-end .round-reveal-chart { position: relative; display: grid; grid-template-rows: minmax(0, 1fr) auto; min-height: 0; padding: 0.25rem !important; }

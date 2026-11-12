@@ -100,7 +100,7 @@ label.suspension-stock { cursor: pointer; }
 @media (max-width: 575.98px) and (max-height: 719.98px) {
     .player-suspension-round .suspension-heading h1 { font-size: 1.3rem; margin: 0.15rem 0; }
     .player-suspension-round .suspension-heading p { font-size: 0.8rem; line-height: 1.25; }
-    .player-suspension-round .suspension-stocks { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.375rem; }
+    .player-suspension-round .suspension-stocks { gap: 0.375rem; }
     .player-suspension-round .suspension-stock { padding: 0.35rem; line-height: 1.15; }
     .player-suspension-round .suspension-stock > img { width: 1.75rem; height: 1.75rem; }
     .player-suspension-round .suspension-stock > strong { font-size: 0.75rem; }
@@ -113,10 +113,6 @@ label.suspension-stock { cursor: pointer; }
     .player-suspension-round .suspension-valuations strong { font-size: 0.75rem; overflow-wrap: anywhere; }
     .player-suspension-round .suspension-holders { padding-top: 0.25rem; }
     .player-suspension-round .suspension-check { top: 0.3rem; right: 0.3rem; width: 1rem; height: 1rem; }
-}
-
-@media (576px <= width < 768px), (576px <= width < 992px) and (pointer: coarse) {
-    .player-suspension-round .suspension-stocks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-height: 480px) and (576px <= width < 768px),
