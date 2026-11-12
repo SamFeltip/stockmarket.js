@@ -1,19 +1,22 @@
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { loanAmount } from "../shared/chance-cards";
+import { cashCardAward } from "../shared/chance-cards";
 import { hideModal } from "./bootstrap";
 import { Alert, Modal, money, useAction } from "./shared";
 import type { Board } from "./types";
 
 export type LoanActivation = (insightId: Board["insights"][number]["_id"]) => Promise<void>;
 
-export function GovernmentLoanModal({ board, insightId, used, onActivate }: {
-    board: Board; insightId: Board["insights"][number]["_id"]; used: boolean; onActivate?: LoanActivation;
+export function GovernmentLoanModal({ board, insightId, used, onActivate, kind = "loan" }: {
+    board: Board; insightId: Board["insights"][number]["_id"]; used: boolean; onActivate?: LoanActivation; kind?: "loan" | "print-money";
 })
 {
     const activate = useMutation(api.trading.activateGovernmentLoan);
     const { run, busy, error } = useAction();
     const canActivate = !used && board.game.status === "playing" && board.game.currentPlayerId === board.player._id;
+    const printMoney = kind === "print-money";
+    const title = printMoney ? "Print Money" : "Government Loan";
+    const award = cashCardAward(kind, board.game.pack, board.player.cash)!;
     const id = `chance-card-${insightId}`;
 
     function closeDialog()
@@ -26,12 +29,13 @@ export function GovernmentLoanModal({ board, insightId, used, onActivate }: {
     }
 
     return (
-        <Modal id={id} title="Government Loan" mobileDrawer>
+        <Modal id={id} title={title} mobileDrawer>
             <div className="modal-body loan-detail government-loan-detail">
-                <h2 className="text-black mb-0">Government Loan</h2>
+                <h2 className="text-black mb-0">{title}</h2>
                 <div className="government-loan-content">
                     <img src="/static/imgs/icons/cash.svg" alt="" className="government-loan-icon" />
-                    <h3>{`Receive £${money(loanAmount(board.game.pack))}`}</h3>
+                    <h3>{printMoney ? "Double your cash" : `Receive £${money(award.amount)}`}</h3>
+                    {printMoney && <p>{`Add £${money(award.amount)} to your current balance.`}</p>}
                     <p className="government-loan-instructions">
                         You can use this card once.
                         <br />

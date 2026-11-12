@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { api, internal } from "../../convex/_generated/api";
+import { applyTurn } from "../../convex/game/commands";
 import { buildNpcObservation } from "../../convex/npc/observation";
 import { decide, emptyMemory, isLegalProposal, roster } from "../../packages/npc-engine/src";
 import { rightsPurchase, suspensionChoice } from "../../packages/npc-engine/src/chance";
@@ -98,6 +99,15 @@ it("claims retained Debentures at the opening price and excludes expired claims 
     const input = await observe();
     const opening = board.game.prices.find((price) => price.stockKey === 8)!.value;
 
+    expect(input.legalActions.filter((action) => action.kind !== "pass" && action.stockKey === 8)).toEqual([]);
+
+    for (const kind of ["buy", "sell"] as const)
+    {
+        await expect(t.run((context) => applyTurn(context, {
+            playerId: npc._id, expectedPeriod: 1, expectedTurn: 1, action: { kind, stockKey: 8, quantity: 1000 },
+        }, { name: npc.name, profileRoot: npc.profileRoot }))).rejects.toThrow("This stock cannot be traded");
+    }
+
     expect(input.chanceOffers).toEqual([{ action: { kind: "debenture", insightId, stockKey: 8 },
         amount: opening * 10_000 }]);
     await t.run(async (context) => context.db.patch(board.game._id, { currentPeriod: 3 }));
@@ -108,6 +118,8 @@ it("claims retained Debentures at the opening price and excludes expired claims 
 
     expect(player.cash).toBe(5000 + opening * 10_000);
     expect(player.holdings).toEqual([{ stockKey: 8, quantity: 0 }]);
+    expect(await t.run((context) => context.db.query("npcTraces").unique()))
+        .toMatchObject({ action: { kind: "debenture", insightId, stockKey: 8 } });
     expect((await observe()).chanceOffers).toEqual([]);
 });
 

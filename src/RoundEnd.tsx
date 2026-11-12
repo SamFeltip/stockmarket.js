@@ -21,7 +21,7 @@ import type { Board } from "./types";
 
 export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
     board: Board; onBeginSuspensions?: () => Promise<void>;
-    onSuspensionDecision?: (insightId: Board["insights"][number]["_id"], stockKey?: number) => Promise<void>;
+    onSuspensionDecision?: (insightId: Board["insights"][number]["_id"], stockKey?: number, playerIds?: Board["player"]["_id"][]) => Promise<void>;
 })
 {
     const { game, stocks, insights } = board;
@@ -105,7 +105,7 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
                     own={card.playerId === board.player._id}
                     busy={busy}
                     error={error}
-                    onDecision={(stockKey) => run(async () =>
+                    onDecision={(stockKey, playerIds) => run(async () =>
                     {
                         if (game.suspensionPeriod !== game.currentPeriod)
                         {
@@ -113,9 +113,9 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
                         }
 
                         await (onSuspensionDecision
-                            ? onSuspensionDecision(card._id, stockKey)
+                            ? onSuspensionDecision(card._id, stockKey, playerIds)
                             : suspendShare({ code: game.code, expectedPeriod: game.currentPeriod,
-                                insightId: card._id, stockKey }));
+                                insightId: card._id, stockKey, playerIds }));
                     })}
                 />
             </div>

@@ -3,6 +3,7 @@ import { rightsIssueOrder } from "../shared/rights-issue";
 import { SpectatorHeader } from "./SpectatorHeader";
 import { Dashboard, Feed } from "./SpectatorDashboard";
 import { SpectatorSkip } from "./RightsIssueSkip";
+import { presentationForPack } from "./pack-presentation";
 import { spectatorBoard } from "./spectator-board";
 import "./spectator/spectator.css";
 import "./spectator/tv-display.css";
@@ -18,6 +19,7 @@ export function RightsIssueSpectatorDesktop({ board, onDecision }: {
     const stock = board.stocks.find((item) => item.key === issue.stockKey)!;
     const snapshot = { ...board, game: { ...board.game, turn: issue.turn } };
     const publicBoard = spectatorBoard(snapshot);
+    const { rightsDescription } = presentationForPack(board.game.pack);
     const order = rightsIssueOrder(board.players, issue.actorPlayerId).map((item) => item._id);
 
     return (
@@ -40,6 +42,7 @@ export function RightsIssueSpectatorDesktop({ board, onDecision }: {
                                         {issue.completed ? "Rights Issue complete. Resuming trading…"
                                             : `${player.name} is deciding how much ${stock.name} stock to purchase during the Rights Issue.`}
                                     </p>
+                                    <p className="d-block mt-1">{rightsDescription}</p>
                                 </div>
                                 <img className="rights-notice-stock" src={stock.imagePath} alt={stock.name} />
                             </div>

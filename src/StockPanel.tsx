@@ -1,3 +1,4 @@
+import { tradingQuote } from "../shared/suspensions";
 import { sharesAvailable } from "../shared/rules";
 import { lazy, Suspense } from "react";
 import { Insights, money } from "./shared";
@@ -12,10 +13,11 @@ const StockPriceChart = lazy(async () => import("./StockPriceChart"));
 export function StockPanel({ board, stock }: { board: Board; stock: Stock })
 {
     const { game, player, players, insights, stocks } = board;
-    const price = game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
+    const price = tradingQuote(game, stock.key, player._id) ?? 0;
+    const marketPrice = game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
     const startingPrice = game.priceHistory?.find((snapshot) => snapshot.period === 0)?.prices
         .find((item) => item.stockKey === stock.key)?.value ?? stock.startingValue;
-    const priceChange = Math.round((price - startingPrice) * 100) / 100;
+    const priceChange = Math.round((marketPrice - startingPrice) * 100) / 100;
     const held = player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0;
     const ownInsights = insights.filter((insight) => insight.stockKey === stock.key);
     const available = sharesAvailable(players, stock.key);
@@ -33,6 +35,7 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
                                 {" Shares held"}
                             </h4>
                             <p>{`Worth £${money(held * price)}`}</p>
+                            {price !== marketPrice && <p>{`Share Suspended · £${price.toFixed(2)} per share this period`}</p>}
                         </div>
                     </section>
                     <Investors players={players} stockKey={stock.key} />

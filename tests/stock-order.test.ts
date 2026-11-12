@@ -26,7 +26,6 @@ for (const [pack, keys] of [
     ["classic", [7, 8, 9, 10, 11, 12]],
     ["frantic", [8, 9, 10, 11, 7, 12]],
     ["tech", [104, 106, 105, 101, 103, 102]],
-    ["crashing", [7, 8, 9, 10, 11, 12]],
 ] as const)
 {
     it(`shares the same ${pack} volatility order for phone, spectator, TV and reveals`, async () =>

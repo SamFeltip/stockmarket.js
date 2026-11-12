@@ -12,10 +12,11 @@ export type Player = Pick<PlayerBoard["players"][number],
     };
 
 export interface Board {
-    game: Pick<PlayerBoard["game"], "code" | "status" | "currentPeriod" | "periodCount" | "prices" | "priceHistory" | "suspended" | "suspensionPeriod" | "rightsIssue" | "pack" | "tradingDates"> & { turn?: number; currentPlayerId?: string };
+    game: Pick<PlayerBoard["game"], "code" | "status" | "currentPeriod" | "periodCount" | "prices" | "priceHistory" | "suspended" | "targetedSuspensions" | "suspensionPeriod" | "rightsIssue" | "pack" | "tradingDates">
+      & Partial<Pick<PlayerBoard["game"], "tradingSuspensions">> & { turn?: number; currentPlayerId?: string };
     trades?: PlayerBoard["trades"];
     stocks: Stock[];
     insights: Insight[];
     players: Player[];
-    feed: Pick<PlayerBoard["feed"][number], "_id" | "_creationTime" | "period" | "title" | "message" | "colour" | "imageRoot" | "stockKey" | "quantity" | "cashBonus" | "debenturePayout" | "roleBefore" | "roleAfter">[];
+    feed: Pick<PlayerBoard["feed"][number], "_id" | "_creationTime" | "period" | "title" | "message" | "colour" | "imageRoot" | "stockKey" | "quantity" | "cashBonus" | "debenturePayout" | "redemptionName" | "roleBefore" | "roleAfter">[];
 }

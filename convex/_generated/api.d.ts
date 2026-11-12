@@ -36,6 +36,7 @@ import type * as npc_rightsIssue from "../npc/rightsIssue.js";
 import type * as npc_scheduling from "../npc/scheduling.js";
 import type * as npc_suspensions from "../npc/suspensions.js";
 import type * as npc_worker from "../npc/worker.js";
+import type * as packSettings from "../packSettings.js";
 import type * as rightsIssue from "../rightsIssue.js";
 import type * as rounds from "../rounds.js";
 import type * as suspensions from "../suspensions.js";
@@ -78,6 +79,7 @@ declare const fullApi: ApiFromModules<{
   "npc/scheduling": typeof npc_scheduling;
   "npc/suspensions": typeof npc_suspensions;
   "npc/worker": typeof npc_worker;
+  packSettings: typeof packSettings;
   rightsIssue: typeof rightsIssue;
   rounds: typeof rounds;
   suspensions: typeof suspensions;

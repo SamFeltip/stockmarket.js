@@ -93,8 +93,8 @@ export const beginSuspensions = mutation({
 
 export const suspendShare = mutation({
     args: { code: v.string(), expectedPeriod: v.number(),
-        insightId: v.id("playerInsights"), stockKey: v.optional(v.number()) },
-    handler: async (context, { code, expectedPeriod, insightId, stockKey }) =>
+        insightId: v.id("playerInsights"), stockKey: v.optional(v.number()), playerIds: v.optional(v.array(v.id("players"))) },
+    handler: async (context, { code, expectedPeriod, insightId, stockKey, playerIds }) =>
     {
         const { game, player } = await member(context, code);
 
@@ -105,7 +105,7 @@ export const suspendShare = mutation({
             fail("Wait for your Share Suspended card");
         }
 
-        const updated = await spendSuspension(context, game, card, stockKey);
+        const updated = await spendSuspension(context, game, card, stockKey, playerIds);
 
         await advanceNpcSuspensions(context, updated);
     },

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { insightCatalog } from "../../stockmarket-shared/src/catalog";
 import { api } from "../convex/_generated/api";
 import { chooseTechStart, techPrices } from "../../stockmarket-shared/src/engine/techMarket";
 import { techDefaultPeriods } from "../shared/packs";
@@ -87,41 +88,36 @@ describe("stock packs", () =>
         expect(franticStocks.map((stock) => stock.key)).toEqual([8, 9, 10, 11, 7, 12]);
         expect(tvStocks?.map((stock) => stock.key)).toEqual(franticStocks.map((stock) => stock.key));
         expect(franticStocks.at(-2)?.variation).toBe(franticStocks.at(-1)?.variation);
-        expect(boards.every((board) => board.insights.length === 12
-          && board.insights.filter((card) => card.chanceKind).length >= 2)).toBe(true);
-        const catalog = await t.run((context) => context.db.query("gameCatalogs").first());
-        const values = (key: number) => catalog!.cards.filter((card) => card.stockKey === key)
-            .map((card) => card.value).toSorted((a, b) => a - b);
+        const allDealt = boards.flatMap((board) => board.insights);
+        const catalog = (await t.run((context) => context.db.query("gameCatalogs").first()))!.cards;
+        const extra = (card: { id?: string; catalogCardId?: string }) =>
+            (card.id ?? card.catalogCardId)?.startsWith("frantic:downside:") ?? false;
 
-        expect(values(7)).toEqual(values(12));
-        expect(Math.max(...values(12))).toBeGreaterThan(20);
-        await expect(sam.mutation(api.games.setPack, { code, pack: "classic" })).rejects.toThrow("lobby host");
-    });
+        expect(boards.every((board) => board.insights.filter((card) => !extra(card)).length === 12
+          && board.insights.filter((card) => card.chanceKind).length >= 2
+          && board.insights.filter((card) => extra(card)).length > 12)).toBe(true);
+        expect(new Set(allDealt.map((card) => card.catalogCardId)).size).toBe(allDealt.length);
+        expect(allDealt.filter((card) => extra(card)).every((card) => card.value < 0)).toBe(true);
 
-    it("rejects a Frantic catalog that cannot cover the base hands and reserved chance cards", async () =>
-    {
-        const { t, sam } = await setup();
-
-        await sam.mutation(api.games.setPack, { code, pack: "frantic" });
-        await t.run(async (context) =>
+        for (const stock of franticStocks)
         {
-            const cards = await context.db.query("insights").collect();
-            const retained = new Set(cards.filter((card) => card.stockKey !== 7 && card.stockKey !== 12)
-                .slice(0, 12).map((card) => card._id));
-            for (const card of cards)
-            {
-                if (!retained.has(card._id))
-                {
-                    await context.db.delete(card._id);
-                }
-            }
-        });
+            const cards = catalog.filter((card) => card.stockKey === stock.key);
+            const positives = cards.filter((card) => card.value > 0).map((card) => card.value);
+            const negatives = cards.filter((card) => card.value < 0).map((card) => card.value);
+            const classic = insightCatalog.filter((card) => card.stockKey === stock.key && card.value < 0);
+            const positiveSource = stock.key === 7 ? 12 : stock.key;
+            const oldFrantic = insightCatalog.filter((card) => card.stockKey === positiveSource && card.value > 0)
+                .map((card) => Math.round(card.value * 1.45 ** stock.variation * 100) / 100);
+            const gain = positives.reduce((sum, value) => sum + value, 0);
+            const loss = -negatives.reduce((sum, value) => sum + value, 0);
 
-        await expect(sam.mutation(api.games.start, { code })).rejects.toThrow("Not enough insights for all players");
-        const board = await sam.query(api.board.get, { code });
+            expect(positives).toEqual(oldFrantic.map((value) => Math.round(value * 200) / 100));
+            expect(negatives.every((value) => classic.some((card) => card.value * 2 === value))).toBe(true);
+            expect(loss / gain).toBeGreaterThanOrEqual(0.475);
+            expect(loss / gain).toBeLessThan(0.5);
+        }
 
-        expect(board.game.status).toBe("waiting");
-        expect(board.insights).toEqual([]);
+        await expect(sam.mutation(api.games.setPack, { code, pack: "classic" })).rejects.toThrow("lobby host");
     });
 
     it("reveals all Tech forecasts after three turns each and settles twelve two-month blocks", async () =>
@@ -264,28 +260,5 @@ describe("stock packs", () =>
         expect(opened.every((seat) => seat.cash === 3_000_000)).toBe(true);
         expect(observation.catalog.every((card) => card.stockKey < 0)).toBe(true);
         expect(estimate(observation, true, "tech").map(({ stockKey }) => stockKey)).toEqual([106, 101, 102, 103, 104, 105]);
-    });
-
-    it("shows the Crashing shock in the reveal and settles it while honoring a suspended stock", async () =>
-    {
-        const { t, sam } = await setup();
-
-        await sam.mutation(api.games.setPack, { code, pack: "crashing" });
-        await sam.mutation(api.games.start, { code });
-        const { game } = await sam.query(api.board.get, { code });
-        const protectedStock = game.prices[0].stockKey;
-
-        await t.run((context) => context.db.patch(game._id, {
-            currentPeriod: 2, status: "closed", suspended: [protectedStock],
-        }));
-        const board = await t.query(api.tv.board, { code });
-
-        expect(board?.reveal?.insights).toHaveLength(6);
-        expect(board?.reveal?.insights.every((card) => card.description.includes("Market crash"))).toBe(true);
-        await sam.mutation(api.rounds.next, { code, expectedPeriod: 2 });
-        const after = await sam.query(api.board.get, { code });
-
-        expect(after.game.prices).toEqual(game.prices.map((price) => price.stockKey === protectedStock ? price
-            : { ...price, value: Math.round(price.value * 70) / 100 }));
     });
 });

@@ -1,12 +1,29 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { currentUser, fail, seedCatalog } from "./library";
+import { currentUser, fail, seedStocks } from "./library";
 import { stockFields, insightFields } from "./schema";
 import { displayGameStocks } from "../../stockmarket-shared/src/engine/packRules";
 import { readEngine } from "./engine";
+import { insightCatalog } from "../../stockmarket-shared/src/catalog";
 import { inStockOrder } from "../shared/rules";
 
-export const seed = internalMutation({ args: {}, handler: seedCatalog });
+export const seed = internalMutation({
+    args: {},
+    handler: async (context) =>
+    {
+        await seedStocks(context);
+
+        if (await context.db.query("insights").first())
+        {
+            return;
+        }
+
+        for (const insight of insightCatalog)
+        {
+            await context.db.insert("insights", insight);
+        }
+    },
+});
 
 // Use the Convex dashboard/CLI to load additional original database records.
 // Internal functions cannot be invoked by browser clients.

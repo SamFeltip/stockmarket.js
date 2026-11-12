@@ -19,7 +19,8 @@ label.suspension-stock { cursor: pointer; }
 .suspension-valuations strong { font-size: 1.2rem; font-weight: 500; }
 .suspension-stock.is-selected { border-color: #198754; background: #f0f6eb; }
 .suspension-stock:has(input:focus-visible) { outline: 2px solid #198754; outline-offset: 2px; }
-.suspension-stock.is-unavailable { opacity: 0.6; cursor: not-allowed; }
+.suspension-stock.is-unavailable { background: #dce0dc; border-color: #a4aca5; color: #414943; filter: grayscale(1); cursor: not-allowed; }
+.suspension-stock.is-unavailable :is(.suspension-stock-choice, .suspension-avatar-choice) { cursor: not-allowed; }
 .suspension-check { position: absolute; top: 0.5rem; right: 0.5rem; width: 1.4rem; height: 1.4rem; display: grid; place-items: center; border: 1px solid #70845b; border-radius: 50%; }
 .is-selected .suspension-check { background: #198754; border-color: #198754; color: white; }
 .suspension-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: auto; }
@@ -31,7 +32,7 @@ label.suspension-stock { cursor: pointer; }
 .suspension-panel:not(:has(.suspension-stocks)) { min-height: 65dvh; justify-content: center; }
 .suspension-portfolios { border: 1px solid #d4d9d2; border-radius: 0.5rem; padding: 1rem; }
 .suspension-portfolios h2 { font-size: 1.15rem; margin-bottom: 0.75rem; }
-.suspension-table-scroll { overflow-x: auto; }
+.suspension-table-scroll { overflow-x: auto; contain: inline-size; }
 .suspension-portfolios table { width: 100%; min-width: 40rem; border-collapse: collapse; font-size: 0.8rem; }
 .suspension-portfolios :is(th, td) { padding: 0.4rem; text-align: right; border-bottom: 1px solid #e0e5dd; white-space: nowrap; }
 .suspension-portfolios th:first-child { text-align: left; }
@@ -142,3 +143,37 @@ label.suspension-stock { cursor: pointer; }
 .suspension-holders small { font-size: 0.75rem; color: #636b66; }
 .suspension-holder-avatars { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.25rem; }
 .suspension-holder-avatars img { width: 1.65rem; height: 1.65rem; border-radius: 50%; object-fit: cover; }
+
+.suspension-stock-choice { display: grid; justify-items: center; gap: inherit; width: 100%; cursor: pointer; }
+.suspension-stock-choice > img { width: 3rem; height: 3rem; object-fit: contain; }
+.suspension-stock-choice input:disabled ~ * { cursor: not-allowed; }
+.suspension-stock:has(.suspension-stock-choice) { outline: none; }
+.suspension-stock-choice:has(input:focus-visible), .suspension-avatar-choice:has(input:focus-visible) { outline: 2px solid #198754; outline-offset: 2px; }
+.suspension-avatar-choice { display: inline-grid; position: relative; place-items: center; min-width: 1.5rem; min-height: 1.5rem; cursor: pointer; }
+.suspension-target-tick { position: absolute; bottom: 0; right: 0; display: grid; place-items: center; width: 0.9rem; height: 0.9rem; background: white; border: 1px solid #198754; border-radius: 50%; }
+.suspension-target-tick:has(svg) { border-color: transparent; }
+.suspension-target-tick svg { width: 0.9rem; height: 0.9rem; }
+@media (max-width: 575.98px), (max-height: 575px) {
+    .suspension-stock-choice > img { width: 1.75rem; height: 1.75rem; }
+}
+
+@media (max-width: 380px) {
+    .targeted-suspension .suspension-valuations { gap: 0.125rem; }
+    .player-suspension-round .targeted-suspension .suspension-valuations strong { font-size: 0.6875rem; white-space: nowrap; }
+}
+
+@media (max-width: 575.98px) {
+    .targeted-suspension .suspension-summary { gap: 0.5rem; }
+    .targeted-suspension:not(.suspension-spectator) .suspension-waiting { flex-direction: row; gap: 0.5rem; padding: 0.25rem; }
+    .targeted-suspension:not(.suspension-spectator) .suspension-waiting img { width: 2.5rem; height: 2.5rem; flex-shrink: 0; }
+    .targeted-suspension:not(.suspension-spectator) .suspension-waiting p { font-size: 0.85rem; text-align: start; }
+}
+
+@media (min-width: 992px) and (max-height: 800px) {
+    .targeted-suspension.suspension-spectator { gap: 0.5rem; }
+    .targeted-suspension.suspension-spectator .suspension-summary { gap: 0.5rem; padding: 0.75rem; }
+    .targeted-suspension.suspension-spectator .suspension-stock { padding-block: 0.4rem; }
+    .targeted-suspension.suspension-spectator .suspension-portfolios { padding: 0.5rem; }
+    .targeted-suspension.suspension-spectator .suspension-waiting img { width: 3rem; height: 3rem; }
+    .targeted-suspension .suspension-spectator-price { margin-block: 0.25rem; }
+}

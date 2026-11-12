@@ -1,11 +1,13 @@
 import { RightsIssueModal, type RightsActivation } from "./RightsIssueModal";
-import { DebentureModal } from "./DebentureModal";
+import { DebentureModal, debenturePresentation } from "./DebentureModal";
 import type { DebentureActivation } from "./DebentureModal";
 import { GovernmentLoanModal } from "./GovernmentLoanModal";
 import type { LoanActivation } from "./GovernmentLoanModal";
 import { Modal, money } from "./shared";
 import { chanceCards, chanceStockKey, loanAmount, privateCashPercent } from "../shared/chance-cards";
 import type { Board } from "./types";
+import { presentationForPack } from "./pack-presentation";
+import { debentureRuleFor, isStockRedemptionCard } from "../shared/debenture";
 import "./player-dock.css";
 
 export function PlayerDock({ board, onActivateLoan, onRedeemDebenture, onActivateRights }: {
@@ -13,8 +15,12 @@ export function PlayerDock({ board, onActivateLoan, onRedeemDebenture, onActivat
     onActivateRights?: RightsActivation;
 })
 {
+    const { pack } = board.game;
+    const { chanceEffects } = presentationForPack(pack);
+    const bonus = loanAmount(pack);
     const ownCards = board.insights.filter((card) => card.playerId === board.player._id
-      && (card.period === board.game.currentPeriod || (card.chanceKind === "debenture" && card.period < board.game.currentPeriod)));
+      && (card.period === board.game.currentPeriod
+        || (isStockRedemptionCard(card.chanceKind) && card.period < board.game.currentPeriod)));
     const cards = ownCards.filter((card) => card.stockKey === chanceStockKey && card.chanceKind)
         .flatMap((card) =>
         {
@@ -24,15 +30,14 @@ export function PlayerDock({ board, onActivateLoan, onRedeemDebenture, onActivat
                 return [];
             }
 
-            const tech = board.game.pack === "tech";
-            const bonus = loanAmount(board.game.pack);
             const loan = definition.kind === "loan";
-            const techEffects = { rights: "Buy extra shares at 20% off", debenture: "Protection against a price drop" };
-            const techEffect = tech && (definition.kind === "rights" || definition.kind === "debenture")
-                ? techEffects[definition.kind] : definition.effect;
-            const effect = loan ? `Collect £${money(bonus)}` : techEffect;
+            const cardEffect = isStockRedemptionCard(definition.kind)
+                ? debenturePresentation[debentureRuleFor(card, pack)].effect
+                : chanceEffects[definition.kind] ?? definition.effect;
+            const effect = loan ? `Collect £${money(bonus)}` : cardEffect;
 
             return [{ ...definition, id: card._id, used: Boolean(card.used), effect,
+                description: definition.kind === "hold" && chanceEffects.hold ? chanceEffects.hold : definition.description,
                 icon: loan ? `£${bonus / 1000}k` : definition.icon }];
         });
     const granted = cards.filter((card) => !card.used);
@@ -64,7 +69,7 @@ export function PlayerDock({ board, onActivateLoan, onRedeemDebenture, onActivat
                     <h2 id="chance-cards-label">Chance Cards</h2>
                     <div className="dock-power-cards" role="region" aria-labelledby="chance-cards-label">
                         {granted.map((card) => (
-                            <button key={card.id} type="button" className={`dock-power-card dock-power-${card.kind}`} data-bs-toggle="modal" data-bs-target={`#chance-card-${card.id}`} aria-label={`${card.name}: ${card.effect}`}>
+                            <button key={card.id} type="button" className={`dock-power-card dock-power-${card.kind === "print-money" ? "loan" : card.kind}`} data-bs-toggle="modal" data-bs-target={`#chance-card-${card.id}`} aria-label={`${card.name}: ${card.effect}`}>
                                 <span className="dock-power-icon" aria-hidden="true">{card.icon}</span>
                                 <span className="dock-power-copy">
                                     <strong>{card.name}</strong>
@@ -82,11 +87,12 @@ export function PlayerDock({ board, onActivateLoan, onRedeemDebenture, onActivat
             )}
             {cards.map((card) =>
             {
-                if (card.kind === "loan")
+                if (card.kind === "loan" || card.kind === "print-money")
                 {
                     return (
                         <GovernmentLoanModal
                             key={card.id}
+                            kind={card.kind}
                             board={board}
                             insightId={card.id}
                             used={card.used}
@@ -108,7 +114,7 @@ export function PlayerDock({ board, onActivateLoan, onRedeemDebenture, onActivat
                     );
                 }
 
-                if (card.kind === "debenture")
+                if (isStockRedemptionCard(card.kind))
                 {
                     return (
                         <DebentureModal

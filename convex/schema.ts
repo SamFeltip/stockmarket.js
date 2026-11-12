@@ -1,6 +1,7 @@
 import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { packIds } from "../shared/packs";
 import { roster, npcDifficulties } from "../../stockmarket-shared/src/npc-catalog";
 
 export const stockFields = {
@@ -22,11 +23,13 @@ export const actionValidator = v.union(v.object({ kind: v.literal("pass") }), v.
     kind: v.union(v.literal("buy"), v.literal("sell")), stockKey: v.number(), quantity: v.number(),
 }));
 
-export const packValidator = v.union(v.literal("classic"), v.literal("frantic"), v.literal("tech"), v.literal("crashing"));
+export const packValidator = v.union(...packIds.map((id) => v.literal(id)));
 
 const forecast = v.optional(v.object({ from: v.number(), to: v.number() }));
 
-export const chanceKindValidator = v.union(v.literal("rights"), v.literal("hold"), v.literal("loan"), v.literal("debenture"), v.literal("option"));
+export const chanceKindValidator = v.union(v.literal("rights"), v.literal("hold"), v.literal("loan"), v.literal("print-money"), v.literal("debenture"), v.literal("bankruptcy-buyout"), v.literal("option"));
+
+const debentureRule = v.optional(v.union(v.literal("bankruptcy"), v.literal("price-drop"), v.literal("fixed-bankruptcy")));
 
 const pricesValidator = v.array(v.object({ stockKey: v.number(), value: v.number() }));
 
@@ -59,6 +62,9 @@ export default defineSchema({
         }))),
         suspended: v.array(v.number()),
         suspensionPeriod: v.optional(v.number()),
+        targetedSuspensions: v.optional(v.array(v.object({ stockKey: v.number(), playerIds: v.array(v.id("players")) }))),
+        tradingSuspensions: v.optional(v.array(v.object({ stockKey: v.number(), value: v.number(),
+            excludedPlayerIds: v.array(v.id("players")) }))),
         rightsIssue: v.optional(v.object({
             insightId: v.id("playerInsights"), stockKey: v.number(), actorPlayerId: v.id("players"),
             period: v.number(), turn: v.number(), index: v.number(), completed: v.optional(v.boolean()),
@@ -82,11 +88,11 @@ export default defineSchema({
         gameId: v.id("games"), playerId: v.id("players"), period: v.number(),
         stockKey: v.number(), description: v.string(), value: v.number(), resolved: v.boolean(),
         used: v.optional(v.boolean()), catalogCardId: v.optional(v.string()),
-        chanceKind: v.optional(chanceKindValidator), forecast,
+        chanceKind: v.optional(chanceKindValidator), debentureRule, forecast,
     }).index("by_game_period", ["gameId", "period"]).index("by_player_period", ["playerId", "period"]),
     gameCatalogs: defineTable({ gameId: v.id("games"), version: v.string(), cards: v.array(v.object({
         id: v.string(), stockKey: v.number(), value: v.number(), description: v.string(),
-        chanceKind: v.optional(chanceKindValidator), forecast,
+        chanceKind: v.optional(chanceKindValidator), debentureRule, forecast,
     })) }).index("by_game", ["gameId"]),
     gameActions: defineTable({ gameId: v.id("games"), period: v.number(), turn: v.number(),
         actorPlayerId: v.id("players"), action: v.union(actionValidator, v.object({
@@ -115,7 +121,8 @@ export default defineSchema({
     feed: defineTable({
         gameId: v.id("games"), period: v.number(), title: v.string(),
         message: v.string(), imageRoot: v.string(), colour: v.string(),
-        debenturePayout: v.optional(v.number()), cashBonus: v.optional(v.number()),
+        debenturePayout: v.optional(v.number()), redemptionName: v.optional(v.string()),
+        cashBonus: v.optional(v.number()),
         stockKey: v.optional(v.number()), quantity: v.optional(v.number()),
         roleBefore: v.optional(companyRoleValidator), roleAfter: v.optional(companyRoleValidator),
     }).index("by_game", ["gameId"]),

@@ -7,9 +7,21 @@ export const revealPauseMs = 500;
 
 export const revealStartDelayMs = actionAnimationMs + revealPauseMs;
 
+const standardReveal = { interval: 2500, fastAnimation: false };
+const insightReveals = {
+    classic: standardReveal,
+    frantic: standardReveal,
+    tech: { interval: 250, fastAnimation: true },
+} satisfies Record<Pack, typeof standardReveal>;
+
+export function insightRevealPresentation(pack: Pack = "classic")
+{
+    return insightReveals[pack];
+}
+
 export function insightRevealMs(pack?: Pack)
 {
-    return pack === "tech" ? 250 : 2500;
+    return insightRevealPresentation(pack).interval;
 }
 
 export function revealDelay(lastActionAt: number | undefined, now = Date.now())

@@ -2,10 +2,12 @@ import { skipDealtSuspensions } from "./game-setup";
 import { describe, expect, it } from "vitest";
 import { api } from "../convex/_generated/api";
 import { chartDateAxis, chartSeries, priceSeries } from "../src/price-history";
-import { tooltipLabel, tradeMarkerLayout } from "../src/TradeMarkers";
+import { tooltipLabel, tradeMarkerLayout, TradeStack } from "../src/TradeMarkers";
 import { packIds } from "../shared/packs";
 import { roundProgress } from "../src/round-preview";
 import { setup } from "./game-setup";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
 describe("Stock history and investors", () =>
 {
@@ -117,13 +119,16 @@ describe("Stock history and investors", () =>
 
         const points = chartSeries(settled.game, 8, [...settled.trades, { ...trade, period: 2 }])
             .filter((point) => point.round <= 1);
-        const width = 1 / (points.length - 1);
+        const tradePoints = points.filter((point) => point.trades);
 
-        expect(points.filter((point) => point.trades)).toEqual([
-            { round: width, value: 2.5, trades: [trade, otherBuy] },
-            { round: 2 * width, value: 2.5, trades: [sale] },
+        expect(tradePoints.map(({ value, trades }) => ({ value, trades }))).toEqual([
+            { value: 2.5, trades: [trade, otherBuy] },
+            { value: 2.5, trades: [sale] },
         ]);
-        expect(points.map((point) => point.round)).toEqual(points.map((_, index) => index / (points.length - 1)));
+        const positions = points.map((point) => point.round);
+
+        expect(positions).toEqual(positions.toSorted((a, b) => a - b));
+        expect(points.at(-1)?.round).toBe(1);
 
         for (const price of settled.game.prices)
         {
@@ -138,9 +143,11 @@ describe("Stock history and investors", () =>
         expect((await sam.query(api.board.get, { code: "test" })).game.priceHistory).toEqual(settled.game.priceHistory);
         expect(settled.insights.filter((card) => card.period === settled.game.currentPeriod)).toHaveLength(10);
     });
-    it("begins history at the current price for older games without inventing past prices", async () =>
+    it("begins history at the current price when a game has no recorded quotes", async () =>
     {
         const { t, sam } = await setup();
+
+        await sam.mutation(api.games.start, { code: "test" });
         const board = await sam.query(api.board.get, { code: "test" });
 
         await t.run(async (context) =>
@@ -182,6 +189,10 @@ for (const pack of packIds)
                 const live = await sam.query(api.board.get, { code });
                 const points = chartSeries(live.game, stockKey, live.trades).filter((point) => point.value !== null);
 
+                const publicBoard = (await t.query(api.tv.board, { code }))!;
+
+                expect(publicBoard.reveal).toBeNull();
+                expect(publicBoard.trades).toEqual(live.trades);
                 expect(points.every((point) => point.value === opening)).toBe(true);
                 expect(points.flatMap((point) => point.trades?.map((trade) => trade.quantity) ?? []))
                     .toEqual([1000, -1000]);
@@ -245,4 +256,26 @@ it("records each insight within a fixed round column and retains the path in sub
     ]);
     expect(settled.game.prices.find((price) => price.stockKey === 8)?.value).toBe(1.5);
     expect(priceSeries({ ...settled.game, currentPeriod: 2 }, 8).slice(0, 4)).toEqual(points);
+});
+
+it("keeps a portrait for every trade in a dense Frantic period", () =>
+{
+    const stockKey = 12;
+    const prices = [{ stockKey, value: 24 }];
+    const trades = Array.from({ length: 18 }, (_, index) => ({
+        stockKey, period: 0, bargainRound: 1, title: `Player ${index}`, imageRoot: `/portrait/${index}`, quantity: 1000,
+    }));
+    const game = { code: "dense", status: "playing" as const, suspended: [],
+        pack: "frantic" as const, currentPeriod: 1, periodCount: 9, prices,
+        priceHistory: [{ period: 0, prices }, { period: 1, prices,
+            steps: [{ stockKey, values: Array.from({ length: 26 }, () => 24), count: 26 }] }] };
+    const points = chartSeries(game, stockKey, trades);
+    const layout = tradeMarkerLayout(points, 220, 115, 10);
+    const marker = points.find((point) => point.trades)!;
+    const markup = renderToStaticMarkup(createElement("svg", {}, createElement(TradeStack, {
+        trades: marker.trades!, x: 25, y: 100, layout,
+    })));
+
+    expect(layout.size).toBeGreaterThanOrEqual(10);
+    expect(markup.match(/<image /g)).toHaveLength(trades.length);
 });

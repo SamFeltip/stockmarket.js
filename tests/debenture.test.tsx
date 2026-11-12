@@ -2,6 +2,8 @@ import { expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { api } from "../convex/_generated/api";
+import { FeedMessage } from "../src/FeedMessage";
+import { tradeLabel } from "../src/TradeMarkers";
 import { PlayAnimation } from "../src/PlayAnimation";
 import { DebentureModal, DebentureStockChoice } from "../src/DebentureModal";
 import { PlayerDock } from "../src/PlayerDock";
@@ -35,7 +37,7 @@ it("retains unused debentures privately across deals and removes their physical 
     expect(html).toContain("type=\"radio\"");
     expect(html).toContain("Cancel");
     expect(html).toContain("Sell");
-    expect((await sam.query(api.board.get, { code: "test" })).debentureOffers)
+    expect((await sam.query(api.board.get, { code: "test" })).debentureOffers.bankruptcy)
         .toContainEqual({ stockKey: 8, quantity: 20_000, amount: 50_000, unitPrice: 2.5,
             claimUntilPeriod: 2, unavailableReason: null });
 });
@@ -44,6 +46,9 @@ it("sells only the chosen bankrupt holding at the game opening price, consumes t
 {
     const { t, sam, board, insightId, command } = await bankruptGame();
 
+    await expect(sam.mutation(api.trading.play, {
+        code: "test", expectedPeriod: command.expectedPeriod, expectedTurn: command.expectedTurn, stockKey: 8, quantity: -1000,
+    })).rejects.toThrow("This stock cannot be traded");
     await sam.mutation(api.trading.redeemDebenture, command);
     const after = await sam.query(api.board.get, { code: "test" });
     const publicBoard = (await sam.query(api.tv.board, { code: "test" }))!;
@@ -57,13 +62,21 @@ it("sells only the chosen bankrupt holding at the game opening price, consumes t
     expect((await t.run(async (context) => await context.db.get(insightId)))?.used).toBe(true);
     expect(after.feed[0]).toMatchObject({ stockKey: 8, quantity: -20_000, debenturePayout: 50_000 });
     expect(publicBoard.feed[0].debenturePayout).toBe(50_000);
+    const feed = renderToStaticMarkup(<FeedMessage item={after.feed[0]} stocks={after.stocks} />);
+
+    expect(feed).toContain("Debenture sold at £50,000");
+    await t.run((context) => context.db.patch(board.game._id, { status: "closed" }));
+    const reveal = (await sam.query(api.tv.board, { code: "test" }))!.reveal!;
+
+    expect(tradeLabel(reveal.trades.find((trade) => trade.debenturePayout === 50_000)!))
+        .toContain("redeemed 20,000 shares with a Debenture for £50,000");
     const popup = renderToStaticMarkup(<PlayAnimation board={{ ...after, feed: [after.feed[0]] }} preview />);
 
     expect(popup).toContain("Debenture sold at £50,000");
     expect(popup).toContain("-20,000");
     expect(popup).toContain(board.stocks.find((stock) => stock.key === 8)!.imagePath);
     await t.run(async (context) => await context.db.patch(board.game._id,
-        { turn: 4, currentPlayerId: board.player._id, currentUserId: board.user._id }));
+        { status: "playing", turn: 4, currentPlayerId: board.player._id, currentUserId: board.user._id }));
     await expect(sam.mutation(api.trading.redeemDebenture, { ...command, expectedTurn: 4 }))
         .rejects.toThrow("cannot be used");
     expect((await sam.query(api.board.get, { code: "test" })).player.cash).toBe(after.player.cash);
@@ -106,7 +119,7 @@ it("expires old cards and allows a fresh card to claim in the second bankruptcy 
             await context.db.delete(action._id);
         }
     });
-    const offer = (await sam.query(api.board.get, { code: "test" })).debentureOffers[0];
+    const offer = (await sam.query(api.board.get, { code: "test" })).debentureOffers.bankruptcy![0];
 
     expect(offer).toMatchObject({ unitPrice: 2.5, amount: 50_000, unavailableReason: null });
     await sam.mutation(api.trading.redeemDebenture, { ...command, expectedPeriod: 2 });
@@ -135,7 +148,7 @@ it("keeps the empty-state dialog useful and closes trading when a claim uses the
     const { t, sam, board, insightId, command } = await bankruptGame();
     const html = renderToStaticMarkup(
         <ConvexProvider client={client}>
-            <DebentureModal board={{ ...board, debentureOffers: [] }} insightId={insightId} used={false} />
+            <DebentureModal board={{ ...board, debentureOffers: {} }} insightId={insightId} used={false} />
         </ConvexProvider>,
     );
 
@@ -154,7 +167,7 @@ it("keeps the empty-state dialog useful and closes trading when a claim uses the
 it("places the selected check outside the logo and shows it on only the chosen stock box", async () =>
 {
     const { board } = await bankruptGame();
-    const offer = { ...board.debentureOffers[0], stock: board.stocks.find((stock) => stock.key === 8)! };
+    const offer = { ...board.debentureOffers.bankruptcy![0], stock: board.stocks.find((stock) => stock.key === 8)! };
     for (const selectedIndex of [0, 1])
     {
         const html = renderToStaticMarkup(
@@ -185,7 +198,7 @@ it("places the selected check outside the logo and shows it on only the chosen s
 it("keeps unavailable and busy stock choices disabled without hiding their details", async () =>
 {
     const { board } = await bankruptGame();
-    const offer = { ...board.debentureOffers[0], stock: board.stocks.find((stock) => stock.key === 8)! };
+    const offer = { ...board.debentureOffers.bankruptcy![0], stock: board.stocks.find((stock) => stock.key === 8)! };
     for (const [busy, unavailableReason] of [[true, null], [false, "The claim window has ended."]] as const)
     {
         const html = renderToStaticMarkup(

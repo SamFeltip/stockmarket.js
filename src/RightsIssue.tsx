@@ -4,6 +4,7 @@ import { SpectatorHeader } from "./SpectatorHeader";
 import { TradeStockSummary } from "./TradeStockSummary";
 import { useState } from "react";
 import type { Board } from "./display-types";
+import { tradingQuote } from "../shared/suspensions";
 import { maxRightsPurchase, rightsIssueOrder, rightsPriceFor, rightsPurchaseError, rightsAvailable } from "../shared/rights-issue";
 import { TradeInputs } from "./TradeInputs";
 import { TradePosition } from "./TradePosition";
@@ -14,6 +15,7 @@ import { NetWorthNumber } from "./RoundWealth";
 import { money, useAction } from "./shared";
 import "./share-suspended.css";
 import "./rights-issue.css";
+import { presentationForPack, rightsPriceLabel } from "./pack-presentation";
 
 export function RightsIssue({ board, playerId, spectator = false, onDecision }: {
     board: Board; playerId?: string; spectator?: boolean; onDecision?: (quantity: number) => Promise<unknown>;
@@ -27,7 +29,8 @@ export function RightsIssue({ board, playerId, spectator = false, onDecision }: 
     const ordered = rightsIssueOrder(board.players, issue.actorPlayerId);
 
     const marketPrice = board.game.prices.find((item) => item.stockKey === issue.stockKey)?.value ?? 0;
-    const purchasePrice = board.game.pack === "tech" ? `£${rightsPriceFor(board.game.pack, marketPrice).toFixed(2)}` : "£1";
+    const purchasePrice = rightsPriceLabel(board.game.pack, marketPrice);
+    const { rightsDescription } = presentationForPack(board.game.pack);
 
     return (
         <>
@@ -45,7 +48,10 @@ export function RightsIssue({ board, playerId, spectator = false, onDecision }: 
                         <header className="suspension-heading">
                             <p>Chance Card</p>
                             <h1>Rights Issue</h1>
-                            {own && <p>{`Optionally buy more ${stock.name} shares at ${purchasePrice} per extra share.`}</p>}
+                            <p>
+                                {own ? `Optionally buy more ${stock.name} shares at ${purchasePrice} per extra share.`
+                                    : rightsDescription}
+                            </p>
                         </header>
                         {own ? (
                             <RightsPurchase key={`${issue.insightId}-${issue.index}`} board={board} onDecision={onDecision} />
@@ -119,7 +125,7 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
     const [draft, setDraft] = useState<TradeDraft>({ field: "shares", value: "0" });
     const { run, busy, error } = useAction();
     const available = rightsAvailable(board.players, issue.stockKey);
-    const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
+    const price = tradingQuote(board.game, stock.key, player._id) ?? 0;
     const issuePrice = rightsPriceFor(board.game.pack, price);
     const limit = maxRightsPurchase(offer.maximum, player.cash, available, issuePrice);
     const { quantity, shares, cash } = resolveTradeDraft(draft, issuePrice, limit);

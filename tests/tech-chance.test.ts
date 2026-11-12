@@ -86,9 +86,11 @@ it("redeems a Tech debenture at the price before a qualifying drop", async () =>
     const { t, sam, board, addCard } = await startTech();
     const stockKey = board.game.prices[0].stockKey;
     const insightId = await addCard("debenture", 1);
+    const bankruptcyId = await addCard("debenture", 1);
 
     await t.run(async (context) =>
     {
+        await context.db.patch(bankruptcyId, { debentureRule: "bankruptcy" });
         const opening = board.game.prices.map((price) =>
             price.stockKey === stockKey ? { stockKey, value: 100 } : price);
         const prices = opening.map((price) => price.stockKey === stockKey ? { stockKey, value: 89 } : price);
@@ -101,6 +103,13 @@ it("redeems a Tech debenture at the price before a qualifying drop", async () =>
                 ? { stockKey, quantity: 2000 } : holding),
         });
     });
+    const claims = (await sam.query(api.board.get, { code })).debentureOffers;
+
+    expect(claims.bankruptcy).toEqual([]);
+    expect(claims["price-drop"]).toContainEqual(expect.objectContaining({ stockKey, amount: 200_000 }));
+    await expect(sam.mutation(api.trading.redeemDebenture, {
+        code, insightId: bankruptcyId, stockKey, expectedPeriod: 1, expectedTurn: 0,
+    })).rejects.toThrow("Choose a bankrupt stock you own");
     await sam.mutation(api.trading.redeemDebenture, { code, insightId, stockKey, expectedPeriod: 1, expectedTurn: 0 });
     const after = await sam.query(api.board.get, { code });
 

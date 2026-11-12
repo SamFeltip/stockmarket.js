@@ -1,5 +1,6 @@
 import { cashStockKey } from "../shared/chance-cards";
 import { sumInsightChanges } from "../shared/settlement";
+import { insightRevealPresentation } from "../shared/presentation";
 import { CashReveal } from "./CashReveal";
 import { lazy, Suspense } from "react";
 import { RolePortrait } from "./RolePortrait";
@@ -30,9 +31,10 @@ export function RoundReveal({ board, preview, stock, insights, index }: {
     board: Board; preview: Board; stock: Stock; insights: Insight[]; index: number;
 })
 {
+    const { fastAnimation } = insightRevealPresentation(board.game.pack);
     if (stock.key === cashStockKey)
     {
-        return <CashReveal insights={insights} index={index} fast={board.game.pack === "tech"} />;
+        return <CashReveal insights={insights} index={index} fast={fastAnimation} />;
     }
 
     const special = !stock.display;
@@ -61,7 +63,7 @@ export function RoundReveal({ board, preview, stock, insights, index }: {
             {active ? (
                 <div
                     key={active._id}
-                    data-fast-reveal={board.game.pack === "tech" ? "" : undefined}
+                    data-fast-reveal={fastAnimation ? "" : undefined}
                     className="game-insight-card p-4 gap-2 rounded bg-white text-black d-flex flex-column align-items-center justify-content-center"
                 >
                     {bonusPlayer ? (

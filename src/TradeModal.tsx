@@ -1,3 +1,4 @@
+import { tradingQuote } from "../shared/suspensions";
 import { floorTradeQuantity, sharesAvailable } from "../shared/rules";
 import { TradeInputs } from "./TradeInputs";
 import { TradePosition } from "./TradePosition";
@@ -22,7 +23,7 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
         setDraft({ field: "shares", value: String(value) });
     }
 
-    const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
+    const price = tradingQuote(board.game, stock.key, board.player._id) ?? 0;
     const held = board.player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0;
     const available = sharesAvailable(board.players, stock.key);
     const limit = floorTradeQuantity(mode === "buy"

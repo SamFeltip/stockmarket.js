@@ -133,14 +133,16 @@ export const board = query({
         const catalog = await displayGameStocks(readEngine(context), game);
         const stocks = catalog.filter((stock) => stock.display);
         const canReveal = game.status === "closed" || game.status === "special_insights";
-        const [revealed, trades] = canReveal
-            ? await Promise.all([roundInsights(context, game), tradeHistory(context, game._id, seats.length)])
-            : [[], []];
+        const [revealed, trades] = await Promise.all([
+            canReveal ? roundInsights(context, game) : [],
+            tradeHistory(context, game._id, seats.length),
+        ]);
         const reveal = canReveal ? {
             period: game.currentPeriod, trades,
             prices: game.prices.map((price) => ({ stockKey: price.stockKey, value: price.value })),
             suspended: game.suspended,
             suspensionPeriod: game.suspensionPeriod,
+            targetedSuspensions: game.targetedSuspensions,
             stocks: catalog.map((stock) => ({ key: stock.key, name: stock.name, display: stock.display,
                 imagePath: stock.imagePath,
                 secondaryImagePath: stock.secondaryImagePath, variation: stock.variation })),
@@ -177,11 +179,12 @@ export const board = query({
 
         return {
             canControl: Boolean(viewerId && viewerId === (displayHost ?? game.hostId) && !game.tvTokenHash),
-            reveal,
+            reveal, trades,
             latestPurchase: purchase ? { title: purchase.title, message: purchase.message } : null,
             game: { code: game.code, pack: game.pack, tradingDates: publicTradingDates(game),
                 status: game.status, currentPeriod: game.currentPeriod,
                 tvControlled: Boolean(game.tvTokenHash), spectatorControlled: Boolean(displayHost),
+                tradingSuspensions: game.tradingSuspensions,
                 periodCount: game.periodCount, turn: game.turn, rightsIssue: game.rightsIssue,
                 currentPlayerId: game.currentPlayerId
                   ?? seats.find((seat) => seat.userId === game.currentUserId)?._id },
@@ -199,7 +202,7 @@ export const board = query({
             feed: feed.map((item) => ({ id: item._id, at: item._creationTime, period: item.period,
                 title: item.title, message: item.message, imageRoot: item.imageRoot, colour: item.colour,
                 stockKey: item.stockKey, quantity: item.quantity, cashBonus: item.cashBonus,
-                debenturePayout: item.debenturePayout,
+                debenturePayout: item.debenturePayout, redemptionName: item.redemptionName,
                 roleBefore: item.roleBefore, roleAfter: item.roleAfter })),
         };
     },

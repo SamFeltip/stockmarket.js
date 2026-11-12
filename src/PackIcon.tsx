@@ -4,7 +4,8 @@ import { asset } from "./spectator/assets";
 
 export function PackIcon({ pack = "classic" }: { pack?: Pack })
 {
-    if (pack === "classic")
+    const presentation = packPresentation[pack];
+    if (!("icon" in presentation))
     {
         return <img className="pack-icon pack-icon-classic" width="23" height="23" src={asset("/static/imgs/icons/Stock.svg")} alt="" />;
     }
@@ -23,7 +24,7 @@ export function PackIcon({ pack = "classic" }: { pack?: Pack })
             aria-hidden="true"
             focusable="false"
         >
-            <path d={packPresentation[pack].icon} />
+            <path d={presentation.icon} />
         </svg>
     );
 }

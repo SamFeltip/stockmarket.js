@@ -2,7 +2,8 @@ import type { Pack } from "../shared/packs";
 import { packPresentation } from "./pack-presentation";
 import { PackIcon } from "./PackIcon";
 import "./play-style-card.css";
-import { chartRoundCount, priceSeries } from "./price-history";
+import { StockHistoryChart } from "./StockHistoryChart";
+import { stockHistory } from "./stock-history";
 import { RolePortrait } from "./RolePortrait";
 import { TradeRoleLabel } from "./TradeRole";
 /* eslint-disable jsx-a11y/no-noninteractive-tabindex -- The feed is a native keyboard scroll region. */
@@ -23,31 +24,15 @@ const count = (n: number) => new Intl.NumberFormat("en-GB", { notation: "compact
 
 function PriceLine({ board, stockKey }: { board: Board; stockKey: number })
 {
-    const history = priceSeries({ ...board.game, prices: [], priceHistory: board.history }, stockKey)
-        .filter((point) => point.value !== null);
-    const values = history.map((point) => point.value ?? 0);
-    if (values.length < 2)
-    {
-        return <span className="muted">History appears after each period</span>;
-    }
+    const stock = board.stocks.find((item) => item.key === stockKey);
+    const game = { ...board.game, prices: stock ? [{ stockKey, value: stock.value }] : [],
+        priceHistory: board.history };
+    const trades = (board.trades ?? []).map((trade) => ({ ...trade, imageRoot: portrait(trade.imageRoot) }));
+    const history = stockHistory(game, stockKey, false, trades, 44);
 
-    const min = Math.min(...values), max = Math.max(...values);
-    const roundSpan = chartRoundCount(board.game);
-    const points = history.map((point) =>
-        `${2 + point.round / roundSpan * 176},${38 - ((point.value ?? 0) - min) / (max - min || 1) * 32}`)
-        .join(" ");
-
-    return (
-        <svg
-            className="sparkline"
-            viewBox="0 0 180 44"
-            role="img"
-            aria-label={`Recorded prices: ${values.map((v) => `£${v.toFixed(2)}`).join(", ")}`}
-        >
-            <path d="M0 40H180" stroke="#adb5aa" />
-            <polyline points={points} stroke="#204712" fill="none" strokeWidth="2.5" />
-        </svg>
-    );
+    return history.markers.length > 1
+        ? <StockHistoryChart name={stock?.name ?? "Stock"} history={history} sparkline />
+        : <span className="muted">History appears after each period</span>;
 }
 
 export function JoinCard({ code, phoneUrl, waiting, compact = false }: {
@@ -148,6 +133,7 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
                     {stocks.map((stock) =>
                     {
                         const change = stock.value - stock.startingValue;
+                        const suspended = board.game.tradingSuspensions?.find((item) => item.stockKey === stock.key);
 
                         return (
                             <article className="stock card" key={stock.key}>
@@ -166,6 +152,9 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
                                         {Math.abs(change).toFixed(2)}
                                     </span>
                                 </div>
+                                {suspended && (
+                                    <p className="stock-footer">{`Suspended price £${suspended.value.toFixed(2)}`}</p>
+                                )}
                                 <PriceLine board={board} stockKey={stock.key} />
                                 <p className="stock-footer">
                                     {count(stock.held)}
@@ -192,7 +181,11 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
                     mutedStockKey={mutedStockKey}
                     animateStockKey={animateStockKey}
                 />
-                <p className="table-note">Holdings in shares · Net worth = cash + shares at current prices</p>
+                <p className="table-note">
+                    {board.game.tradingSuspensions?.length
+                        ? "Holdings in shares · Net worth uses each player’s trading prices"
+                        : "Holdings in shares · Net worth = cash + shares at current prices"}
+                </p>
             </section>
             <section className="bottom-row">
                 <JoinCard code={board.game.code} phoneUrl={phoneUrl} compact />

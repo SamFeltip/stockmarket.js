@@ -120,7 +120,8 @@ export function CatalogEditor()
 
     return (
         <div className="container">
-            <h1>Insights</h1>
+            <h1>Legacy insights</h1>
+            <p>Active games use the decks saved at launch. This editor is for archived insight records.</p>
             <Alert message={error} />
             {insights.map((insight) => (
                 <div className="card mb-2" key={insight._id} id={`insight-${insight.key}`}>

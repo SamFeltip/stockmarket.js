@@ -5,7 +5,9 @@ export const periodLabel = (round: number) => round === 0 ? "Start" : `Period ${
 const fullDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
 export const tradeLabel = (trade: ChartTrade) =>
-    `${trade.title} ${trade.quantity > 0 ? "bought" : "sold"} ${Math.abs(trade.quantity).toLocaleString("en-GB")} shares`;
+    trade.debenturePayout === undefined
+        ? `${trade.title} ${trade.quantity > 0 ? "bought" : "sold"} ${Math.abs(trade.quantity).toLocaleString("en-GB")} shares`
+        : `${trade.title} redeemed ${Math.abs(trade.quantity).toLocaleString("en-GB")} shares with a ${trade.redemptionName ?? "Debenture"} for £${trade.debenturePayout.toLocaleString("en-GB")}`;
 
 export function tooltipLabel(round: number, point?: ChartPoint)
 {
@@ -27,7 +29,7 @@ export function tooltipLabel(round: number, point?: ChartPoint)
     ) : label;
 }
 
-export function tradeMarkerLayout(data: ChartPoint[], plotWidth: number, height: number, rounds: number)
+export function tradeMarkerLayout(data: ChartPoint[], plotWidth: number, height: number, rounds: number, maxSize = 16)
 {
     const positions = data.filter((point) => point.trades).map((point) => point.round);
     let gap = Infinity;
@@ -50,34 +52,24 @@ export function tradeMarkerLayout(data: ChartPoint[], plotWidth: number, height:
     }
 
     const columnWidth = gap === Infinity ? 18 : gap * plotWidth / rounds;
-    const horizontalLimit = columnWidth - Math.min(2, columnWidth / 4);
-    // Leave room for the price movement even when one period has many trades.
-    const markerBudget = Math.max(0, (height - 38) * 0.65);
-    const compact = (maxBuys + maxSells) * 8 > markerBudget;
-    if (compact)
-    {
-        maxBuys = Number(maxBuys > 0);
-        maxSells = Number(maxSells > 0);
-    }
+    // Keep faces readable and overlap the stack when space is tight.
+    const size = Math.min(maxSize, Math.max(Math.min(10, maxSize), columnWidth - 2));
+    const sides = Number(maxBuys > 0) + Number(maxSells > 0);
+    const spacing = 2;
+    const budget = Math.max(sides * (size + spacing), (height - 38) * 0.65);
+    const stride = Math.max(1, Math.min(size + spacing,
+        (budget - sides * (size + spacing)) / Math.max(1, maxBuys + maxSells - sides)));
+    const extent = (count: number) => count ? size + spacing + (count - 1) * stride : 0;
+    const padding = { top: extent(maxBuys), bottom: extent(maxSells) };
 
-    const verticalLimit = markerBudget / Math.max(1, maxBuys + maxSells);
-    const size = Math.max(0, Math.min(16, horizontalLimit, verticalLimit * 0.8));
-    const spacing = Math.min(3, size / 4);
-    const stride = size + spacing;
-    const padding = { top: maxBuys * stride, bottom: maxSells * stride };
-
-    return { size, spacing, stride, padding, compact };
+    return { size, spacing, stride, padding };
 }
 
 export function TradeStack({ trades, x, y, layout }: {
     trades: ChartTrade[]; x: number; y: number; layout: ReturnType<typeof tradeMarkerLayout>;
 })
 {
-    const { size, spacing, stride, compact } = layout;
-    if (size === 0)
-    {
-        return null;
-    }
+    const { size, spacing, stride } = layout;
 
     const strokeWidth = Math.min(1, size / 6);
     const inset = strokeWidth / 2;
@@ -92,31 +84,12 @@ export function TradeStack({ trades, x, y, layout }: {
                 const side = trades.filter((trade) => (trade.quantity > 0) === buy);
                 const colour = buy ? "#198754" : "#c5283d";
                 const direction = buy ? "buy" : "sell";
-                if (compact && side.length > 1)
-                {
-                    const top = buy ? y - stride : y + spacing;
-
-                    return (
-                        <g data-trade-side={direction} key={direction}>
-                            <rect x={x - size / 2} y={top} width={size} height={size} rx={2} fill={colour} />
-                            <text
-                                x={x}
-                                y={top + size / 2}
-                                textAnchor="middle"
-                                dominantBaseline="central"
-                                fontSize={size * 0.65}
-                                fill="white"
-                            >
-                                {side.length}
-                            </text>
-                        </g>
-                    );
-                }
 
                 return side.map((trade, index) =>
                 {
                     const left = x - size / 2;
-                    const top = buy ? y - stride * (index + 1) : y + spacing + stride * index;
+                    const offset = spacing + stride * index;
+                    const top = buy ? y - size - offset : y + offset;
 
                     return (
                         <g data-trade-side={direction} key={`${direction}:${index}`}>
@@ -133,7 +106,7 @@ export function TradeStack({ trades, x, y, layout }: {
                             />
                         </g>
                     );
-                });
+                }).toReversed();
             })}
         </g>
     );

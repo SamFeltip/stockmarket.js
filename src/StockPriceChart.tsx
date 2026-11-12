@@ -5,6 +5,7 @@ import { chartDateAxis, chartRoundCount, chartSeries } from "./price-history";
 import type { ChartPoint, ChartTrade } from "./price-history";
 import type { Board, Stock } from "./display-types";
 import { periodLabel, tooltipLabel, tradeLabel, tradeMarkerLayout, TradeStack } from "./TradeMarkers";
+import { presentationForPack } from "./pack-presentation";
 
 const chartMargin = { top: 8, right: 12, bottom: 0, left: 0 };
 const dateChartMargin = { ...chartMargin, right: 38 };
@@ -109,7 +110,7 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
     const data = useMemo(() => chartSeries(game, stock.key, trades), [game, stock.key, trades]);
     const known = data.filter((point) => point.value !== null);
     const hasOnePrice = known.filter((point) => !point.trades).length === 1;
-    const showPriceDots = game.pack !== "tech";
+    const { priceDots: showPriceDots } = presentationForPack(game.pack).chart;
     const roundCount = chartRoundCount(game);
     const tickStep = Math.max(1, Math.ceil(roundCount / 10));
     const ticks = Array.from({ length: Math.ceil(roundCount / tickStep) + 1 }, (_, index) =>

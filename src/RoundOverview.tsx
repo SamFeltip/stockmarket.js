@@ -8,6 +8,10 @@ import type { Board, Stock } from "./display-types";
 
 function OverviewStock({ before, after, stock, mobile }: { before: Board; after: Board; stock: Stock; mobile: boolean })
 {
+    const targeted = before.game.targetedSuspensions?.find((item) => item.stockKey === stock.key);
+    const names = before.players.filter((player) => targeted?.playerIds.includes(player._id))
+        .map((player) => player.name);
+    const frozenPrice = after.game.tradingSuspensions?.find((item) => item.stockKey === stock.key)?.value;
     const result = (
         <StockResult
             before={before.game.prices.find((price) => price.stockKey === stock.key)?.value ?? 0}
@@ -20,7 +24,10 @@ function OverviewStock({ before, after, stock, mobile }: { before: Board; after:
             {mobile ? (
                 <div className="round-overview-stock-summary">
                     <img src={stock.imagePath} alt="" draggable={false} />
-                    <StockHistoryChart name={stock.name} points={stockHistory(after.game, stock.key, true).points} />
+                    <StockHistoryChart
+                        name={stock.name}
+                        history={stockHistory(after.game, stock.key, true, after.trades ?? before.trades)}
+                    />
                     {result}
                 </div>
             ) : (
@@ -31,6 +38,12 @@ function OverviewStock({ before, after, stock, mobile }: { before: Board; after:
                 </>
             )}
             {after.game.suspended.includes(stock.key) && <p className="round-overview-suspension">Share Suspended · Stock price held</p>}
+            {names.length > 0 && (
+                <p className="round-overview-suspension">
+                    {`Share Suspended · ${names.join(", ")}`}
+                    {frozenPrice !== undefined && ` · £${frozenPrice.toFixed(2)} next period`}
+                </p>
+            )}
             <StockRoleFooter board={before} stock={stock} compact={mobile} />
         </article>
     );
@@ -59,7 +72,7 @@ export function RoundOverview({ before, after, layout }: { before: Board; after:
                             <img src={stock.imagePath} alt="" />
                             <StockHistoryChart
                                 name={stock.name}
-                                points={stockHistory(after.game, stock.key, true).points}
+                                history={stockHistory(after.game, stock.key, true, after.trades ?? before.trades)}
                             />
                         </div>
                     ))}

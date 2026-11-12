@@ -8,7 +8,8 @@
 }
 .pack-options {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     gap: clamp(0.25rem, 1.2vw, 0.55rem);
 }
 .pack-options .pack-option, .pack-current {

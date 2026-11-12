@@ -1,4 +1,4 @@
-import { debentureOffers } from "./game/debenture";
+import { debentureClaims } from "./game/debenture";
 import { companyRoles } from "../shared/company-roles";
 import { query } from "./_generated/server";
 import { v } from "convex/values";
@@ -22,9 +22,7 @@ export const get = query({
         const stocks = await displayGameStocks(readEngine(context), game);
         const allInsights = await roundInsights(context, game);
         const retained = await retainedDebentures(readEngine(context), game, player._id);
-        const debentures = allInsights.some((card) => card.playerId === player._id && card.chanceKind === "debenture"
-          && !card.used) || retained.length > 0;
-        const claims = debentures ? await debentureOffers(context, game, player) : [];
+        const claims = await debentureClaims(context, game, player, allInsights.concat(retained));
         const reveal = game.status === "closed" || game.status === "special_insights" || game.status === "finished";
         const players = await Promise.all(seats.map(async (seat) =>
         {
@@ -61,6 +59,7 @@ export const get = query({
                 tvControlled: Boolean(game.tvTokenHash), spectatorControlled: Boolean(spectatorHost(game, seats)),
                 prices: game.prices, priceHistory: game.priceHistory, status: game.status, turn: game.turn,
                 suspended: game.suspended, suspensionPeriod: game.suspensionPeriod,
+                targetedSuspensions: game.targetedSuspensions, tradingSuspensions: game.tradingSuspensions,
                 rightsIssue: game.rightsIssue, npcDifficulty: game.npcDifficulty ?? "medium" },
             debentureOffers: claims,
             player, user: { _id: user._id, name: user.name, profileRoot: user.profileRoot }, stocks, feed,

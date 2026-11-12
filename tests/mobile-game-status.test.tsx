@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { GameMetrics } from "../src/GameStatus";
 import { setup } from "./game-setup";
 import { api } from "../convex/_generated/api";
+import { packIds } from "../shared/packs";
 
 describe("mobile remaining goes", () =>
 {
@@ -33,7 +34,7 @@ describe("mobile remaining goes", () =>
     it("shows the same Turn and Period trackers for each stock pack", () =>
     {
         const players = [{ _id: "sam", name: "Sam" }];
-        for (const pack of ["classic", "frantic", "tech", "crashing"] as const)
+        for (const pack of packIds)
         {
             const html = renderToStaticMarkup(
                 <GameMetrics board={{ players, game: { pack, currentPlayerId: "sam", turn: 1,

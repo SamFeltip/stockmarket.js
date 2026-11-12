@@ -1,3 +1,4 @@
+import { tradingQuote } from "../shared/suspensions";
 import { TradeStockSummary } from "./TradeStockSummary";
 import { StockInsightChange } from "./StockInsightChange";
 import type { Board, Stock } from "./types";
@@ -9,7 +10,7 @@ export function StockPreview({ board, stock, large = false, active = false }: {
     active?: boolean;
 })
 {
-    const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
+    const price = tradingQuote(board.game, stock.key, board.player._id) ?? 0;
     const change = (
         <StockInsightChange insights={board.insights} stockKey={stock.key} game={board.game} />
     );

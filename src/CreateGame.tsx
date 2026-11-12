@@ -1,5 +1,5 @@
 import { PackControl } from "./PackControl";
-import { packDefaultPeriods, type Pack } from "../shared/packs";
+import { packDefaultPeriods, rulesForPack, type Pack } from "../shared/packs";
 import { useState } from "react";
 import { GameLengthControl } from "./GameLengthControl";
 import { useMutation } from "convex/react";
@@ -10,10 +10,10 @@ import { LobbyCard } from "./LobbyCard";
 
 export function CreateGame()
 {
-    const [periods, setPeriods] = useState(packDefaultPeriods());
-    const [techPeriods, setTechPeriods] = useState(packDefaultPeriods("tech"));
+    const [periods, setPeriods] = useState({ standard: packDefaultPeriods(), extended: packDefaultPeriods("tech") });
     const [pack, setPack] = useState<Pack>("classic");
-    const selectedPeriods = pack === "tech" ? techPeriods : periods;
+    const { lengthGroup } = rulesForPack(pack);
+    const selectedPeriods = periods[lengthGroup];
     const create = useMutation(api.games.create);
     const navigate = useNavigate();
     const { run, busy, error } = useAction();
@@ -63,7 +63,12 @@ export function CreateGame()
                 <PackControl pack={pack} busy={busy} onChange={setPack} />
                 <fieldset disabled={busy}>
                     <legend className="form-label fs-5">Game length</legend>
-                    <GameLengthControl periods={selectedPeriods} pack={pack} busy={busy} onChange={pack === "tech" ? setTechPeriods : setPeriods} />
+                    <GameLengthControl
+                        periods={selectedPeriods}
+                        pack={pack}
+                        busy={busy}
+                        onChange={(length) => setPeriods((current) => ({ ...current, [lengthGroup]: length }))}
+                    />
                 </fieldset>
                 <div className="spectate-option">
                     <div className="form-check form-switch spectate-toggle">

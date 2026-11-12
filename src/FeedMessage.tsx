@@ -7,15 +7,18 @@ export function FeedMessage({ item, stocks, detailed = false }: {
     item: Board["feed"][number]; stocks: Board["stocks"]; detailed?: boolean;
 })
 {
-    if (item.cashBonus)
+    if (item.cashBonus !== undefined)
     {
+        const printMoney = item.message === "played Print Money";
+        const amount = `£${money(item.cashBonus)}`;
+
         return (
             <div>
-                <p className="trade-message text-success" aria-label={`Received £${money(item.cashBonus)} government bonus`}>
+                <p className="trade-message text-success" aria-label={printMoney ? `Print Money added ${amount}` : `Received ${amount} government bonus`}>
                     <img src={cashStock.imagePath} alt="" />
-                    {`£${money(item.cashBonus)}`}
+                    {amount}
                 </p>
-                {detailed && <p className="trade-description">received government bonus</p>}
+                {(detailed || printMoney) && <p className="trade-description">{item.message}</p>}
             </div>
         );
     }
@@ -30,11 +33,18 @@ export function FeedMessage({ item, stocks, detailed = false }: {
         return <p>{item.message}</p>;
     }
 
+    const payout = item.debenturePayout;
+    const debenture = payout !== undefined;
+    const redemptionName = item.redemptionName ?? "Debenture";
+    const tradeLabel = debenture
+        ? `Redeemed ${money(Math.abs(quantity))} ${stock.name} shares with a ${redemptionName}`
+        : `${quantity > 0 ? "Bought" : "Sold"} ${money(Math.abs(quantity))} ${stock.name} shares`;
+
     return (
         <div>
             <p
                 className={`trade-message text-${quantity > 0 ? "success" : "danger"}`}
-                aria-label={`${quantity > 0 ? "Bought" : "Sold"} ${money(Math.abs(quantity))} ${stock.name} shares`}
+                aria-label={tradeLabel}
             >
                 <img src={stock.imagePath} alt="" />
                 {money(quantity)}
@@ -42,10 +52,10 @@ export function FeedMessage({ item, stocks, detailed = false }: {
             {item.message.includes("shares in the Rights Issue") && (
                 <p className="trade-description">Rights Issue · £1 per share</p>
             )}
-            {detailed && (
+            {debenture && <p className="trade-description">{`${redemptionName} sold at £${money(payout)}`}</p>}
+            {detailed && !debenture && (
                 <p className="trade-description">
-                    {item.debenturePayout === undefined ? `${quantity > 0 ? "Purchased" : "Sold"} ${money(Math.abs(quantity))} ${stock.name} stocks`
-                        : `Debenture sold at £${money(item.debenturePayout)}`}
+                    {`${quantity > 0 ? "Purchased" : "Sold"} ${money(Math.abs(quantity))} ${stock.name} stocks`}
                 </p>
             )}
             {detailed && <TradeRoleChange item={item} />}
