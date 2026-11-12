@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { actionAnimationMs, revealDelay, revealPauseMs } from "../shared/presentation";
+import { actionAnimationMs, insightRevealMs, revealDelay, revealPauseMs } from "../shared/presentation";
 import { cashStock } from "../shared/chance-cards";
 import { RoundWealth } from "../src/RoundWealth";
 import { setup } from "./game-setup";
@@ -8,6 +8,12 @@ import { api } from "../convex/_generated/api";
 
 describe("round presentation", () =>
 {
+    it("reveals Tech insight cards every quarter second and keeps the Classic interval", () =>
+    {
+        expect(insightRevealMs("classic")).toBe(2500);
+        expect(insightRevealMs("tech")).toBe(250);
+    });
+
     it("waits through the final action animation and a pause, without delaying old rounds", () =>
     {
         expect(revealDelay(1000, 1000)).toBe(actionAnimationMs + revealPauseMs);

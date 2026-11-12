@@ -1,4 +1,4 @@
-import { packPeriods } from "../shared/packs";
+import { gamePeriodCount } from "../shared/packs";
 import { PackControl } from "./PackControl";
 import { GameLengthControl } from "./GameLengthControl";
 import { maximumPlayers, minimumPlayers } from "../shared/rules";
@@ -51,7 +51,7 @@ export function Waiting({ board }: { board: Board })
                 <div className="py-3">
                     <p className="pb-2">Game length</p>
                     <GameLengthControl
-                        periods={packPeriods(game.pack, game.periodCount + 1)}
+                        periods={gamePeriodCount(game)}
                         pack={game.pack}
                         busy={busy}
                         onChange={host ? (periods) =>

@@ -1,6 +1,6 @@
 import { PackControl } from "../PackControl";
 import { GameLengthControl } from "../GameLengthControl";
-import { packPeriods, type Pack } from "../../shared/packs";
+import { gamePeriodCount, type Pack } from "../../shared/packs";
 import { Link } from "react-router-dom";
 import { Alert } from "../shared";
 import { JoinCard } from "./Dashboard";
@@ -35,12 +35,12 @@ export function SpectatorLobby({ board, phoneUrl, busy, error, onStart, onPack, 
                         {board.canControl ? (
                             <GameLengthControl
                                 pack={game.pack}
-                                periods={packPeriods(game.pack, game.periodCount + 1)}
+                                periods={gamePeriodCount(game)}
                                 busy={busy}
                                 onChange={onLength}
                             />
                         ) : (
-                            <span className="length-value bg-dark rounded">{`${packPeriods(game.pack, game.periodCount + 1)} periods`}</span>
+                            <span className="length-value bg-dark rounded">{`${gamePeriodCount(game)} periods`}</span>
                         )}
                     </div>
                     <Alert message={error} />

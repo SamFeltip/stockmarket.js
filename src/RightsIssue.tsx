@@ -4,8 +4,7 @@ import { SpectatorHeader } from "./SpectatorHeader";
 import { TradeStockSummary } from "./TradeStockSummary";
 import { useState } from "react";
 import type { Board } from "./display-types";
-import { rightsIssueOrder, rightsPriceFor, rightsPurchaseError, rightsAvailable } from "../shared/rights-issue";
-import { floorTradeQuantity } from "../shared/rules";
+import { maxRightsPurchase, rightsIssueOrder, rightsPriceFor, rightsPurchaseError, rightsAvailable } from "../shared/rights-issue";
 import { TradeInputs } from "./TradeInputs";
 import { TradePosition } from "./TradePosition";
 import { resolveTradeDraft, stepShares, type TradeDraft } from "./trades";
@@ -122,7 +121,7 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
     const available = rightsAvailable(board.players, issue.stockKey);
     const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
     const issuePrice = rightsPriceFor(board.game.pack, price);
-    const limit = floorTradeQuantity(Math.min(offer.maximum, player.cash / issuePrice, available));
+    const limit = maxRightsPurchase(offer.maximum, player.cash, available, issuePrice);
     const { quantity, shares, cash } = resolveTradeDraft(draft, issuePrice, limit);
     const reason = rightsPurchaseError(quantity, offer.maximum, player.cash, board.game.pack, issuePrice)
       || (quantity > available ? "There aren't enough shares available. Try fewer shares." : "");

@@ -6,10 +6,12 @@ import { member, members, netWorth, roundInsights, tradeHistory } from "./librar
 
 import { phoneHost, spectatorHost } from "./game/hosting";
 import { publicIdentity } from "./npc/identity";
-import { displayGameStocks, settlementInsights, type SettlementCard } from "../../stockmarket-shared/src/engine/packRules";
+import { displayGameStocks, revealInsights, type SettlementCard } from "../../stockmarket-shared/src/engine/packRules";
 import { readEngine } from "./engine";
 import { privateForecasts, retainedDebentures } from "../../stockmarket-shared/src/engine/dealing";
 import { publicTradingDates } from "./packSettings";
+import { legacyTechRounds } from "../shared/packs";
+import { techForecastDescription } from "../../stockmarket-shared/src/engine/techMarket";
 
 export const get = query({
     args: { code: v.string() },
@@ -43,10 +45,13 @@ export const get = query({
             tradeHistory(context, game._id, seats.length),
         ]);
 
+        const legacyRounds = legacyTechRounds(game);
         const insights: SettlementCard[] = reveal
-            ? settlementInsights(game, allInsights, seats, stocks).concat(retained)
-            : allInsights.filter((insight) => insight.playerId === player._id && !insight.forecast).concat(retained,
-                await privateForecasts(readEngine(context), game, player._id));
+            ? revealInsights(game, allInsights, seats, stocks).concat(retained)
+            : allInsights.filter((insight) => insight.playerId === player._id && (!legacyRounds || !insight.forecast))
+                .concat(retained, legacyRounds ? await privateForecasts(readEngine(context), game, player._id) : [])
+                .map((card) => card.forecast
+                    ? { ...card, description: techForecastDescription(game.techStart, card) } : card);
 
         return {
             game: { _id: game._id, _creationTime: game._creationTime, code: game.code,

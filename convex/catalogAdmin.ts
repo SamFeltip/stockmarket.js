@@ -2,6 +2,9 @@ import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { currentUser, fail, seedCatalog } from "./library";
 import { stockFields, insightFields } from "./schema";
+import { displayGameStocks } from "../../stockmarket-shared/src/engine/packRules";
+import { readEngine } from "./engine";
+import { inStockOrder } from "../shared/rules";
 
 export const seed = internalMutation({ args: {}, handler: seedCatalog });
 
@@ -30,9 +33,10 @@ export const importCatalog = internalMutation({
 export const list = query({ args: {}, handler: async (context) =>
 {
     await currentUser(context);
-    const stocks = await context.db.query("stocks").collect();
+    const stocks = await displayGameStocks(readEngine(context));
+    const insights = await context.db.query("insights").collect();
 
-    return (await context.db.query("insights").collect()).toSorted((a, b) => a.key - b.key)
+    return inStockOrder(insights.toSorted((a, b) => a.key - b.key), stocks)
         .map((insight) => ({ ...insight, stock: stocks.find((stock) => stock.key === insight.stockKey) }));
 } });
 

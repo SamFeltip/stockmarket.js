@@ -1,6 +1,7 @@
 import { sharesAvailable } from "../shared/rules";
 import { lazy, Suspense } from "react";
-import { Change, Insights, money } from "./shared";
+import { Insights, money } from "./shared";
+import { StockInsightChange } from "./StockInsightChange";
 import { StockPreview } from "./StockPreview";
 import { Investors } from "./Investors";
 import { TradeModal } from "./TradeModal";
@@ -17,7 +18,6 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
     const priceChange = Math.round((price - startingPrice) * 100) / 100;
     const held = player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0;
     const ownInsights = insights.filter((insight) => insight.stockKey === stock.key);
-    const value = ownInsights.reduce((sum, insight) => sum + insight.value, 0);
     const available = sharesAvailable(players, stock.key);
     const myTurn = game.currentPlayerId === board.player._id;
 
@@ -56,7 +56,12 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
                     <div id="insights" className="d-grid gap-2">
                         <div className="d-flex justify-content-between">
                             <h4 className="text-black">Your Insights</h4>
-                            <Change value={value} button />
+                            <StockInsightChange
+                                insights={ownInsights}
+                                stockKey={stock.key}
+                                game={game}
+                                button
+                            />
                         </div>
                         <Insights insights={ownInsights} stocks={stocks} />
                     </div>

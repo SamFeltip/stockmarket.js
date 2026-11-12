@@ -1,9 +1,16 @@
+import type { Pack } from "./packs";
+
 // Keep turn scheduling and both clients on the same presentation timing.
 export const actionAnimationMs = 3500;
 
 export const revealPauseMs = 500;
 
 export const revealStartDelayMs = actionAnimationMs + revealPauseMs;
+
+export function insightRevealMs(pack?: Pack)
+{
+    return pack === "tech" ? 250 : 2500;
+}
 
 export function revealDelay(lastActionAt: number | undefined, now = Date.now())
 {

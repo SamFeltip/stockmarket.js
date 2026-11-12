@@ -1,4 +1,5 @@
 import { nextRoundLabel } from "./pack-presentation";
+import { insightRevealMs } from "../shared/presentation";
 import "./round-desktop.css";
 import { pendingSuspensions } from "../shared/suspensions";
 import { ShareSuspended } from "./ShareSuspended";
@@ -46,6 +47,7 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
     const lastPlay = board.feed.find((item) => item.period === game.currentPeriod
       && item.colour !== "grey" && (item.quantity || item.cashBonus || item.message === "passed their go"));
     const ready = useRevealReady(lastPlay?._creationTime);
+    const revealMs = insightRevealMs(game.pack);
     const { preview, wealth } = roundProgress(board, reviewed ? groups.length : step, index);
 
     const afterCash = suspensions.length > 0 ? "Next: Share Suspended" : "Show round summary";
@@ -67,13 +69,13 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
         const timer = setTimeout(() =>
         {
             setIndex((current) => current + 1);
-        }, 2500);
+        }, revealMs);
 
         return () =>
         {
             clearTimeout(timer);
         };
-    }, [index, visible.length, unresolved, step, ready, reviewed]);
+    }, [index, visible.length, unresolved, step, ready, reviewed, revealMs]);
 
     if (game.status === "finished")
     {

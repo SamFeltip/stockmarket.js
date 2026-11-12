@@ -8,7 +8,7 @@ import { spectatorHost } from "./game/hosting";
 import { launchGame } from "./launch";
 import { advancePeriod } from "./advancePeriod";
 
-import { displayGameStocks, settlementInsights, validPackLength } from "../../stockmarket-shared/src/engine/packRules";
+import { displayGameStocks, revealInsights, validPackLength } from "../../stockmarket-shared/src/engine/packRules";
 import { readEngine } from "./engine";
 import { changeLobbyPack, openingMarket, publicTradingDates, setLobbyLength } from "./packSettings";
 import { packValidator } from "./schema";
@@ -144,12 +144,13 @@ export const board = query({
             stocks: catalog.map((stock) => ({ key: stock.key, name: stock.name, display: stock.display,
                 imagePath: stock.imagePath,
                 secondaryImagePath: stock.secondaryImagePath, variation: stock.variation })),
-            insights: settlementInsights(game, revealed, seats, catalog).map((insight) => ({
+            insights: revealInsights(game, revealed, seats, catalog).map((insight) => ({
                 _id: insight._id, playerId: insight.playerId,
                 stockKey: insight.stockKey, value: insight.value, description: insight.description,
                 resolved: insight.resolved, chanceKind: insight.chanceKind, used: insight.used,
                 period: insight.period, bonusRole: insight.bonusRole,
-                removedInsightId: insight.removedInsightId })),
+                removedInsightId: insight.removedInsightId, forecast: insight.forecast,
+                marketSteps: insight.marketSteps })),
         } : null;
         const players = await Promise.all(seats.map(async (seat) =>
         {

@@ -2,9 +2,11 @@ import { StockChoice } from "./StockChoice";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
+import { legacyTechRounds } from "../shared/packs";
 import { hideModal } from "./bootstrap";
 import { Alert, Modal, money, useAction } from "./shared";
 import type { Board } from "./types";
+import { inStockOrder } from "../shared/rules";
 
 export type DebentureActivation = (insightId: Board["insights"][number]["_id"], stockKey: number) => Promise<void>;
 
@@ -15,7 +17,7 @@ export function DebentureModal({ board, insightId, used, onActivate }: {
     const redeem = useMutation(api.trading.redeemDebenture);
     const { run, busy, error } = useAction();
     const [stockKey, setStockKey] = useState<number>();
-    const offers = (board.debentureOffers ?? []).flatMap((offer) =>
+    const offers = inStockOrder(board.debentureOffers ?? [], board.stocks).flatMap((offer) =>
     {
         const stock = board.stocks.find((item) => item.key === offer.stockKey);
 
@@ -42,10 +44,10 @@ export function DebentureModal({ board, insightId, used, onActivate }: {
             <div className="modal-body loan-detail debenture-detail d-grid gap-3">
                 <h2 className="text-black mb-0">Debenture</h2>
                 <p>
-                    {tech ? "If a stock you already held drops by 10% or more in one round, sell at its price before the drop."
+                    {tech ? "If a stock you already held drops by 10% or more between settlements, sell at its price before the drop."
                         : "Choose one bankrupt company and sell all your stocks at the opening price from the start of the game."}
                 </p>
-                <p>{tech ? "Single use. Stays in your hand for 2 trading rounds." : "Single use. Stays in your hand for 2 trading periods."}</p>
+                <p>{`Single use. Stays in your hand for 2 trading ${legacyTechRounds(board.game) ? "rounds" : "periods"}.`}</p>
                 <div className="debenture-stock-list" role="radiogroup" aria-label={tech ? "Eligible stocks you own" : "Bankrupt stocks you own"}>
                     {offers.length > 0 ? offers.map((offer) => (
                         <DebentureStockChoice

@@ -4,7 +4,7 @@ import type { Insight } from "./display-types";
 const percent = (value: number) => `${value >= 0 ? "+" : "−"}${Math.abs(Math.round(value * 100))}%`;
 const tone = (value: number) => value > 0 ? "success" : (value < 0 ? "danger" : "secondary");
 
-export function CashReveal({ insights, index }: { insights: Insight[]; index: number })
+export function CashReveal({ insights, index, fast = false }: { insights: Insight[]; index: number; fast?: boolean })
 {
     const active = insights[index];
     const sum = Math.round(insights.slice(0, index + 1).reduce((total, card) => total + card.value, 0) * 100) / 100;
@@ -23,7 +23,11 @@ export function CashReveal({ insights, index }: { insights: Insight[]; index: nu
                     {active && <p className={`cash-reveal-delta text-${tone(active.value)}`}>{percent(active.value)}</p>}
                 </div>
             </div>
-            <div key={active?._id ?? "complete"} className={`${active ? "game-insight-card " : ""}cash-reveal-card rounded bg-white text-black`}>
+            <div
+                key={active?._id ?? "complete"}
+                data-fast-reveal={active && fast ? "" : undefined}
+                className={`${active ? "game-insight-card " : ""}cash-reveal-card rounded bg-white text-black`}
+            >
                 <img src="/static/imgs/icons/cash-outline.svg" alt="" />
                 <div className={`cash-reveal-percent text-${tone(active?.value ?? sum)}`}>
                     <svg width="32" height="24" viewBox="0 0 24 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -172,3 +172,64 @@ it("ignores expired loans, used cards and unprofitable Rights Issues", async () 
     expect(suspensionChoice([{ stockKey: 8, quantity: 1000 }], [{ stockKey: 8, value: 2 }],
         [{ stockKey: 8, value: 1 }], [8])).toBeUndefined();
 });
+
+it("charges the exact Tech Rights Issue price without letting NPCs buy beyond their cash", async () =>
+{
+    const { t, sam } = await setup(5, 1);
+    const code = "test";
+
+    await sam.mutation(api.games.setPack, { code, pack: "tech" });
+    await sam.mutation(api.npc.lobby.add, { code, required: true });
+    await sam.mutation(api.games.start, { code });
+    const board = await sam.query(api.board.get, { code });
+    const [, atBudget, belowBudget] = board.players;
+    const [{ stockKey }] = board.game.prices;
+    const insightId = await t.run(async (context) =>
+    {
+        await context.db.patch(board.game._id, {
+            prices: board.game.prices.map((price) => price.stockKey === stockKey ? { ...price, value: 0.18 } : price),
+        });
+
+        for (const [seat, cash] of [[atBudget, 140], [belowBudget, 139.99]] as const)
+        {
+            await context.db.patch(seat._id, { cash, holdings: seat.holdings.map((holding) =>
+                holding.stockKey === stockKey ? { ...holding, quantity: 4000 } : holding) });
+        }
+
+        return context.db.insert("playerInsights", { gameId: board.game._id, playerId: board.player._id,
+            period: 0, stockKey: chanceStockKey, chanceKind: "rights", description: "rights", value: 0, resolved: false });
+    });
+
+    await sam.mutation(api.rightsIssue.activate, { code, expectedPeriod: 0, expectedTurn: 0, insightId, stockKey });
+    await t.mutation(internal.npc.rightsIssue.run, { gameId: board.game._id, insightId, index: 0 });
+    await t.mutation(internal.npc.rightsIssue.run, { gameId: board.game._id, insightId, index: 0 });
+    await t.mutation(internal.npc.rightsIssue.run, { gameId: board.game._id, insightId, index: 1 });
+    const after = await sam.query(api.board.get, { code });
+    const purchased = after.players.find((seat) => seat._id === atBudget._id);
+    const skipped = after.players.find((seat) => seat._id === belowBudget._id);
+
+    expect(purchased?.cash).toBe(0);
+    expect(purchased?.holdings.find((holding) => holding.stockKey === stockKey)?.quantity).toBe(5000);
+    expect(skipped?.cash).toBe(139.99);
+    expect(skipped?.holdings.find((holding) => holding.stockKey === stockKey)?.quantity).toBe(4000);
+});
+
+it("excludes hidden stocks from an NPC's Rights Issue options even when a legacy save has a quote", async () =>
+{
+    const { t, board, npc, observe } = await fixture("rights");
+    const hidden = 999;
+
+    await t.run(async (context) =>
+    {
+        const player = (await context.db.get(npc._id))!;
+
+        await context.db.insert("stocks", { key: hidden, name: "Hidden", display: false,
+            startingValue: 100, variation: 1, imagePath: "", secondaryImagePath: "" });
+        await context.db.patch(npc._id, { holdings: [...player.holdings, { stockKey: hidden, quantity: 20_000 }] });
+        await context.db.patch(board.game._id, { prices: [...board.game.prices, { stockKey: hidden, value: 100 }] });
+    });
+    const options = (await observe()).chanceOffers;
+
+    expect(options).toHaveLength(1);
+    expect(options?.[0].action).toMatchObject({ kind: "rights-issue", stockKey: 8 });
+});

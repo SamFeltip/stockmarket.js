@@ -1,11 +1,45 @@
 import { skipDealtSuspensions } from "./game-setup";
 import { describe, expect, it } from "vitest";
 import { api } from "../convex/_generated/api";
-import { chartSeries, priceSeries } from "../src/price-history";
+import { chartDateAxis, chartSeries, priceSeries } from "../src/price-history";
+import { tooltipLabel, tradeMarkerLayout } from "../src/TradeMarkers";
+import { packIds } from "../shared/packs";
+import { roundProgress } from "../src/round-preview";
 import { setup } from "./game-setup";
 
 describe("Stock history and investors", () =>
 {
+    it("labels wide Tech charts with dated boundaries while keeping numeric ticks on narrow and Classic charts", () =>
+    {
+        const boundaries = ["2024-11-01", "2024-12-31", "2025-02-28", "2025-04-30", "2025-06-30"];
+        const tradingDates = { from: boundaries[0], to: boundaries[1], boundaries, dailyCloses: [] };
+        const game = { pack: "tech" as const, tradingDates };
+        const axis = chartDateAxis(game, 4, 310);
+
+        expect(axis?.ticks).toEqual([0, 1, 3, 4]);
+        expect(axis?.format(4)).toBe("30 Jun 2025");
+        expect(chartDateAxis(game, 4, 250)).toBeUndefined();
+        expect(chartDateAxis({ ...game, pack: "classic" }, 4, 800)).toBeUndefined();
+    });
+
+    it("uses the actual market dates for partial reveals and the opening quote date for trades", () =>
+    {
+        const stockKey = 104;
+        const trade = { stockKey, period: 0, bargainRound: 1, title: "Sam", imageRoot: "", quantity: 1000 };
+        const opening = [{ stockKey, value: 100 }];
+        const points = priceSeries({
+            currentPeriod: 0, periodCount: 0, prices: opening,
+            tradingDates: { from: "2024-12-31", to: "2025-01-06", boundaries: ["2024-12-31", "2025-01-06"],
+                dailyCloses: [["2025-01-02", "2025-01-03", "2025-01-06"]] },
+            priceHistory: [{ period: 0, prices: opening }, { period: 1, prices: opening,
+                steps: [{ stockKey, values: [102, 101], count: 3 }] }],
+        }, stockKey, new Map([[0, [[trade]]]]));
+
+        expect(points.map((point) => point.date)).toEqual(["2024-12-31", "2024-12-31", "2025-01-02", "2025-01-03"]);
+        expect(tooltipLabel(points[2].round, points[2])).toBe("2 January 2025");
+        expect(tooltipLabel(1)).toBe("Period 1");
+    });
+
     it("starts NatWest at £8 and corrects an existing £9 catalog without rewriting saved games", async () =>
     {
         const { t, sam } = await setup();
@@ -70,7 +104,8 @@ describe("Stock history and investors", () =>
 
         expect(closed.trades).toEqual([trade, otherBuy, sale]);
         expect((await sam.query(api.tv.board, { code: "test" }))?.reveal?.trades).toEqual(closed.trades);
-        expect(chartSeries(closed.game, 8, closed.trades)).toEqual(priceSeries(closed.game, 8));
+        expect(chartSeries(closed.game, 8, closed.trades).flatMap((point) => point.trades ?? []))
+            .toEqual(closed.trades);
         await skipDealtSuspensions(sam, "test");
         await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 0 });
         const settled = await bob.query(api.board.get, { code: "test" });
@@ -80,7 +115,7 @@ describe("Stock history and investors", () =>
             expect.objectContaining({ period: 1, prices: settled.game.prices }),
         ]);
 
-        const points = chartSeries(settled.game, 8, [...settled.trades, { ...trade, period: 1 }])
+        const points = chartSeries(settled.game, 8, [...settled.trades, { ...trade, period: 2 }])
             .filter((point) => point.round <= 1);
         const width = 1 / (points.length - 1);
 
@@ -121,6 +156,60 @@ describe("Stock history and investors", () =>
         ]);
     });
 });
+
+for (const pack of packIds)
+{
+    it(`shows ${pack} buys and sells during trading, the reveal and the settled history`, async () =>
+    {
+        const { t, sam, clients } = await setup();
+        const code = "test";
+
+        await sam.mutation(api.games.setPack, { code, pack });
+        await sam.mutation(api.games.start, { code });
+        const opened = await sam.query(api.board.get, { code });
+        const stockKey = opened.stocks.find((stock) => stock.display)!.key;
+        const opening = opened.game.prices.find((quote) => quote.stockKey === stockKey)?.value;
+        for (let turn = 0; turn < 12; turn++)
+        {
+            const quantity = turn === 0 ? 1000 : (turn === 4 ? -1000 : 0);
+
+            await clients[turn % clients.length].mutation(api.trading.play, {
+                code, expectedPeriod: 0, expectedTurn: turn, ...(quantity && { stockKey, quantity }),
+            });
+
+            if (turn === 4)
+            {
+                const live = await sam.query(api.board.get, { code });
+                const points = chartSeries(live.game, stockKey, live.trades).filter((point) => point.value !== null);
+
+                expect(points.every((point) => point.value === opening)).toBe(true);
+                expect(points.flatMap((point) => point.trades?.map((trade) => trade.quantity) ?? []))
+                    .toEqual([1000, -1000]);
+            }
+        }
+
+        const closed = await sam.query(api.board.get, { code });
+        const publicReveal = (await t.query(api.tv.board, { code }))!.reveal!;
+        const { preview } = roundProgress(closed, 0, 0);
+        const revealed = chartSeries(preview.game, stockKey, publicReveal.trades);
+        const markers = revealed.filter((point) => point.trades);
+
+        expect(markers.flatMap((point) => point.trades?.map((trade) => trade.quantity) ?? [])).toEqual([1000, -1000]);
+
+        if (pack === "tech")
+        {
+            expect(markers).toHaveLength(1);
+            expect(markers[0].date).toBe(closed.game.tradingDates?.from);
+            expect(tradeMarkerLayout(revealed, 260, 130, 12).size).toBeGreaterThan(10);
+        }
+
+        await skipDealtSuspensions(sam, code);
+        await sam.mutation(api.rounds.next, { code, expectedPeriod: 0 });
+        const settled = await sam.query(api.board.get, { code });
+
+        expect(chartSeries(settled.game, stockKey, settled.trades).filter((point) => point.trades)).toEqual(markers);
+    });
+}
 
 it("records each insight within a fixed round column and retains the path in subsequent rounds", async () =>
 {

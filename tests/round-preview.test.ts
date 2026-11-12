@@ -98,7 +98,9 @@ it("adds only revealed card segments and reserves the remaining round width", as
     const trade = { stockKey: 8, period: 0, bargainRound: 1, title: "Sam", imageRoot: "", quantity: 1000 };
     const futureTrade = { ...trade, period: 1 };
 
-    expect(chartSeries(board.game, 8, [trade]).some((point) => point.trades)).toBe(false);
+    expect(chartSeries(board.game, 8, [trade]).filter((point) => point.value !== null)).toEqual([
+        { round: 0, value: 2.5 }, { round: 0.5, value: 2.5, trades: [trade] },
+    ]);
     expect(chartSeries(partial.game, 8, [trade, futureTrade]).filter((point) => point.value !== null)).toEqual([
         { round: 0, value: 2.5 }, { round: 0.25, value: 2.5, trades: [trade] }, { round: 0.5, value: 3.5 },
     ]);
@@ -106,4 +108,43 @@ it("adds only revealed card segments and reserves the remaining round width", as
         { round: 0, value: 2.5 }, { round: 0.25, value: 2.5, trades: [trade] },
         { round: 0.5, value: 3.5 }, { round: 0.75, value: 3 }, { round: 1, value: 3.25 },
     ]);
+});
+
+it("extends the Tech chart on each forecast while keeping settlement tied to the historical close", async () =>
+{
+    const { t, sam } = await setup();
+    const code = "test";
+
+    await sam.mutation(api.games.setPack, { code, pack: "tech" });
+    await sam.mutation(api.games.start, { code });
+    const opened = await sam.query(api.board.get, { code });
+
+    await t.run((context) => context.db.patch(opened.game._id, { status: "closed" }));
+    const board = await sam.query(api.board.get, { code });
+    const stockKey = board.stocks.find((stock) => stock.display)!.key;
+    const price = (game: typeof board.game) => game.prices.find((quote) => quote.stockKey === stockKey)?.value;
+    const opening = price(board.game);
+    const cards = board.insights.filter((card) => card.stockKey === stockKey);
+    const closes = cards.at(-1)!.marketSteps!;
+
+    expect(cards.length).toBeGreaterThan(2);
+
+    for (let index = 0; index < cards.length; index++)
+    {
+        const { preview, wealth } = roundProgress(board, 0, index);
+        const count = Math.floor(closes.length * (index + 1) / cards.length);
+        const points = priceSeries(preview.game, stockKey).filter((point) => point.value !== null);
+
+        expect(points.map((point) => point.value)).toEqual([opening, ...closes.slice(0, count)]);
+        expect(points.at(-1)?.round).toBeCloseTo(count / closes.length);
+        expect(price(wealth.game)).toBe(opening);
+    }
+
+    const complete = roundProgress(board, 0, cards.length);
+    const suspended = roundProgress({ ...board, game: { ...board.game, suspended: [stockKey] } }, 0, 0);
+    const heldPoints = priceSeries(suspended.preview.game, stockKey).filter((point) => point.value !== null);
+
+    expect(price(complete.wealth.game)).toBe(closes.at(-1));
+    expect(heldPoints).toHaveLength(1 + Math.floor(closes.length / cards.length));
+    expect(heldPoints.every((point) => point.value === opening)).toBe(true);
 });

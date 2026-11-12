@@ -3,6 +3,8 @@ import * as engine from "../../../stockmarket-shared/src/packages/npc-engine/src
 import type { Action } from "../../packages/game-contracts/src";
 import { api, internal } from "../../convex/_generated/api";
 import { setup } from "../game-setup";
+import { packIds } from "../../shared/packs";
+import { roundMoney, sharesPerCompany } from "../../shared/rules";
 
 vi.mock("../../../stockmarket-shared/src/packages/npc-engine/src", async (original) =>
 {
@@ -117,6 +119,63 @@ it("records one fallback pass for a malformed proposal and ignores a deleted gam
         2,
     );
 });
+
+for (const pack of packIds)
+{
+    it(`enforces cash, share supply and ownership for scheduled ${pack} NPC trades`, async () =>
+    {
+        const { t, sam, clients } = await setup(5, 3);
+
+        await sam.mutation(api.games.setPack, { code: "test", pack });
+        await sam.mutation(api.npc.lobby.add, { code: "test" });
+        await sam.mutation(api.games.start, { code: "test" });
+        const opened = await sam.query(api.board.get, { code: "test" });
+        const npc = opened.players.find((seat) => seat.kind === "npc")!;
+        const [quote, soldOut] = opened.game.prices;
+        const startingCash = roundMoney(1000 * quote.value);
+
+        await t.run(async (context) =>
+        {
+            await context.db.patch(npc._id, { cash: startingCash });
+            await context.db.patch(opened.player._id, { holdings: opened.player.holdings.map((holding) =>
+                holding.stockKey === soldOut.stockKey ? { ...holding, quantity: sharesPerCompany } : holding) });
+        });
+
+        const moves = [
+            { kind: "buy", stockKey: quote.stockKey, quantity: 2000 },
+            { kind: "buy", stockKey: quote.stockKey, quantity: 1000 },
+            { kind: "sell", stockKey: quote.stockKey, quantity: 2000 },
+        ] as const;
+        for (const [round, action] of moves.entries())
+        {
+            for (const [seat, client] of clients.entries())
+            {
+                await client.mutation(api.trading.play, { code: "test", expectedPeriod: 0, expectedTurn: round * 4 + seat });
+            }
+
+            vi.mocked(engine.decide).mockReturnValue({ action, nextMemory: engine.emptyMemory(), reason: "cards" });
+            const pending = (await t.run((context) => context.db.query("npcTurns").unique()))!;
+            const job = { pendingId: pending._id, generation: pending.generation };
+
+            await t.mutation(internal.npc.worker.run, job);
+            await t.mutation(internal.npc.worker.run, job);
+            const observation = vi.mocked(engine.decide).mock.lastCall?.[0];
+            const updated = await t.run((context) => context.db.get(npc._id));
+
+            expect(observation?.legalActions.some((candidate) => candidate.kind !== "pass"
+              && candidate.stockKey === soldOut.stockKey)).toBe(false);
+            expect(updated?.cash).toBe(round === 0 ? startingCash : 0);
+            expect(updated?.holdings.find((holding) => holding.stockKey === quote.stockKey)?.quantity)
+                .toBe(round === 0 ? 0 : 1000);
+        }
+
+        const actions = await t.run((context) => context.db.query("gameActions").collect());
+
+        expect(actions.filter((event) => event.actorPlayerId === npc._id).map((event) => event.action))
+            .toEqual([{ kind: "pass" }, moves[1], { kind: "pass" }]);
+    });
+}
+
 it("retries unexpected engine failures with a stable token before committing one fallback pass", async () =>
 {
     const { t, sam } = await setup(5, 1);

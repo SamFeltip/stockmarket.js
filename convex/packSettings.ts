@@ -1,6 +1,6 @@
 import { packStocks, packStartingCash, validPackLength } from "../../stockmarket-shared/src/engine/packRules";
 import { techTradingDates } from "../../stockmarket-shared/src/engine/techMarket";
-import { packDefaultPeriods, packPeriods, packRounds, type Pack } from "../../stockmarket-shared/src/shared/packs";
+import { gamePeriodCount, packDefaultPeriods, type Pack } from "../../stockmarket-shared/src/shared/packs";
 import type { Doc as Document_ } from "./_generated/dataModel";
 import type { MutationCtx as MutationContext } from "./_generated/server";
 import { readEngine } from "./engine";
@@ -15,7 +15,7 @@ export async function openingMarket(context: MutationContext, pack: Pack | undef
 
     return {
         pack, techStart: undefined,
-        periodCount: packRounds(pack, periodCount + 1) - 1,
+        periodCount,
         prices, priceHistory: [{ period: 0, prices }],
     };
 }
@@ -27,7 +27,7 @@ export async function setLobbyLength(context: MutationContext, game: Document_<"
         fail("Invalid game length");
     }
 
-    await context.db.patch(game._id, { periodCount: packRounds(game.pack, periodCount + 1) - 1 });
+    await context.db.patch(game._id, { periodCount });
 }
 
 export async function changeLobbyPack(context: MutationContext, game: Document_<"games">, seats: Document_<"players">[], pack: Pack)
@@ -39,7 +39,7 @@ export async function changeLobbyPack(context: MutationContext, game: Document_<
 
     const wasTech = game.pack === "tech";
     const standardPeriodCount = wasTech ? game.standardPeriodCount ?? packDefaultPeriods() - 1 : game.periodCount;
-    const techPeriodCount = wasTech ? packPeriods(game.pack, game.periodCount + 1) - 1 : game.techPeriodCount;
+    const techPeriodCount = wasTech ? gamePeriodCount(game) - 1 : game.techPeriodCount;
     const periodCount = pack === "tech" ? techPeriodCount ?? packDefaultPeriods(pack) - 1 : standardPeriodCount;
     const market = await openingMarket(context, pack, periodCount);
 
@@ -57,5 +57,5 @@ export async function changeLobbyPack(context: MutationContext, game: Document_<
 export function publicTradingDates(game: Document_<"games">)
 {
     return game.techStart === undefined || game.status === "waiting" ? undefined
-        : techTradingDates(game.techStart, game.currentPeriod);
+        : techTradingDates(game);
 }

@@ -3,7 +3,7 @@ import type { Board as PlayerBoard } from "./types";
 
 export type Stock = Pick<PlayerBoard["stocks"][number], "key" | "name" | "display" | "imagePath" | "secondaryImagePath"> & { variation?: number; startingValue?: number };
 
-export type Insight = Pick<PlayerBoard["insights"][number], "_id" | "playerId" | "stockKey" | "value" | "description" | "resolved" | "chanceKind" | "used" | "period" | "bonusRole" | "removedInsightId">;
+export type Insight = Pick<PlayerBoard["insights"][number], "_id" | "playerId" | "stockKey" | "value" | "description" | "resolved" | "chanceKind" | "used" | "period" | "bonusRole" | "removedInsightId" | "forecast" | "marketSteps">;
 
 export type Player = Pick<PlayerBoard["players"][number],
     "_id" | "name" | "profileRoot" | "cash" | "holdings" | "netWorth" | "ranking"> & {

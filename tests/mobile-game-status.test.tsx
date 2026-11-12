@@ -37,28 +37,43 @@ describe("mobile remaining goes", () =>
         {
             const html = renderToStaticMarkup(
                 <GameMetrics board={{ players, game: { pack, currentPlayerId: "sam", turn: 1,
-                    currentPeriod: pack === "tech" ? 12 : 1, periodCount: pack === "tech" ? 143 : 5 } }}
+                    currentPeriod: 1, periodCount: pack === "tech" ? 11 : 5 } }}
                 />,
             );
 
             expect(html).toContain(">Turn</span>");
             expect(html).toContain(">Period</span>");
-            expect(html).toContain(pack === "tech" ? "value=\"13\" max=\"144\"" : "value=\"2\" max=\"6\"");
+            expect(html).toContain(pack === "tech" ? "value=\"2\" max=\"12\"" : "value=\"2\" max=\"6\"");
             expect(html).toContain("turn-goes");
         }
     });
 
-    it("advances Tech rounds within a period and rolls over after round twelve", () =>
+    for (const periods of [4, 12, 18])
     {
-        for (const [currentPeriod, period, round] of [[0, 1, 1], [1, 1, 2], [11, 1, 12], [12, 2, 1], [143, 12, 12]])
+        it(`tracks each two-month block in a ${periods}-period Tech game`, () =>
         {
-            const html = renderToStaticMarkup(
-                <GameMetrics board={{ players: [], game: { pack: "tech", turn: 0, currentPeriod, periodCount: 143 } }} />,
-            );
+            for (const period of [1, 2, periods])
+            {
+                const html = renderToStaticMarkup(
+                    <GameMetrics board={{ players: [],
+                        game: { pack: "tech", turn: 0, currentPeriod: period - 1, periodCount: periods - 1 } }}
+                    />,
+                );
 
-            expect(html).toContain(`aria-valuetext="Period ${period} of 12, Round ${round} of 12"`);
-            expect(html).toContain(`value="${currentPeriod + 1}" max="144"`);
-            expect(html).toContain(`<small class="game-metric-round">Round ${round} of 12</small>`);
-        }
+                expect(html).toContain(`<strong>${period}</strong><span>of ${periods}</span>`);
+                expect(html).toContain(`value="${period}" max="${periods}"`);
+                expect(html).not.toMatch(/Round \d+ of \d+/);
+            }
+        });
+    }
+
+    it("keeps the original progress for a previously started Tech game with 144 rounds", () =>
+    {
+        const html = renderToStaticMarkup(
+            <GameMetrics board={{ players: [], game: { pack: "tech", turn: 0, currentPeriod: 12, periodCount: 143 } }} />,
+        );
+
+        expect(html).toContain("<strong>2</strong><span>of 12</span>");
+        expect(html).toContain("value=\"13\" max=\"144\"");
     });
 });

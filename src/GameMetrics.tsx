@@ -1,4 +1,4 @@
-import { packPeriods, packRoundsPerPeriod, roundWithinPeriod, type Pack } from "../shared/packs";
+import { gamePeriodCount, gamePeriodNumber, legacyTechRounds, type Pack } from "../shared/packs";
 
 export function GameMetrics({ board }: { board: {
     game: { turn: number; currentPlayerId?: string; currentPeriod: number; periodCount: number; pack?: Pack };
@@ -6,14 +6,11 @@ export function GameMetrics({ board }: { board: {
 } })
 {
     const { game, players } = board;
-    const round = game.currentPeriod + 1;
-    const rounds = game.periodCount + 1;
-    const period = packPeriods(game.pack, round);
-    const periods = packPeriods(game.pack, rounds);
-    const roundsPerPeriod = packRoundsPerPeriod(game.pack);
-    const roundLabel = roundsPerPeriod > 1
-        ? `Round ${roundWithinPeriod(game.pack, game.currentPeriod)} of ${roundsPerPeriod}` : undefined;
-    const turnUnit = roundLabel ? "round" : "period";
+    const currentRound = game.currentPeriod + 1;
+    const totalRounds = game.periodCount + 1;
+    const period = gamePeriodNumber(game, game.currentPeriod);
+    const periods = gamePeriodCount(game);
+    const turnUnit = legacyTechRounds(game) ? "round" : "period";
     const current = players.find((player) => player._id === game.currentPlayerId);
     const used = Math.min(3, Math.floor(game.turn / Math.max(1, players.length)));
     const remaining = 3 - used;
@@ -44,13 +41,7 @@ export function GameMetrics({ board }: { board: {
                     <strong>{period}</strong>
                     <span>{`of ${periods}`}</span>
                 </div>
-                <progress
-                    aria-label="Period progress"
-                    aria-valuetext={roundLabel ? `Period ${period} of ${periods}, ${roundLabel}` : undefined}
-                    value={round}
-                    max={rounds}
-                />
-                {roundLabel && <small className="game-metric-round">{roundLabel}</small>}
+                <progress aria-label="Period progress" value={currentRound} max={totalRounds} />
             </div>
         </div>
     );

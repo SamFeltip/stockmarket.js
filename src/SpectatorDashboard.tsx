@@ -131,9 +131,7 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
     mutedStockKey?: number; animateStockKey?: number;
 })
 {
-    const volatilityOrder = [7, 8, 9, 10, 11, 12];
-    const stockPosition = (key: number) => volatilityOrder.indexOf(key) + 1 || volatilityOrder.length + 1;
-    const stocks = board.stocks.toSorted((a, b) => stockPosition(a.key) - stockPosition(b.key));
+    const stocks = board.stocks;
     const ranked = board.players.toSorted((a, b) => b.netWorth - a.netWorth);
     const finished = board.game.status === "finished";
     const total = ranked.reduce((sum, player) => sum + player.netWorth, 0);
