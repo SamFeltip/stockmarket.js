@@ -222,3 +222,14 @@ describe("TV spectator integration", () =>
             .rejects.toThrow("already exists");
     });
 });
+
+it("assigns a short TV code and returns it again when the same device retries", async () =>
+{
+    const t = convexTest(schema, modules);
+    const request = { token, periodCount: 5 };
+    const code = await t.mutation(api.tv.create, request);
+
+    expect(code).toMatch(/^tv-[a-z0-9]{4}$/);
+    expect(await t.mutation(api.tv.create, request)).toBe(code);
+    expect(await t.mutation(api.tv.create, { ...request, token: "b".repeat(64) })).not.toBe(code);
+});

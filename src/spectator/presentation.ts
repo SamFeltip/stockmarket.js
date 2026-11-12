@@ -11,7 +11,8 @@ export function websiteBoard(board: Board): DisplayBoard
         game: { ...board.game, prices: reveal?.prices
           ?? board.stocks.map((stock) => ({ stockKey: stock.key, value: stock.value })),
         suspended: reveal?.suspended ?? [], targetedSuspensions: reveal?.targetedSuspensions,
-        suspensionPeriod: reveal?.suspensionPeriod, priceHistory: board.history },
+        revealProgress: reveal?.revealProgress, suspensionPeriod: reveal?.suspensionPeriod,
+        priceHistory: board.history },
         stocks: reveal?.stocks ?? board.stocks.map((stock) => ({
             ...stock, display: true, imagePath: stockLogo(stock.key, stock.imagePath),
             secondaryImagePath: stockLogo(stock.key, stock.secondaryImagePath),

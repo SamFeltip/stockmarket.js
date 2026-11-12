@@ -112,9 +112,12 @@ describe("stock packs", () =>
             const loss = -negatives.reduce((sum, value) => sum + value, 0);
 
             expect(positives).toEqual(oldFrantic.map((value) => Math.round(value * 200) / 100));
-            expect(negatives.every((value) => classic.some((card) => card.value * 2 === value))).toBe(true);
-            expect(loss / gain).toBeGreaterThanOrEqual(0.475);
-            expect(loss / gain).toBeLessThan(0.5);
+            const downsideMultiplier = stock.key === 8 ? 2 : 1;
+
+            expect(negatives.every((value) => classic.some((card) =>
+                card.value * 2 * downsideMultiplier === value))).toBe(true);
+            expect(loss / gain).toBeGreaterThanOrEqual(0.475 * downsideMultiplier);
+            expect(loss / gain).toBeLessThan(0.5 * downsideMultiplier);
         }
 
         await expect(sam.mutation(api.games.setPack, { code, pack: "classic" })).rejects.toThrow("lobby host");
@@ -261,4 +264,29 @@ describe("stock packs", () =>
         expect(observation.catalog.every((card) => card.stockKey < 0)).toBe(true);
         expect(estimate(observation, true, "tech").map(({ stockKey }) => stockKey)).toEqual([106, 101, 102, 103, 104, 105]);
     });
+});
+
+it("enforces Frantic's ten million share supply on a real trade", async () =>
+{
+    const { t, sam } = await setup();
+    const code = "test";
+
+    await sam.mutation(api.games.setPack, { code, pack: "frantic" });
+    await sam.mutation(api.games.start, { code });
+    const board = await sam.query(api.board.get, { code });
+    const stockKey = 8;
+    const rival = board.players.find((player) => player._id !== board.player._id)!;
+
+    await t.run(async (context) =>
+    {
+        await context.db.patch(rival._id, { holdings: [{ stockKey, quantity: 9_999_000 }] });
+    });
+
+    const trade = { code, expectedPeriod: 0, expectedTurn: 0, stockKey };
+
+    await expect(sam.mutation(api.trading.play, { ...trade, quantity: 2000 })).rejects.toThrow("Not enough shares available");
+    await sam.mutation(api.trading.play, { ...trade, quantity: 1000 });
+    const traded = await sam.query(api.board.get, { code });
+
+    expect(traded.player.holdings.find((holding) => holding.stockKey === stockKey)?.quantity).toBe(1000);
 });

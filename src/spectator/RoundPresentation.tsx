@@ -4,7 +4,7 @@ import { pendingSuspensions } from "../../shared/suspensions";
 import { ShareSuspended } from "../ShareSuspended";
 import { useAction } from "../shared";
 import { cashStockKey } from "../../shared/chance-cards";
-import { useEffect, useState } from "react";
+import { useRoundReveal } from "../use-round-reveal";
 import type { Board } from "./types";
 import { websiteBoard } from "./presentation";
 import { revealGroups } from "../reveals";
@@ -12,18 +12,23 @@ import { roundProgress } from "../round-preview";
 import { RoundReveal } from "../RoundReveal";
 import { RoundOverview } from "../RoundOverview";
 import { useRevealReady } from "../use-reveal-ready";
-import { useWideRoundOverview } from "../use-wide-round-overview";
+import { useMediaQuery } from "../use-wide-round-overview";
 import { RoundWealth } from "../RoundWealth";
+import "../round-desktop.css";
 
 function unavailableAction()
 {
     return Promise.reject(new Error("The display is not connected to this game"));
 }
 
-export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overview = false,
-    onBeginSuspensions = unavailableAction, onSkipSuspension = unavailableAction }: {
-    snapshot: Board; onNext: () => void; busy: boolean;
+export function RoundPresentation({ snapshot, forceWide = false, canAdvance = true,
+    onNext, busy, error, onBack, overview = false,
+    onBeginSuspensions = unavailableAction, onSkipSuspension = unavailableAction,
+    onMoveReveal = unavailableAction }: {
+    snapshot: Board; forceWide?: boolean; canAdvance?: boolean; onNext: () => void; busy: boolean;
     error: string; onBack: () => void; overview?: boolean;
+    onMoveReveal?: (arguments_: { code: string; expectedPeriod: number;
+        step: number; summary: boolean }) => Promise<unknown>;
     onBeginSuspensions?: (arguments_: { code: string; expectedPeriod: number }) => Promise<unknown>;
     onSkipSuspension?: (arguments_: { code: string; expectedPeriod: number;
         insightId: NonNullable<Board["reveal"]>["insights"][number]["_id"] }) => Promise<unknown>;
@@ -33,40 +38,27 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
     const beginSuspensions = onBeginSuspensions;
     const skipSuspension = onSkipSuspension;
     const decision = useAction();
-    const wideOverview = useWideRoundOverview();
+    const wideOverview = useMediaQuery("(min-width: 992px)");
     const groups = revealGroups(board.stocks, board.insights);
-    const [step, setStep] = useState(overview ? groups.length : 0);
-    const [index, setIndex] = useState(0);
+    const { step, summary } = board.game.revealProgress ?? { step: 0, summary: false };
     const stock = groups[step];
     const cash = stock?.key === cashStockKey;
     const visible = board.insights.filter((insight) => insight.stockKey === stock?.key);
     const unresolved = stock?.name === "Hold Stock Price" ? visible.find((insight) => !insight.resolved) : undefined;
     const owner = board.players.find((player) => player._id === unresolved?.playerId);
     const suspensions = pendingSuspensions(board.game.currentPeriod, board.players, board.insights);
-    const reviewed = step >= groups.length || board.game.suspensionPeriod === board.game.currentPeriod;
+    const reviewed = overview || step >= groups.length || board.game.suspensionPeriod === board.game.currentPeriod;
     const lastPlay = snapshot.feed.find((item) => item.period === snapshot.game.currentPeriod
       && item.colour !== "grey" && (item.quantity || item.cashBonus || item.message === "passed their go"));
     const ready = useRevealReady(lastPlay?.at);
-    const revealMs = insightRevealMs(board.game.pack);
+    const index = useRoundReveal({ step, summary, count: visible.length,
+        paused: !ready || reviewed || Boolean(unresolved), delay: insightRevealMs(board.game.pack) });
     const pendingHolds = board.insights.some((insight) => !insight.resolved
       && board.stocks.find((item) => item.key === insight.stockKey)?.name === "Hold Stock Price");
     const { preview, wealth } = roundProgress(board, reviewed ? groups.length : step, index);
 
     const afterCash = suspensions.length > 0 ? "Next: Share Suspended" : "Show round summary";
     const continuation = step < groups.length - 1 ? `Next: ${groups[step + 1].name}` : afterCash;
-
-    useEffect(() =>
-    {
-        if (!ready || unresolved || index >= visible.length || reviewed)
-        {
-            return;
-        }
-
-        const timer = globalThis.setTimeout(() => setIndex((current) => current + 1), revealMs);
-
-        return () => globalThis.clearTimeout(timer);
-    }, [index, visible.length, unresolved, step, reviewed, ready, revealMs]);
-
     if (!ready)
     {
         return (
@@ -82,7 +74,7 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
         const card = suspensions[0];
 
         return (
-            <main className="website-presentation">
+            <main className="website-presentation suspension-presentation">
                 <div className="round-end suspension-round p-4">
                     <ShareSuspended
                         key={card._id}
@@ -110,12 +102,12 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
 
     return (
         <main className="website-presentation">
-            <div className="round-end spectator-round-end gap-3 p-4 d-grid">
+            <div className={`round-end spectator-round-end gap-3 p-4 d-grid${reviewed ? " round-summary" : ""}`}>
                 <div className="d-flex flex-column align-items-center justify-content-center">
                     <h1>End of round</h1>
                     {stock && !stock.display && !cash && <h2>Additional insights</h2>}
                 </div>
-                {reviewed ? <RoundOverview before={board} after={preview} layout={wideOverview ? undefined : "compact"} /> : (
+                {reviewed ? <RoundOverview before={board} after={preview} layout={wideOverview || forceWide ? "wide" : "compact"} /> : (
                     <>
                         <div id="insight-view" className="card card-green p-4 rounded border border-5 border-white">
                             {unresolved ? (
@@ -147,24 +139,6 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
                                 />
                             ) : null)}
                         </div>
-                        <div
-                            id="stock-view"
-                            className="card card-green px-5 py-4 rounded border-5 border-white flex-sm-row align-items-center"
-                        >
-                            <h2>Stock Values:</h2>
-                            <div className="gap-3 flex-fill d-flex flex-nowrap flex-column flex-sm-row justify-content-between align-items-center">
-                                {board.stocks.filter((item) => item.display).map((item) => (
-                                    <div className="game-stock d-flex flex-column align-items-center" key={item.key}>
-                                        <img className="w-100 p-3 object-fit-contain" src={item.secondaryImagePath} alt={item.name} />
-                                        <div>
-                                            £
-                                            {(preview.game.prices.find((price) =>
-                                                price.stockKey === item.key)?.value ?? 0).toFixed(2)}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
                         <RoundWealth players={wealth.players} stock={stock} />
                     </>
                 )}
@@ -174,41 +148,31 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
                     {reviewed ? (
                         <>
                             {pendingHolds && <p>Waiting for players to resolve their hold-stock insights.</p>}
-                            <button className="btn btn-primary" disabled={busy || pendingHolds} onClick={onNext}>
-                                {busy ? "Starting…" : nextRoundLabel(board.game)}
-                                {" "}
-                                →
-                            </button>
+                            {canAdvance ? (
+                                <button className="btn btn-primary" disabled={busy || pendingHolds} onClick={onNext}>
+                                    {busy ? "Starting…" : nextRoundLabel(board.game)}
+                                    {" →"}
+                                </button>
+                            ) : <p>Waiting for the controlling TV to continue.</p>}
                         </>
                     )
                         : (
                             <button
                                 className="btn btn-primary"
-                                disabled={Boolean(unresolved) || decision.busy}
+                                disabled={Boolean(unresolved)}
+                                aria-disabled={decision.busy || undefined}
                                 onClick={() =>
                                 {
-                                    if (index < visible.length)
+                                    if (decision.busy)
                                     {
-                                        setIndex(visible.length);
+                                        return;
                                     }
-                                    else
-                                    {
-                                        if (step === groups.length - 1 && suspensions.length > 0)
-                                        {
-                                            void decision.run(async () =>
-                                            {
-                                                await beginSuspensions({ code: board.game.code,
-                                                    expectedPeriod: board.game.currentPeriod });
-                                                setStep((old) => old + 1);
-                                                setIndex(0);
-                                            });
-                                        }
-                                        else
-                                        {
-                                            setStep((old) => old + 1);
-                                            setIndex(0);
-                                        }
-                                    }
+
+                                    const skip = index < visible.length;
+
+                                    void decision.run(() => onMoveReveal({ code: board.game.code,
+                                        expectedPeriod: board.game.currentPeriod,
+                                        step: skip ? step : step + 1, summary: skip }));
                                 }}
                             >
                                 {index < visible.length ? (cash ? "Skip to cash summary" : "Skip to stock summary") : continuation}

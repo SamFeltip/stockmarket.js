@@ -20,7 +20,7 @@ export function StockPanel({ board, stock }: { board: Board; stock: Stock })
     const priceChange = Math.round((marketPrice - startingPrice) * 100) / 100;
     const held = player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0;
     const ownInsights = insights.filter((insight) => insight.stockKey === stock.key);
-    const available = sharesAvailable(players, stock.key);
+    const available = sharesAvailable(players, stock.key, game.pack);
     const myTurn = game.currentPlayerId === board.player._id;
 
     return (

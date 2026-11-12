@@ -26,35 +26,6 @@ button,input{font:inherit}button{cursor:pointer;border:1px solid transparent;bor
 .feed-entries h3{font-size:.85rem;color:#111;line-height:1.4;margin-bottom:.3rem}
 .feed-entries p{font-size:.75rem;line-height:1.45;white-space:normal;overflow-wrap:anywhere}
 
-/* Original website round components; sizes follow the TV viewport scale. */
-.website-presentation{height:100vh;color:white;overflow:auto}
-.website-presentation .round-end{height:100vh;min-height:0;grid-template-rows:auto minmax(0,1fr) auto auto auto;padding:1rem 2.5vw!important;gap:.6rem!important;align-content:stretch}
-.website-presentation .round-end:has(.round-overview){grid-template-rows:auto minmax(0,1fr) auto}
-.website-presentation h1{font-size:2rem}.website-presentation h2{font-size:1.4rem}
-.website-presentation .card-green{color:white;border:0}
-.website-presentation #insight-view{min-height:0;padding:.8rem!important;border-width:.2rem!important}
-.website-presentation .round-reveal{min-height:0;grid-template-rows:minmax(0,1fr) 8rem}
-.website-presentation .round-reveal>div:first-child{padding:.8rem!important}
-.website-presentation .game-stock-view img{max-height:5.5rem!important;padding:.4rem!important}
-.website-presentation .game-stock-view h2{font-size:1.25rem}
-.website-presentation .game-insight-card{padding:.7rem!important}.website-presentation .game-insight-card>img{height:4rem;object-fit:contain}
-.website-presentation .total-insight{font-size:1.4rem;justify-content:center;gap:.5rem}.website-presentation .total-insight img{height:.9rem}
-.website-presentation .round-reveal-chart{padding:.4rem!important;min-height:0}
-.website-presentation .round-reveal-chart .stock-price-chart{height:100%;min-height:0}
-.website-presentation #stock-view{padding:.3rem 1rem!important;gap:1rem}
-.website-presentation #stock-view h2{font-size:1rem;white-space:nowrap}
-.website-presentation #stock-view .game-stock img{height:3.5rem;max-height:none;padding:.5rem!important}
-.website-presentation #stock-view .game-stock{min-width:0;flex:1}
-.website-presentation #stock-view .game-stock>div{font-size:.9rem}
-.website-presentation #player-view h2{font-size:1rem}
-.website-presentation .round-wealth-players{gap:.6rem}.website-presentation .round-wealth-players img{width:2.5rem}
-.website-presentation .round-navigation{position:static!important;padding:0!important;justify-self:end}
-.website-presentation .hold-stock-options{grid-template-columns:repeat(3,1fr)}.hold-stock-options img{height:3rem;object-fit:contain;max-width:100%}
-.website-presentation .round-overview-stocks{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
-.website-presentation .round-overview-stocks article{padding:.6rem!important}
-.website-presentation .round-overview-players img{width:2.5rem}
-.website-presentation .round-overview-players h3,.website-presentation .round-overview-players h4{font-size:1rem}
-.website-presentation .round-overview-players p{font-size:.8rem}
 .play-notification{position:fixed;inset:0;z-index:1090;background:rgba(15,44,18,.96);color:white;pointer-events:none;animation:fadeout 2.5s ease-in-out 1s forwards}
 #play-notif>div>img{width:15rem;height:15rem}#play-notif h1{font-size:3rem}
 #play-notif .trade-message{display:flex;align-items:center;justify-content:center;gap:1rem;font-size:2rem}
@@ -69,7 +40,6 @@ button,input{font:inherit}button{cursor:pointer;border:1px solid transparent;bor
 .feed-entries .trade-message{display:flex;align-items:center;gap:.3rem;font-size:1rem;flex-wrap:wrap}
 .feed-entries .trade-message img{width:1.5rem;height:1.5rem;object-fit:contain}
 
-.website-presentation .round-player-holdings{font-size:.65rem;text-align:center}
 .tv-results{height:100vh;overflow:hidden;color:white}
 .tv-results .game-results{height:100vh;min-height:0;padding:1rem 2.5vw;gap:.75rem;grid-template-areas:"heading" "main" "histories" "footer";grid-template-rows:auto minmax(0,1fr) auto auto;color:white;border:0}
 .tv-results .results-main{display:grid;min-height:0;grid-template-columns:minmax(0,1fr) minmax(0,1.65fr);gap:.75rem}
@@ -101,18 +71,6 @@ button,input{font:inherit}button{cursor:pointer;border:1px solid transparent;bor
 
 
 /* TV typography scales in rem with the viewport, including portraits and cards. */
-.website-presentation .round-overview { grid-template-rows: auto minmax(min-content, 1fr) auto; gap: .6rem!important; }
-.website-presentation .round-overview-stocks { min-height: 0; gap: .6rem; }
-.website-presentation .round-overview-stocks article { min-height: 0; }
-.website-presentation .round-overview-stocks article > img { height: 2rem; max-width: 100%; }
-.website-presentation .round-overview-stocks h3 { font-size: 1rem; margin: .2rem 0; }
-.website-presentation .round-overview .stock-result h2 { font-size: 1.35rem; }
-.website-presentation .round-overview .stock-result-change { font-size: 1rem; }
-.website-presentation .round-overview-players { gap: .6rem; }
-.website-presentation .round-overview-players article { min-width: 0; padding: .5rem!important; }
-.website-presentation .round-overview-players img { height: 2.5rem; aspect-ratio: 1; object-fit: cover; }
-.website-presentation .round-overview-players h3, .website-presentation .round-overview-players h4 { margin: .2rem 0; overflow-wrap: anywhere; }
-.website-presentation .round-navigation { flex-wrap: wrap; max-width: 100%; }
 /* Bootstrap's selected and accordion styles must not conceal remote focus. */
 :is(button, input, [tabindex="0"]):focus { outline: .18rem solid #fff284!important; outline-offset: .12rem; box-shadow: 0 0 0 .3rem #0f2c12!important; }
 :is(button.btn-primary, button.primary, .lengths button[aria-pressed="true"]):focus { outline-color: white!important; }
@@ -120,18 +78,8 @@ button,input{font:inherit}button{cursor:pointer;border:1px solid transparent;bor
 .tv-results .result-player-button:focus { border-color: #fff284!important; }
 .portfolios { overflow: auto; }
 /* Give animated portfolio changes their own line above the current value. */
-.website-presentation .net-worth-number { padding-top: 1.4em; }
-.website-presentation .wealth-delta { inset: 0 0 auto; animation: tv-wealth-change 1.8s ease-out both; }
-.website-presentation .round-wealth-players > div { min-width: 0; }
-.website-presentation .round-player-holdings { overflow-wrap: anywhere; }
 
 
-.website-presentation .game-insight-card .role-portrait .investor-photo { width: 4rem; height: 4rem; }
-.website-presentation .game-insight-card .role-portrait .company-role-badge { width: 1.4rem; height: 1.4rem; top: -.35rem; left: -.35rem; }
-.website-presentation .stock-role-footer { gap: .35rem; padding-top: .5rem; margin-top: .5rem; }
-.website-presentation .stock-role-entry p { font-size: .85rem; }
-.website-presentation .stock-role-footer .role-portrait .investor-photo { width: 1.8rem; height: 1.8rem; }
-.website-presentation .stock-role-footer .role-portrait .company-role-badge { width: .8rem; height: .8rem; top: -.2rem; left: -.2rem; }
 .holding-role { display: inline-flex; align-items: center; justify-content: flex-end; gap: .2rem; }
 .holding-role img { width: .9rem; height: .9rem; flex-shrink: 0; }
 

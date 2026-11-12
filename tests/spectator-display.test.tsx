@@ -149,7 +149,8 @@ describe("TV spectator display parity", () =>
         const reveal = render(closed);
 
         expect(reveal).toContain("End of round");
-        expect(reveal).toContain("Stock Values:");
+        expect(reveal).not.toContain("Stock Values:");
+        expect(reveal).toContain("round-reveal-chart");
         expect(reveal).toContain("Net Worth");
         expect(reveal).toContain("round-player-holdings");
         expect(summary(closed)).toContain("Round overview");

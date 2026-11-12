@@ -1,3 +1,4 @@
+import { HomeStart } from "./HomeStart";
 import { useMutation, useQuery } from "convex/react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../convex/_generated/api";
@@ -50,10 +51,7 @@ export function Home({ user }: { user: Board["user"] })
                             <button type="submit" name="intent" value="spectate" className="btn btn-outline-light">Spectate</button>
                         </div>
                     </form>
-                    <Link to="/games/new" className="home-start btn btn-primary d-flex flex-column justify-content-center align-items-center text-center">
-                        <img width={48} height={39} src="/static/imgs/icons/Handshake.svg" alt="" />
-                        <div>Start game</div>
-                    </Link>
+                    <HomeStart />
                 </div>
             </div>
         </main>

@@ -1,19 +1,21 @@
-import { useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
-const wideOverviewQuery = "(min-width: 768px) and (min-height: 720px)";
-
-function subscribeToWideOverview(onChange: () => void)
+export function useMediaQuery(query: string)
 {
-    const query = matchMedia(wideOverviewQuery);
+    const subscribe = useCallback((onChange: () => void) =>
+    {
+        const media = matchMedia(query);
 
-    query.addEventListener("change", onChange);
+        media.addEventListener("change", onChange);
 
-    return () => query.removeEventListener("change", onChange);
+        return () => media.removeEventListener("change", onChange);
+    }, [query]);
+    const matches = () => matchMedia(query).matches;
+
+    return useSyncExternalStore(subscribe, matches, () => false);
 }
-
-const isWideOverview = () => matchMedia(wideOverviewQuery).matches;
 
 export function useWideRoundOverview()
 {
-    return useSyncExternalStore(subscribeToWideOverview, isWideOverview, () => false);
+    return useMediaQuery("(min-width: 768px) and (min-height: 720px)");
 }

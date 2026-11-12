@@ -3,3 +3,4 @@
 .game-length-value { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 6rem; padding: 0.25rem 1rem; line-height: 1.2; }
 .game-length-value strong { font-size: 1.1rem; }
 .game-length-value span { font-size: 0.75rem; }
+.game-length-control > button[aria-disabled="true"] { opacity: 0.5; cursor: default; }

@@ -67,15 +67,17 @@ export function RoundOverview({ before, after, layout }: { before: Board; after:
             </div>
             {layout === "wide" && (
                 <section className="round-overview-charts" aria-label="Stock price histories">
-                    {stocks.map((stock) => (
-                        <div className="rounded" key={stock.key}>
-                            <img src={stock.imagePath} alt="" />
-                            <StockHistoryChart
-                                name={stock.name}
-                                history={stockHistory(after.game, stock.key, true, after.trades ?? before.trades)}
-                            />
-                        </div>
-                    ))}
+                    <Marquee label="Stock graphs. Scroll or use the arrow keys to browse">
+                        {stocks.map((stock) => (
+                            <div className="round-overview-chart-tile rounded" key={stock.key}>
+                                <img src={stock.imagePath} alt="" draggable={false} />
+                                <StockHistoryChart
+                                    name={stock.name}
+                                    history={stockHistory(after.game, stock.key, true, after.trades ?? before.trades)}
+                                />
+                            </div>
+                        ))}
+                    </Marquee>
                 </section>
             )}
             {mobile && <h2>Player results</h2>}

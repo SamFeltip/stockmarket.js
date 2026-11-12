@@ -31,7 +31,7 @@ describe("NPC profiles", () =>
         }
     }
 
-    it("keeps Easy Frankie's favourite even with negative cards, but never trades a zero price", () =>
+    it("keeps Easy Frankie's favourite in Classic, sells it on a loss in Frantic, and never trades a zero price", () =>
     {
         const input = observation();
         const players = input.players.map((seat) =>
@@ -56,6 +56,14 @@ describe("NPC profiles", () =>
                 "loyal",
             ).action.kind,
         ).toBe("pass");
+        expect(
+            decide(
+                observation({ pack: "frantic", players, ownInsights: negative }),
+                { personality: "frankie", difficulty: "easy" },
+                emptyMemory(),
+                "loyal",
+            ).action,
+        ).toEqual({ kind: "sell", stockKey: 7, quantity: 30_000 });
         expect(
             decide(
                 observation({ prices: [{ stockKey: 7, value: 0 }] }),

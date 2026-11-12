@@ -1,3 +1,4 @@
+import { lastItem } from "../shared/rules";
 import { chartRoundCount, chartSeries, type PriceHistoryGame } from "./price-history";
 import { tradeMarkerLayout } from "./TradeMarkers";
 import type { Board } from "./display-types";
@@ -9,7 +10,7 @@ export function stockHistory(game: PriceHistoryGame, stockKey: number, fitToHist
     const start = values[0] ?? 0;
     const min = values.length > 0 ? Math.min(...values) : 0;
     const max = values.length > 0 ? Math.max(...values) : 0;
-    const lastRound = fitToHistory ? Math.max(1, Math.ceil(history.at(-1)?.round ?? 0)) : chartRoundCount(game);
+    const lastRound = fitToHistory ? Math.max(1, Math.ceil(lastItem(history)?.round ?? 0)) : chartRoundCount(game);
     const layout = tradeMarkerLayout(history, 164, height, lastRound, 8);
     const inset = history.some((point) => point.trades) ? 8 : 4;
     const top = 4 + layout.padding.top;

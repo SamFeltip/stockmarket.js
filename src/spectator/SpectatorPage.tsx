@@ -21,6 +21,7 @@ export function SpectatorScreen({ board }: { board: Board })
     const setPack = useMutation(api.games.setPack);
     const start = useMutation(api.games.start);
     const nextSpectator = useMutation(api.rounds.nextSpectator);
+    const moveReveal = useMutation(api.rounds.moveReveal);
     const beginSuspensions = useMutation(api.rounds.beginSuspensions);
     const skipSuspension = useMutation(api.rounds.skipSuspension);
     const { run, busy, error } = useAction();
@@ -58,6 +59,7 @@ export function SpectatorScreen({ board }: { board: Board })
                 <RoundPresentation
                     key={`${game.code}-${game.currentPeriod}`}
                     snapshot={board}
+                    onMoveReveal={moveReveal}
                     onBeginSuspensions={beginSuspensions}
                     onSkipSuspension={skipSuspension}
                     busy={busy}

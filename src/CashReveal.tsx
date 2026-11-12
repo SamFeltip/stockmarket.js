@@ -1,3 +1,4 @@
+import { asset } from "./spectator/assets";
 import { cashStock } from "../shared/chance-cards";
 import type { Insight } from "./display-types";
 
@@ -14,7 +15,7 @@ export function CashReveal({ insights, index, fast = false }: { insights: Insigh
         <div className="cash-reveal" aria-label="Cash reveal">
             <div className="cash-reveal-total rounded">
                 <div className="cash-reveal-identity">
-                    <img src={cashStock.imagePath} alt="" />
+                    <img src={asset(cashStock.imagePath)} alt="" />
                     <h2>Cash</h2>
                 </div>
                 <div className="text-center" aria-live="polite">
@@ -28,7 +29,7 @@ export function CashReveal({ insights, index, fast = false }: { insights: Insigh
                 data-fast-reveal={active && fast ? "" : undefined}
                 className={`${active ? "game-insight-card " : ""}cash-reveal-card rounded bg-white text-black`}
             >
-                <img src="/static/imgs/icons/cash-outline.svg" alt="" />
+                <img src={asset("/static/imgs/icons/cash-outline.svg")} alt="" />
                 <div className={`cash-reveal-percent text-${tone(active?.value ?? sum)}`}>
                     <svg width="32" height="24" viewBox="0 0 24 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d={(active?.value ?? sum) < 0 ? "M2 3l7 7 4-4 9 9M15 15h7V8" : ((active?.value ?? sum) > 0 ? "M2 15l7-7 4 4 9-9M15 3h7v7" : "M2 9h20m-6-6 6 6-6 6")} />

@@ -1,3 +1,4 @@
+import { asset } from "./spectator/assets";
 import "./company-roles.css";
 import { companyRoleThresholds, type CompanyRole } from "../shared/company-roles";
 import { money } from "./shared";
@@ -25,7 +26,7 @@ export function TradePosition({ cash, holding, buying, assignedRoles = [] }: {
 
                         return (
                             <div key={role}>
-                                <img src={`/static/imgs/icons/${role}.svg`} alt="" />
+                                <img src={asset(`/static/imgs/icons/${role}.svg`)} alt="" />
                                 <span>
                                     {assignedRoles.includes(role) ? `${role === "chairman" ? "Chairman" : "Director"} role assigned`
                                         : (remaining > 0 ? `${money(remaining)} stocks until ${role}`

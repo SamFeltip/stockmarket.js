@@ -25,7 +25,7 @@ export function TradeModal({ board, stock, mode }: { board: Board; stock: Stock;
 
     const price = tradingQuote(board.game, stock.key, board.player._id) ?? 0;
     const held = board.player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0;
-    const available = sharesAvailable(board.players, stock.key);
+    const available = sharesAvailable(board.players, stock.key, board.game.pack);
     const limit = floorTradeQuantity(mode === "buy"
         ? Math.min(available, sharesForCash(board.player.cash, price)) : held);
     const { quantity, shares, cash } = resolveTradeDraft(draft, price, limit);

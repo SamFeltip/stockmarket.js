@@ -1,3 +1,4 @@
+import { lastItem } from "../shared/rules";
 import { cashStockKey } from "../shared/chance-cards";
 import { sumInsightChanges } from "../shared/settlement";
 import { insightRevealPresentation } from "../shared/presentation";
@@ -43,9 +44,10 @@ export function RoundReveal({ board, preview, stock, insights, index }: {
     const bonusPlayer = active?.bonusRole ? board.players.find((player) => player._id === active.playerId) : undefined;
     const before = board.game.prices.find((price) => price.stockKey === stock.key)?.value ?? 0;
     const after = preview.game.prices.find((price) => price.stockKey === stock.key)?.value ?? before;
-    const marketPrice = insights.some((insight) => insight.marketSteps)
-        ? preview.game.priceHistory?.at(-1)?.steps?.find((step) => step.stockKey === stock.key)?.values.at(-1)
+    const steps = insights.some((insight) => insight.marketSteps)
+        ? lastItem(preview.game.priceHistory)?.steps?.find((step) => step.stockKey === stock.key)?.values
         : undefined;
+    const marketPrice = lastItem(steps);
     const sum = marketPrice === undefined ? sumInsightChanges(insights.slice(0, index + 1)) : marketPrice - before;
 
     return (

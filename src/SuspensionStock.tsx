@@ -1,3 +1,4 @@
+import { asset } from "./spectator/assets";
 import { sharesHeld } from "../shared/suspensions";
 import { SelectionTick } from "./SelectionTick";
 import type { Player, Stock } from "./display-types";
@@ -27,7 +28,7 @@ export function SuspensionStock({ stock, quantity, holders, before, after, selec
                 className={`suspension-change total-insight text-${tone}`}
                 aria-label={`Price change: ${change >= 0 ? "+" : "−"}£${Math.abs(change).toFixed(2)}`}
             >
-                {change !== 0 && <img src={`/static/imgs/icons/stock_${change > 0 ? "up" : "down"}.svg`} alt="" />}
+                {change !== 0 && <img src={asset(`/static/imgs/icons/stock_${change > 0 ? "up" : "down"}.svg`)} alt="" />}
                 <span>{`${change === 0 ? "+" : ""}£${Math.abs(change).toFixed(2)}`}</span>
             </div>
             {spectator ? (
@@ -71,23 +72,26 @@ export function SuspensionStock({ stock, quantity, holders, before, after, selec
                     {holders.map((holder) =>
                     {
                         const label = `${holder.name} · ${sharesHeld(holder, stock.key).toLocaleString("en-GB")} shares`;
-                        if (!targeting)
-                        {
-                            return <img key={holder._id} src={holder.profileRoot} alt={holder.name} title={label} />;
-                        }
+                        const suspended = targeting?.suspended(holder._id) ?? false;
+                        const checked = suspended || targeting?.checked.includes(holder._id) === true;
 
-                        const suspended = targeting.suspended(holder._id);
-                        const checked = suspended || targeting.checked.includes(holder._id);
-
-                        const badge = (checked || targeting.toggle)
+                        const badge = (checked || targeting?.toggle)
                             ? <span className="suspension-target-tick" aria-hidden="true">{checked && <SelectionTick />}</span>
                             : null;
-                        if (!targeting.toggle)
+                        const identity = (
+                            <>
+                                <span className="suspension-avatar-photo">
+                                    <img src={holder.profileRoot} alt="" />
+                                    {badge}
+                                </span>
+                                <span className="suspension-holder-name">{holder.name}</span>
+                            </>
+                        );
+                        if (!targeting?.toggle)
                         {
                             return (
                                 <span className="suspension-avatar-choice" key={holder._id} title={label}>
-                                    <img src={holder.profileRoot} alt={holder.name} />
-                                    {badge}
+                                    {identity}
                                 </span>
                             );
                         }
@@ -102,8 +106,7 @@ export function SuspensionStock({ stock, quantity, holders, before, after, selec
                                     disabled={disabled || suspended}
                                     onChange={(event) => targeting.toggle?.(holder._id, event.currentTarget.checked)}
                                 />
-                                <img src={holder.profileRoot} alt="" />
-                                {badge}
+                                {identity}
                             </label>
                         );
                     })}

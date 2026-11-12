@@ -1,3 +1,4 @@
+import { asset } from "./spectator/assets";
 import { cashStock } from "../shared/chance-cards";
 import { TradeRoleChange } from "./TradeRole";
 import type { Board } from "./display-types";
@@ -15,7 +16,7 @@ export function FeedMessage({ item, stocks, detailed = false }: {
         return (
             <div>
                 <p className="trade-message text-success" aria-label={printMoney ? `Print Money added ${amount}` : `Received ${amount} government bonus`}>
-                    <img src={cashStock.imagePath} alt="" />
+                    <img src={asset(cashStock.imagePath)} alt="" />
                     {amount}
                 </p>
                 {(detailed || printMoney) && <p className="trade-description">{item.message}</p>}

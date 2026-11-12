@@ -58,7 +58,7 @@ export const get = query({
                 currentUserId: game.currentUserId, currentPeriod: game.currentPeriod, periodCount: game.periodCount,
                 tvControlled: Boolean(game.tvTokenHash), spectatorControlled: Boolean(spectatorHost(game, seats)),
                 prices: game.prices, priceHistory: game.priceHistory, status: game.status, turn: game.turn,
-                suspended: game.suspended, suspensionPeriod: game.suspensionPeriod,
+                suspended: game.suspended, revealProgress: game.revealProgress, suspensionPeriod: game.suspensionPeriod,
                 targetedSuspensions: game.targetedSuspensions, tradingSuspensions: game.tradingSuspensions,
                 rightsIssue: game.rightsIssue, npcDifficulty: game.npcDifficulty ?? "medium" },
             debentureOffers: claims,

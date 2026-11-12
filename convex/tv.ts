@@ -1,3 +1,4 @@
+import { generateTvCode } from "../shared/tv-code";
 import { companyRoles } from "../shared/company-roles";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
@@ -27,25 +28,40 @@ async function tokenHash(token: string)
 
 // A device is never a player. Its capability authorizes TV host actions.
 export const create = mutation({
-    args: { code: v.string(), periodCount: v.number(), token: v.string(), pack: v.optional(packValidator) },
+    args: { code: v.optional(v.string()), periodCount: v.number(), token: v.string(), pack: v.optional(packValidator) },
     handler: async (context, arguments_) =>
     {
-        const code = normalizeCode(arguments_.code);
         const hash = await tokenHash(arguments_.token);
         if (!validPackLength(arguments_.pack, arguments_.periodCount))
         {
             fail("Invalid game length");
         }
 
-        const existing = await context.db.query("games").withIndex("by_code", (q) => q.eq("code", code)).unique();
-        if (existing)
+        const findCode = (code: string) => context.db.query("games").withIndex("by_code", (q) => q.eq("code", code)).unique();
+        let code: string;
+        if (arguments_.code === undefined)
         {
-            if (existing.tvTokenHash === hash)
+            const existing = await context.db.query("games").withIndex("by_tv_token", (q) => q.eq("tvTokenHash", hash)).first();
+            if (existing)
             {
-                return code;
+                return existing.code;
             }
 
-            fail("Lobby code already exists; choose another code");
+            code = await generateTvCode(async (candidate) => Boolean(await findCode(candidate)));
+        }
+        else
+        {
+            code = normalizeCode(arguments_.code);
+            const existing = await findCode(code);
+            if (existing)
+            {
+                if (existing.tvTokenHash === hash)
+                {
+                    return code;
+                }
+
+                fail("Lobby code already exists; choose another code");
+            }
         }
 
         const market = await openingMarket(context, arguments_.pack, arguments_.periodCount);
@@ -141,7 +157,7 @@ export const board = query({
             period: game.currentPeriod, trades,
             prices: game.prices.map((price) => ({ stockKey: price.stockKey, value: price.value })),
             suspended: game.suspended,
-            suspensionPeriod: game.suspensionPeriod,
+            revealProgress: game.revealProgress, suspensionPeriod: game.suspensionPeriod,
             targetedSuspensions: game.targetedSuspensions,
             stocks: catalog.map((stock) => ({ key: stock.key, name: stock.name, display: stock.display,
                 imagePath: stock.imagePath,

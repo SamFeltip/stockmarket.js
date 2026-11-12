@@ -25,7 +25,7 @@ Use the parent workspace's [setup guide](https://github.com/SamFeltip/stockmarke
 - Original routes: `/`, `/login`, `/signup`, `/logout`, `/games`, `/games/new`, `/games/show/:code`, `/users`, `/users/show/:id`, `/insights`.
 - Case-insensitive lobby codes, four to six players (including NPCs), host-controlled six-to-ten-period game length and launch, live lobby updates.
 - £60,000 starting cash; all six original stocks, prices, volatility and SQL insight templates; ten private insights per player per period.
-- Rotating turns with three actions per player per period and a new opening seat each period; buying/selling positive multiples of 1,000 shares; 200,000 shares per company; passing; investor lists and portfolio rankings.
+- Rotating turns with three actions per player per period and a new opening seat each period; buying/selling positive multiples of 1,000 shares; 200,000 shares per company (10 million in Frantic); passing; investor lists and portfolio rankings.
 - Private insights, stock/player tabs, special insight display, activity feed, mobile offcanvas/menu and trade notifications.
 - Animated round-end insight reveals, aggregate price changes floored at zero, special currency and hold-stock handling, next rounds and final rankings.
 - Insight-description editor; editing now requires sign-in. User lists expose display names only.

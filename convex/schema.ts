@@ -61,6 +61,7 @@ export default defineSchema({
             }))),
         }))),
         suspended: v.array(v.number()),
+        revealProgress: v.optional(v.object({ step: v.number(), summary: v.boolean() })),
         suspensionPeriod: v.optional(v.number()),
         targetedSuspensions: v.optional(v.array(v.object({ stockKey: v.number(), playerIds: v.array(v.id("players")) }))),
         tradingSuspensions: v.optional(v.array(v.object({ stockKey: v.number(), value: v.number(),
@@ -71,7 +72,7 @@ export default defineSchema({
             offers: v.array(v.object({ playerId: v.id("players"), held: v.number(), maximum: v.number(),
                 purchased: v.optional(v.number()) })),
         })),
-    }).index("by_code", ["code"]),
+    }).index("by_code", ["code"]).index("by_tv_token", ["tvTokenHash"]),
     players: defineTable({
         gameId: v.id("games"), userId: v.optional(v.id("users")),
         controller: v.optional(v.union(v.object({ kind: v.literal("human"), userId: v.id("users") }),

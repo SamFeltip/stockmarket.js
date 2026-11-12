@@ -124,7 +124,7 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
     const stock = board.stocks.find((item) => item.key === issue.stockKey)!;
     const [draft, setDraft] = useState<TradeDraft>({ field: "shares", value: "0" });
     const { run, busy, error } = useAction();
-    const available = rightsAvailable(board.players, issue.stockKey);
+    const available = rightsAvailable(board.players, issue.stockKey, board.game.pack);
     const price = tradingQuote(board.game, stock.key, player._id) ?? 0;
     const issuePrice = rightsPriceFor(board.game.pack, price);
     const limit = maxRightsPurchase(offer.maximum, player.cash, available, issuePrice);

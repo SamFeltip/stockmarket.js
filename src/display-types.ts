@@ -12,7 +12,7 @@ export type Player = Pick<PlayerBoard["players"][number],
     };
 
 export interface Board {
-    game: Pick<PlayerBoard["game"], "code" | "status" | "currentPeriod" | "periodCount" | "prices" | "priceHistory" | "suspended" | "targetedSuspensions" | "suspensionPeriod" | "rightsIssue" | "pack" | "tradingDates">
+    game: Pick<PlayerBoard["game"], "code" | "status" | "currentPeriod" | "periodCount" | "prices" | "priceHistory" | "suspended" | "targetedSuspensions" | "suspensionPeriod" | "revealProgress" | "rightsIssue" | "pack" | "tradingDates">
       & Partial<Pick<PlayerBoard["game"], "tradingSuspensions">> & { turn?: number; currentPlayerId?: string };
     trades?: PlayerBoard["trades"];
     stocks: Stock[];

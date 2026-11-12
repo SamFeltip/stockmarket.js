@@ -1,3 +1,4 @@
+import { asset } from "./spectator/assets";
 import "./company-roles.css";
 import type { CompanyRole } from "../shared/company-roles";
 
@@ -8,7 +9,7 @@ const roleIcons = {
 
 export function RolePortrait({ name, profileRoot, role }: { name: string; profileRoot: string; role?: CompanyRole })
 {
-    const fallback = "/static/imgs/1profile.png";
+    const fallback = asset("/static/imgs/1profile.png");
 
     return (
         <div className="role-portrait">
@@ -21,13 +22,13 @@ export function RolePortrait({ name, profileRoot, role }: { name: string; profil
                 height={48}
                 onError={(event) =>
                 {
-                    if (!event.currentTarget.src.endsWith(fallback))
+                    if (event.currentTarget.getAttribute("src") !== fallback)
                     {
                         event.currentTarget.src = fallback;
                     }
                 }}
             />
-            {role && <img className="company-role-badge" src={roleIcons[role]} alt={role === "chairman" ? "Chairman" : "Director"} />}
+            {role && <img className="company-role-badge" src={asset(roleIcons[role])} alt={role === "chairman" ? "Chairman" : "Director"} />}
         </div>
     );
 }

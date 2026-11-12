@@ -56,13 +56,15 @@ label.suspension-stock { cursor: pointer; }
 .suspension-confirm::backdrop { background: rgb(0 0 0 / 50%); }
 .suspension-confirm h2 { font-size: 1.4rem; margin-bottom: 1rem; color: #111; }
 .suspension-confirm p { font-size: 1rem; color: #636b66; margin-bottom: 1.5rem; }
-.round-end.suspension-round { display: flex !important; min-height: 100dvh; height: auto; width: 100%; padding-bottom: 1rem !important; }
+.round-end.suspension-round { display: flex !important; min-height: 100vh; min-height: 100dvh; height: auto; width: 100%; padding-bottom: 1rem !important; }
 .website-presentation:has(.suspension-round) { overflow-y: auto; }
 @media (min-width: 576px) {
     .suspension-stocks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (min-width: 992px) {
     .suspension-stocks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 850px) {
     .suspension-spectator .suspension-stocks { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.75rem; }
 }
 @media (max-width: 991.98px) {
@@ -141,7 +143,19 @@ label.suspension-stock { cursor: pointer; }
     border-top: 1px solid #e0e5dd;
 }
 .suspension-holders small { font-size: 0.75rem; color: #636b66; }
-.suspension-holder-avatars { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.25rem; }
+.suspension-holder-avatars {
+    display: flex;
+    align-self: stretch;
+    overflow-x: auto;
+    gap: 0.35rem;
+    padding: 0.25rem;
+}
+.suspension-avatar-photo { position: relative; }
+.suspension-holder-name { font-size: 0.75rem; line-height: 1.2; overflow-wrap: anywhere; }
+@media (min-height: 900px) {
+    .player-suspension-round .suspension-holder-avatars { flex-direction: column; }
+    .player-suspension-round .suspension-avatar-choice { grid-template-columns: auto minmax(0, 1fr); justify-items: start; width: 100%; text-align: left; }
+}
 .suspension-holder-avatars img { width: 1.65rem; height: 1.65rem; border-radius: 50%; object-fit: cover; }
 
 .suspension-stock-choice { display: grid; justify-items: center; gap: inherit; width: 100%; cursor: pointer; }
@@ -149,7 +163,8 @@ label.suspension-stock { cursor: pointer; }
 .suspension-stock-choice input:disabled ~ * { cursor: not-allowed; }
 .suspension-stock:has(.suspension-stock-choice) { outline: none; }
 .suspension-stock-choice:has(input:focus-visible), .suspension-avatar-choice:has(input:focus-visible) { outline: 2px solid #198754; outline-offset: 2px; }
-.suspension-avatar-choice { display: inline-grid; position: relative; place-items: center; min-width: 1.5rem; min-height: 1.5rem; cursor: pointer; }
+.suspension-avatar-choice { display: grid; justify-items: center; align-content: start; flex: 0 0 auto; gap: 0.2rem; width: min(4.25rem, 100%); min-width: 0; }
+.suspension-avatar-choice:has(input) { cursor: pointer; }
 .suspension-target-tick { position: absolute; bottom: 0; right: 0; display: grid; place-items: center; width: 0.9rem; height: 0.9rem; background: white; border: 1px solid #198754; border-radius: 50%; }
 .suspension-target-tick:has(svg) { border-color: transparent; }
 .suspension-target-tick svg { width: 0.9rem; height: 0.9rem; }
@@ -169,11 +184,15 @@ label.suspension-stock { cursor: pointer; }
     .targeted-suspension:not(.suspension-spectator) .suspension-waiting p { font-size: 0.85rem; text-align: start; }
 }
 
-@media (min-width: 992px) and (max-height: 800px) {
-    .targeted-suspension.suspension-spectator { gap: 0.5rem; }
+@media (min-width: 850px) and (max-height: 800px) {
+    .suspension-panel.suspension-spectator { gap: 0.375rem; }
+    .suspension-spectator .suspension-heading h1 { font-size: 1.5rem; margin-block: 0.2rem; }
+    .suspension-spectator .suspension-portfolios h2 { margin-bottom: 0.375rem; }
+    .suspension-spectator .suspension-holders { padding-top: 0.25rem; }
+    .suspension-spectator .suspension-holder-avatars { padding-block: 0.125rem; }
     .targeted-suspension.suspension-spectator .suspension-summary { gap: 0.5rem; padding: 0.75rem; }
     .targeted-suspension.suspension-spectator .suspension-stock { padding-block: 0.4rem; }
     .targeted-suspension.suspension-spectator .suspension-portfolios { padding: 0.5rem; }
     .targeted-suspension.suspension-spectator .suspension-waiting img { width: 3rem; height: 3rem; }
-    .targeted-suspension .suspension-spectator-price { margin-block: 0.25rem; }
+    .targeted-suspension .suspension-spectator-price { margin-block: 0.125rem; }
 }

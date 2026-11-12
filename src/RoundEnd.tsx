@@ -4,7 +4,7 @@ import "./round-desktop.css";
 import { pendingSuspensions } from "../shared/suspensions";
 import { ShareSuspended } from "./ShareSuspended";
 import { cashStockKey } from "../shared/chance-cards";
-import { useEffect, useState } from "react";
+import { useRoundReveal } from "./use-round-reveal";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Alert, useAction } from "./shared";
@@ -29,8 +29,8 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
     const beginSuspensions = useMutation(api.rounds.beginSuspensions);
     const suspendShare = useMutation(api.rounds.suspendShare);
     const { run, busy, error } = useAction();
-    const [step, setStep] = useState(0);
-    const [index, setIndex] = useState(0);
+    const moveReveal = useMutation(api.rounds.moveReveal);
+    const { step, summary } = game.revealProgress ?? { step: 0, summary: false };
     const wideOverview = useWideRoundOverview();
     const groups = revealGroups(stocks, insights);
     const activeStock = groups[step];
@@ -47,7 +47,8 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
     const lastPlay = board.feed.find((item) => item.period === game.currentPeriod
       && item.colour !== "grey" && (item.quantity || item.cashBonus || item.message === "passed their go"));
     const ready = useRevealReady(lastPlay?._creationTime);
-    const revealMs = insightRevealMs(game.pack);
+    const index = useRoundReveal({ step, summary, count: visible.length,
+        paused: !ready || reviewed || Boolean(unresolved), delay: insightRevealMs(game.pack) });
     const { preview, wealth } = roundProgress(board, reviewed ? groups.length : step, index);
 
     const afterCash = suspensions.length > 0 ? "Next: Share Suspended" : "Show round summary";
@@ -58,24 +59,6 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
         return onBeginSuspensions ? onBeginSuspensions()
             : beginSuspensions({ code: game.code, expectedPeriod: game.currentPeriod });
     }
-
-    useEffect(() =>
-    {
-        if (!ready || reviewed || unresolved || index >= visible.length)
-        {
-            return;
-        }
-
-        const timer = setTimeout(() =>
-        {
-            setIndex((current) => current + 1);
-        }, revealMs);
-
-        return () =>
-        {
-            clearTimeout(timer);
-        };
-    }, [index, visible.length, unresolved, step, ready, reviewed, revealMs]);
 
     if (game.status === "finished")
     {
@@ -175,27 +158,10 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
                             disabled={Boolean(unresolved) || busy}
                             onClick={() =>
                             {
-                                if (index < visible.length)
-                                {
-                                    setIndex(visible.length);
-                                }
-                                else
-                                {
-                                    if (step === groups.length - 1 && suspensions.length > 0)
-                                    {
-                                        void run(async () =>
-                                        {
-                                            await beginSuspensionPhase();
-                                            setStep((current) => current + 1);
-                                            setIndex(0);
-                                        });
-                                    }
-                                    else
-                                    {
-                                        setStep((current) => current + 1);
-                                        setIndex(0);
-                                    }
-                                }
+                                const skip = index < visible.length;
+
+                                void run(() => moveReveal({ code: game.code, expectedPeriod: game.currentPeriod,
+                                    step: skip ? step : step + 1, summary: skip }));
                             }}
                         >
                             {index < visible.length ? (cash ? "Skip to cash summary" : "Skip to stock summary")
