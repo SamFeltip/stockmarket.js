@@ -6,14 +6,15 @@ export function spectatorBoard(board: Board)
       || /^bought \d+ shares in /.test(item.message));
 
     return {
-        canControl: false, reveal: null,
+        canControl: false, reveal: null, trades: board.trades ?? [],
         latestPurchase: latest ? { title: latest.title, message: latest.message } : null,
-        game: { ...board.game, turn: board.game.turn ?? 0,
+        game: { ...board.game, turn: board.game.turn ?? 0, tradingSuspensions: board.game.tradingSuspensions,
             currentPlayerId: board.players.find((player) => player._id === board.game.currentPlayerId)?._id,
             tvControlled: false, spectatorControlled: true },
         players: board.players.map((player) => ({ ...player, id: player._id, roles: player.roles ?? [],
             kind: "human" as const, npcDifficulty: undefined, npcPersonality: undefined, tagline: "" })),
         stocks: board.stocks.filter((stock) => stock.display).map((stock) => ({ ...stock,
+            secondaryImagePath: stock.secondaryImagePath,
             startingValue: stock.startingValue ?? board.game.priceHistory?.[0]?.prices.find((price) =>
                 price.stockKey === stock.key)?.value ?? 0,
             value: board.game.prices.find((price) => price.stockKey === stock.key)?.value ?? 0,
@@ -22,6 +23,7 @@ export function spectatorBoard(board: Board)
         history: board.game.priceHistory ?? [],
         feed: board.feed.map((item) => ({ ...item, id: item._id, at: item._creationTime,
             stockKey: item.stockKey, quantity: item.quantity, cashBonus: item.cashBonus,
-            debenturePayout: item.debenturePayout, roleBefore: item.roleBefore, roleAfter: item.roleAfter })),
+            debenturePayout: item.debenturePayout, redemptionName: item.redemptionName,
+            roleBefore: item.roleBefore, roleAfter: item.roleAfter })),
     };
 }

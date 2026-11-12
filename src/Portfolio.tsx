@@ -1,5 +1,6 @@
 import { cashStockKey } from "../shared/chance-cards";
-import { Change, Insights, money } from "./shared";
+import { Insights, money } from "./shared";
+import { StockInsightChange } from "./StockInsightChange";
 import type { Board, Player } from "./types";
 
 import { NpcIdentity } from "./npc/NpcIdentity";
@@ -29,8 +30,10 @@ export function Portfolio({ board, player }: { board: Board; player: Player })
                             <img height={50} src={stock.imagePath} alt={stock.name} />
                             <p className="text-black">{player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0}</p>
                             {own && (
-                                <Change value={insights.filter((insight) => insight.stockKey === stock.key)
-                                    .reduce((sum, insight) => sum + insight.value, 0)}
+                                <StockInsightChange
+                                    insights={insights}
+                                    stockKey={stock.key}
+                                    game={board.game}
                                 />
                             )}
                         </div>

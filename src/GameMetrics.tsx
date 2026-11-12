@@ -1,9 +1,16 @@
+import { gamePeriodCount, gamePeriodNumber, legacyTechRounds, type Pack } from "../shared/packs";
+
 export function GameMetrics({ board }: { board: {
-    game: { turn: number; currentPlayerId?: string; currentPeriod: number; periodCount: number };
+    game: { turn: number; currentPlayerId?: string; currentPeriod: number; periodCount: number; pack?: Pack };
     players: { _id: string; name: string }[]; player?: { _id: string };
 } })
 {
     const { game, players } = board;
+    const currentRound = game.currentPeriod + 1;
+    const totalRounds = game.periodCount + 1;
+    const period = gamePeriodNumber(game, game.currentPeriod);
+    const periods = gamePeriodCount(game);
+    const turnUnit = legacyTechRounds(game) ? "round" : "period";
     const current = players.find((player) => player._id === game.currentPlayerId);
     const used = Math.min(3, Math.floor(game.turn / Math.max(1, players.length)));
     const remaining = 3 - used;
@@ -20,8 +27,8 @@ export function GameMetrics({ board }: { board: {
                 <div
                     className="turn-goes"
                     role="img"
-                    aria-label={`${owner} goes left this period: ${remaining} of 3, including this turn`}
-                    title={`${owner} goes left this period: ${remaining} of 3, including this turn`}
+                    aria-label={`${owner} goes left this ${turnUnit}: ${remaining} of 3, including this turn`}
+                    title={`${owner} goes left this ${turnUnit}: ${remaining} of 3, including this turn`}
                 >
                     {[0, 1, 2].map((go) => (
                         <span key={go} className={go < used ? "is-used" : (go === used ? "is-current" : "")} />
@@ -31,10 +38,10 @@ export function GameMetrics({ board }: { board: {
             <div className="game-metric">
                 <span className="game-metric-label">Period</span>
                 <div className="game-metric-value">
-                    <strong>{game.currentPeriod + 1}</strong>
-                    <span>{`of ${game.periodCount + 1}`}</span>
+                    <strong>{period}</strong>
+                    <span>{`of ${periods}`}</span>
                 </div>
-                <progress aria-label="Period progress" value={game.currentPeriod + 1} max={game.periodCount + 1} />
+                <progress aria-label="Period progress" value={currentRound} max={totalRounds} />
             </div>
         </div>
     );

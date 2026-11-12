@@ -5,7 +5,8 @@ import { roster } from "../../stockmarket-shared/src/npc-catalog";
 import { api, internal } from "../convex/_generated/api";
 import { pendingSuspensions } from "../shared/suspensions";
 import { previewRound } from "../src/round-preview";
-import { ShareSuspended, SuspensionStock } from "../src/ShareSuspended";
+import { ShareSuspended } from "../src/ShareSuspended";
+import { SuspensionStock } from "../src/SuspensionStock";
 import { RoundEnd } from "../src/RoundEnd";
 import { RoundPresentation } from "../src/spectator/RoundPresentation";
 import { RoundOverview } from "../src/RoundOverview";
@@ -108,7 +109,7 @@ npcSuspensionTest("shows and resolves the %s NPC's suspension decision before th
     );
 
     expect(considering.game.suspended).toEqual([]);
-    expect(preview).toContain("Stock valuations, ordered by volatility");
+    expect(preview).toContain("aria-label=\"Stock valuations\"");
     expect(preview).not.toContain("suspension-holder-avatars");
     expect(preview).not.toContain("type=\"radio\"");
 

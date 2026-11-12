@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { GameMetrics } from "../src/GameStatus";
 import { setup } from "./game-setup";
 import { api } from "../convex/_generated/api";
+import { packIds } from "../shared/packs";
 
 describe("mobile remaining goes", () =>
 {
@@ -28,5 +29,52 @@ describe("mobile remaining goes", () =>
                 expect(html.match(/class="is-current"/g) ?? []).toHaveLength(1);
             }
         }
+    });
+
+    it("shows the same Turn and Period trackers for each stock pack", () =>
+    {
+        const players = [{ _id: "sam", name: "Sam" }];
+        for (const pack of packIds)
+        {
+            const html = renderToStaticMarkup(
+                <GameMetrics board={{ players, game: { pack, currentPlayerId: "sam", turn: 1,
+                    currentPeriod: 1, periodCount: pack === "tech" ? 11 : 5 } }}
+                />,
+            );
+
+            expect(html).toContain(">Turn</span>");
+            expect(html).toContain(">Period</span>");
+            expect(html).toContain(pack === "tech" ? "value=\"2\" max=\"12\"" : "value=\"2\" max=\"6\"");
+            expect(html).toContain("turn-goes");
+        }
+    });
+
+    for (const periods of [4, 12, 18])
+    {
+        it(`tracks each two-month block in a ${periods}-period Tech game`, () =>
+        {
+            for (const period of [1, 2, periods])
+            {
+                const html = renderToStaticMarkup(
+                    <GameMetrics board={{ players: [],
+                        game: { pack: "tech", turn: 0, currentPeriod: period - 1, periodCount: periods - 1 } }}
+                    />,
+                );
+
+                expect(html).toContain(`<strong>${period}</strong><span>of ${periods}</span>`);
+                expect(html).toContain(`value="${period}" max="${periods}"`);
+                expect(html).not.toMatch(/Round \d+ of \d+/);
+            }
+        });
+    }
+
+    it("keeps the original progress for a previously started Tech game with 144 rounds", () =>
+    {
+        const html = renderToStaticMarkup(
+            <GameMetrics board={{ players: [], game: { pack: "tech", turn: 0, currentPeriod: 12, periodCount: 143 } }} />,
+        );
+
+        expect(html).toContain("<strong>2</strong><span>of 12</span>");
+        expect(html).toContain("value=\"13\" max=\"144\"");
     });
 });

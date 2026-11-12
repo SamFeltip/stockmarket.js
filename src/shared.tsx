@@ -5,6 +5,7 @@ import { hideModal } from "./bootstrap";
 import { TradeDrawerHandle } from "./TradeDrawerHandle";
 import { friendlyError } from "./errors";
 import type { Insight, Stock } from "./types";
+import { inStockOrder } from "../shared/rules";
 
 export const money = (value: number) => value.toLocaleString("en-GB", { maximumFractionDigits: 2 });
 
@@ -95,20 +96,23 @@ export function Modal({ id, title, children, mobileDrawer = false, portal = fals
     return (mobileDrawer || portal) && typeof document !== "undefined" ? createPortal(dialog, document.body) : dialog;
 }
 
-export function Change({ value, button = false }: { value: number; button?: boolean })
+export function Change({ value, button = false, caption }: { value: number; button?: boolean; caption?: string })
 {
     const tone = value > 0 ? "success" : (value < 0 ? "danger" : "secondary");
 
     return (
-        <div className={button ? `btn btn-${tone}` : `total-insight text-${tone} d-flex flex-row align-items-center`}>
-            {value === 0 ? <p>boring!</p> : (
+        <div className={button ? `btn btn-${tone}` : `total-insight text-${tone} d-flex flex-row align-items-center`} title={caption}>
+            {caption && <span className="visually-hidden">{`Forecast for ${caption}: `}</span>}
+            {value === 0 && !caption ? <p>boring!</p> : (
                 <>
-                    <img
-                        height={button ? 16 : 6}
-                        className="pe-2"
-                        src={`/static/imgs/icons/stock_${value > 0 ? "up" : "down"}${button ? "_black" : ""}.svg`}
-                        alt="stock movement"
-                    />
+                    {value !== 0 && (
+                        <img
+                            height={button ? 16 : 6}
+                            className="pe-2"
+                            src={`/static/imgs/icons/stock_${value > 0 ? "up" : "down"}${button ? "_black" : ""}.svg`}
+                            alt="stock movement"
+                        />
+                    )}
                     <span>
                         £
                         {value.toFixed(2)}
@@ -127,7 +131,7 @@ export function Insights({ insights, stocks }: { insights: Insight[]; stocks: St
                 id="insight-list"
                 style={{ gridTemplateColumns: "1fr 1fr", gap: 10, display: "grid", gridTemplateRows: "min-content" }}
             >
-                {insights.map((insight) =>
+                {inStockOrder(insights, stocks).map((insight) =>
                 {
                     const stock = stocks.find((item) => item.key === insight.stockKey);
 

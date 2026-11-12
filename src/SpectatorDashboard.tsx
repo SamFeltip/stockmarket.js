@@ -1,4 +1,9 @@
-import { priceSeries } from "./price-history";
+import type { Pack } from "../shared/packs";
+import { packPresentation } from "./pack-presentation";
+import { PackIcon } from "./PackIcon";
+import "./play-style-card.css";
+import { StockHistoryChart } from "./StockHistoryChart";
+import { stockHistory } from "./stock-history";
 import { RolePortrait } from "./RolePortrait";
 import { TradeRoleLabel } from "./TradeRole";
 /* eslint-disable jsx-a11y/no-noninteractive-tabindex -- The feed is a native keyboard scroll region. */
@@ -19,30 +24,15 @@ const count = (n: number) => new Intl.NumberFormat("en-GB", { notation: "compact
 
 function PriceLine({ board, stockKey }: { board: Board; stockKey: number })
 {
-    const history = priceSeries({ ...board.game, prices: [], priceHistory: board.history }, stockKey)
-        .filter((point) => point.value !== null);
-    const values = history.map((point) => point.value ?? 0);
-    if (values.length < 2)
-    {
-        return <span className="muted">History appears after each period</span>;
-    }
+    const stock = board.stocks.find((item) => item.key === stockKey);
+    const game = { ...board.game, prices: stock ? [{ stockKey, value: stock.value }] : [],
+        priceHistory: board.history };
+    const trades = (board.trades ?? []).map((trade) => ({ ...trade, imageRoot: portrait(trade.imageRoot) }));
+    const history = stockHistory(game, stockKey, false, trades, 44);
 
-    const min = Math.min(...values), max = Math.max(...values);
-    const points = history.map((point) =>
-        `${2 + point.round / (board.game.periodCount + 1) * 176},${38 - ((point.value ?? 0) - min) / (max - min || 1) * 32}`)
-        .join(" ");
-
-    return (
-        <svg
-            className="sparkline"
-            viewBox="0 0 180 44"
-            role="img"
-            aria-label={`Recorded prices: ${values.map((v) => `£${v.toFixed(2)}`).join(", ")}`}
-        >
-            <path d="M0 40H180" stroke="#adb5aa" />
-            <polyline points={points} stroke="#204712" fill="none" strokeWidth="2.5" />
-        </svg>
-    );
+    return history.markers.length > 1
+        ? <StockHistoryChart name={stock?.name ?? "Stock"} history={history} sparkline />
+        : <span className="muted">History appears after each period</span>;
 }
 
 export function JoinCard({ code, phoneUrl, waiting, compact = false }: {
@@ -72,7 +62,6 @@ export function Feed({ board }: { board: Board })
                 className="feed-entries"
                 tabIndex={0}
                 aria-label="Game feed entries"
-
             >
                 {board.feed.length > 0 ? board.feed.map((item) => (
                     <article key={item.id}>
@@ -99,7 +88,7 @@ export function Feed({ board }: { board: Board })
                                 item={{ ...item, _id: item.id, _creationTime: item.at }}
                                 stocks={board.stocks.map((stock) => ({ ...stock, display: true,
                                     imagePath: stockLogo(stock.key, stock.imagePath),
-                                    secondaryImagePath: stockLogo(stock.key, stock.imagePath) }))}
+                                    secondaryImagePath: stockLogo(stock.key, stock.secondaryImagePath) }))}
                             />
                         </div>
                     </article>
@@ -109,21 +98,29 @@ export function Feed({ board }: { board: Board })
     );
 }
 
+export function PlayStyleCard({ pack = "classic" }: { pack?: Pack })
+{
+    return (
+        <article className="card bg-white play-style-card">
+            <PackIcon pack={pack} />
+            <div>
+                <h3>Play style</h3>
+                <strong>{packPresentation[pack].name}</strong>
+            </div>
+        </article>
+    );
+}
+
 export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mutedStockKey, animateStockKey }: {
     board: Board; phoneUrl: string; portfolioNotice?: ReactNode; portfolioOrder?: string[];
     mutedStockKey?: number; animateStockKey?: number;
 })
 {
-    const volatilityOrder = [7, 8, 9, 10, 11, 12];
-    const stocks = board.stocks.toSorted((a, b) =>
-        (volatilityOrder.indexOf(a.key) + 1 || Infinity) - (volatilityOrder.indexOf(b.key) + 1 || Infinity));
+    const stocks = board.stocks;
     const ranked = board.players.toSorted((a, b) => b.netWorth - a.netWorth);
-    const total = board.players.reduce((sum, player) => sum + player.netWorth, 0);
-    const invested = board.players.reduce((sum, player) => sum + player.netWorth - player.cash, 0);
     const finished = board.game.status === "finished";
-    const current = board.game.status === "playing" && !board.game.rightsIssue
-        ? board.players.find((player) => player.id === board.game.currentPlayerId)
-        : undefined;
+    const total = ranked.reduce((sum, player) => sum + player.netWorth, 0);
+    const invested = ranked.reduce((sum, player) => sum + player.netWorth - player.cash, 0);
 
     return (
         <div className="dashboard">
@@ -136,6 +133,7 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
                     {stocks.map((stock) =>
                     {
                         const change = stock.value - stock.startingValue;
+                        const suspended = board.game.tradingSuspensions?.find((item) => item.stockKey === stock.key);
 
                         return (
                             <article className="stock card" key={stock.key}>
@@ -154,6 +152,9 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
                                         {Math.abs(change).toFixed(2)}
                                     </span>
                                 </div>
+                                {suspended && (
+                                    <p className="stock-footer">{`Suspended price £${suspended.value.toFixed(2)}`}</p>
+                                )}
                                 <PriceLine board={board} stockKey={stock.key} />
                                 <p className="stock-footer">
                                     {count(stock.held)}
@@ -180,23 +181,30 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
                     mutedStockKey={mutedStockKey}
                     animateStockKey={animateStockKey}
                 />
-                <p className="table-note">Holdings in shares · Net worth = cash + shares at current prices</p>
+                <p className="table-note">
+                    {board.game.tradingSuspensions?.length
+                        ? "Holdings in shares · Net worth uses each player’s trading prices"
+                        : "Holdings in shares · Net worth = cash + shares at current prices"}
+                </p>
             </section>
             <section className="bottom-row">
                 <JoinCard code={board.game.code} phoneUrl={phoneUrl} compact />
-                <article className="stat card">
-                    <h3>{finished ? "Winner" : "Combined wealth"}</h3>
-                    <strong>{finished ? ranked[0]?.name ?? "—" : money(total)}</strong>
-                    <p>{finished ? money(ranked[0]?.netWorth ?? 0) : `${money(invested)} in shares`}</p>
-                </article>
-                {current && (
-                    <article className="current-player card" role="status">
-                        <img src={portrait(current.profileRoot)} alt="" />
-                        <div>
-                            <h3>Current player</h3>
-                            <strong>{current.name}</strong>
-                        </div>
+                {finished && (
+                    <article className="stat card">
+                        <h3>Winner</h3>
+                        <strong>{ranked[0]?.name ?? "—"}</strong>
+                        <p>{money(ranked[0]?.netWorth ?? 0)}</p>
                     </article>
+                )}
+                {!finished && (
+                    <>
+                        <article className="stat card">
+                            <h3>Total net worth</h3>
+                            <strong>{money(total)}</strong>
+                            <p>{`${money(invested)} in shares`}</p>
+                        </article>
+                        <PlayStyleCard pack={board.game.pack} />
+                    </>
                 )}
             </section>
         </div>

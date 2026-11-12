@@ -1,18 +1,22 @@
-import { maximumPlayers, startingCash, validGameLength } from "../shared/rules";
+import { maximumPlayers } from "../shared/rules";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { currentUser, fail, gameByCode, member, members, normalizeCode, seedCatalog } from "./library";
+import { currentUser, fail, gameByCode, member, members, normalizeCode } from "./library";
 
 import { phoneHost, spectatorHost } from "./game/hosting";
 import { launchGame } from "./launch";
+import { packStartingCash, validPackLength } from "../../stockmarket-shared/src/engine/packRules";
+import { packValidator } from "./schema";
+import { changeLobbyPack, openingMarket, setLobbyLength } from "./packSettings";
 
 export const create = mutation({
-    args: { code: v.string(), periodCount: v.number(), spectate: v.optional(v.boolean()) },
+    args: { code: v.string(), periodCount: v.number(),
+        spectate: v.optional(v.boolean()), pack: v.optional(packValidator) },
     handler: async (context, arguments_) =>
     {
         const user = await currentUser(context);
         const code = normalizeCode(arguments_.code);
-        if (!validGameLength(arguments_.periodCount))
+        if (!validPackLength(arguments_.pack, arguments_.periodCount))
         {
             fail("Invalid game length");
         }
@@ -22,15 +26,12 @@ export const create = mutation({
             fail("Lobby code already exists");
         }
 
-        await seedCatalog(context);
-        const stocks = (await context.db.query("stocks").collect()).filter((stock) => stock.display);
-        const prices = stocks.map((stock) => ({ stockKey: stock.key, value: stock.startingValue }));
+        const market = await openingMarket(context, arguments_.pack, arguments_.periodCount);
         const gameId = await context.db.insert("games", {
             code, hostId: user._id, spectatorHostId: arguments_.spectate ? user._id : undefined,
-            currentUserId: user._id, periodCount: arguments_.periodCount,
+            currentUserId: user._id, ...market,
             currentPeriod: 0, turn: 0, status: "waiting", suspended: [],
             rulesVersion: 2, npcDifficulty: "medium", rosterRevision: 0,
-            prices, priceHistory: [{ period: 0, prices }],
         });
         if (arguments_.spectate)
         {
@@ -38,8 +39,8 @@ export const create = mutation({
         }
 
         const playerId = await context.db.insert("players", {
-            gameId, userId: user._id, controller: { kind: "human", userId: user._id }, seatOrder: 0, active: true, cash: startingCash,
-            holdings: stocks.map((stock) => ({ stockKey: stock.key, quantity: 0 })),
+            gameId, userId: user._id, controller: { kind: "human", userId: user._id }, seatOrder: 0, active: true, cash: packStartingCash(arguments_.pack),
+            holdings: market.prices.map((price) => ({ stockKey: price.stockKey, quantity: 0 })),
         });
 
         await context.db.patch(gameId, { currentPlayerId: playerId });
@@ -82,7 +83,7 @@ export const join = mutation({
         const playerId = await context.db.insert("players", {
             gameId: game._id, userId: user._id, controller: { kind: "human", userId: user._id },
             seatOrder: Math.max(-1, ...players.map((seat, index) => seat.seatOrder ?? index)) + 1,
-            cash: startingCash, active: true,
+            cash: packStartingCash(game.pack), active: true,
             holdings: game.prices.map((price) => ({ stockKey: price.stockKey, quantity: 0 })),
         });
         // Displays own no seats. The first human gets the normal phone lobby controls.
@@ -153,12 +154,24 @@ export const setLength = mutation({
             fail("Only the lobby host can change game length");
         }
 
-        if (!validGameLength(periodCount))
+        await setLobbyLength(context, game, periodCount);
+    },
+});
+
+export const setPack = mutation({
+    args: { code: v.string(), pack: packValidator },
+    handler: async (context, { code, pack }) =>
+    {
+        const user = await currentUser(context);
+        const game = await gameByCode(context, code);
+        const seats = await members(context, game._id);
+        if ((phoneHost(game, seats) !== user._id && spectatorHost(game, seats) !== user._id)
+          || game.status !== "waiting")
         {
-            fail("Invalid game length");
+            fail("Only the lobby host can change the stock pack");
         }
 
-        await context.db.patch(game._id, { periodCount });
+        await changeLobbyPack(context, game, seats, pack);
     },
 });
 

@@ -1,8 +1,10 @@
+import { nextRoundLabel } from "./pack-presentation";
+import { insightRevealMs } from "../shared/presentation";
 import "./round-desktop.css";
 import { pendingSuspensions } from "../shared/suspensions";
 import { ShareSuspended } from "./ShareSuspended";
 import { cashStockKey } from "../shared/chance-cards";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Alert, useAction } from "./shared";
@@ -12,26 +14,14 @@ import { RoundOverview } from "./RoundOverview";
 import { RoundWealth } from "./RoundWealth";
 import { roundProgress } from "./round-preview";
 import { RoundReveal } from "./RoundReveal";
+import { useWideRoundOverview } from "./use-wide-round-overview";
 import { useRevealReady } from "./use-reveal-ready";
 import { HoldStock } from "./HoldStock";
 import type { Board } from "./types";
 
-const wideOverviewQuery = "(min-width: 992px) and (pointer: fine), (min-width: 768px) and (min-height: 720px)";
-
-function subscribeToWideOverview(onChange: () => void)
-{
-    const query = matchMedia(wideOverviewQuery);
-
-    query.addEventListener("change", onChange);
-
-    return () => query.removeEventListener("change", onChange);
-}
-
-const isWideOverview = () => matchMedia(wideOverviewQuery).matches;
-
 export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
     board: Board; onBeginSuspensions?: () => Promise<void>;
-    onSuspensionDecision?: (insightId: Board["insights"][number]["_id"], stockKey?: number) => Promise<void>;
+    onSuspensionDecision?: (insightId: Board["insights"][number]["_id"], stockKey?: number, playerIds?: Board["player"]["_id"][]) => Promise<void>;
 })
 {
     const { game, stocks, insights } = board;
@@ -41,7 +31,7 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
     const { run, busy, error } = useAction();
     const [step, setStep] = useState(0);
     const [index, setIndex] = useState(0);
-    const wideOverview = useSyncExternalStore(subscribeToWideOverview, isWideOverview, () => false);
+    const wideOverview = useWideRoundOverview();
     const groups = revealGroups(stocks, insights);
     const activeStock = groups[step];
     const cash = activeStock?.key === cashStockKey;
@@ -57,6 +47,7 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
     const lastPlay = board.feed.find((item) => item.period === game.currentPeriod
       && item.colour !== "grey" && (item.quantity || item.cashBonus || item.message === "passed their go"));
     const ready = useRevealReady(lastPlay?._creationTime);
+    const revealMs = insightRevealMs(game.pack);
     const { preview, wealth } = roundProgress(board, reviewed ? groups.length : step, index);
 
     const afterCash = suspensions.length > 0 ? "Next: Share Suspended" : "Show round summary";
@@ -78,13 +69,13 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
         const timer = setTimeout(() =>
         {
             setIndex((current) => current + 1);
-        }, 2500);
+        }, revealMs);
 
         return () =>
         {
             clearTimeout(timer);
         };
-    }, [index, visible.length, unresolved, step, ready, reviewed]);
+    }, [index, visible.length, unresolved, step, ready, reviewed, revealMs]);
 
     if (game.status === "finished")
     {
@@ -114,7 +105,7 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
                     own={card.playerId === board.player._id}
                     busy={busy}
                     error={error}
-                    onDecision={(stockKey) => run(async () =>
+                    onDecision={(stockKey, playerIds) => run(async () =>
                     {
                         if (game.suspensionPeriod !== game.currentPeriod)
                         {
@@ -122,9 +113,9 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
                         }
 
                         await (onSuspensionDecision
-                            ? onSuspensionDecision(card._id, stockKey)
+                            ? onSuspensionDecision(card._id, stockKey, playerIds)
                             : suspendShare({ code: game.code, expectedPeriod: game.currentPeriod,
-                                insightId: card._id, stockKey }));
+                                insightId: card._id, stockKey, playerIds }));
                     })}
                 />
             </div>
@@ -169,7 +160,7 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
                                     void run(() => next({ code: game.code, expectedPeriod: game.currentPeriod }));
                                 }}
                             >
-                                {game.currentPeriod >= game.periodCount ? "Finish Game" : "Next Period"}
+                                {nextRoundLabel(game)}
                                 {" →"}
                             </button>
                         </>

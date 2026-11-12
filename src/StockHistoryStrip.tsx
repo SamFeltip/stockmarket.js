@@ -3,9 +3,9 @@ import { StockHistoryChart } from "./StockHistoryChart";
 import { stockHistory } from "./stock-history";
 import type { Board, Stock } from "./display-types";
 
-function HistoryCard({ game, stock }: { game: Board["game"]; stock: Stock })
+function HistoryCard({ board, stock }: { board: Board; stock: Stock })
 {
-    const history = stockHistory(game, stock.key);
+    const history = stockHistory(board.game, stock.key, false, board.trades);
 
     return (
         <article className="history-card bg-white text-black rounded">
@@ -14,7 +14,7 @@ function HistoryCard({ game, stock }: { game: Board["game"]; stock: Stock })
                     <img src={stock.imagePath} alt="" draggable={false} />
                     <h3>{stock.name}</h3>
                 </div>
-                <StockHistoryChart name={stock.name} points={history.points} />
+                <StockHistoryChart name={stock.name} history={history} />
             </div>
             <dl className="history-stats">
                 {[["Starting value", history.start], ["Max value", history.max], ["Min value", history.min]].map(([label, value]) => (
@@ -36,7 +36,7 @@ export function StockHistoryStrip({ board }: { board: Board })
         <section className="stock-history-strip" aria-label="Final stock price histories">
             <h2 className="visually-hidden">Stock history</h2>
             <Marquee label="Stock histories; drag or use arrow keys to browse">
-                {stocks.map((stock) => <HistoryCard key={stock.key} game={board.game} stock={stock} />)}
+                {stocks.map((stock) => <HistoryCard key={stock.key} board={board} stock={stock} />)}
             </Marquee>
         </section>
     );

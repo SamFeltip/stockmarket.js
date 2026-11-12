@@ -32,11 +32,14 @@ export function NetWorthNumber({ value, shares = false, initialValue = value, co
 export function RoundWealth({ players, stock }: { players: Player[]; stock?: Stock })
 {
     return (
-        <section id="player-view" className="card card-green p-3 rounded">
-            <h2>Net Worth</h2>
+        <section id="player-view">
+            <div className="round-wealth-heading">
+                <h2>Net Worth</h2>
+                {stock?.display && <small className="round-wealth-stock-name">{stock.name}</small>}
+            </div>
             <div className="round-wealth-players">
                 {players.map((player) => (
-                    <div className="d-flex flex-column align-items-center" key={player._id}>
+                    <div className="round-wealth-card card card-green align-items-center text-center" key={player._id}>
                         <img className="rounded" src={player.profileRoot} alt="" />
                         <span className="round-player-name">{player.name}</span>
                         <NetWorthNumber value={player.netWorth} />
@@ -48,8 +51,11 @@ export function RoundWealth({ players, stock }: { players: Player[]; stock?: Sto
                         )}
                         {stock?.display && (
                             <span className="round-player-holdings">
-                                {`${money(player.holdings.find((holding) =>
-                                    holding.stockKey === stock.key)?.quantity ?? 0)} ${stock.name} shares`}
+                                {money(player.holdings.find((holding) =>
+                                    holding.stockKey === stock.key)?.quantity ?? 0)}
+                                {" "}
+                                <span className="round-holding-stock-name">{`${stock.name} `}</span>
+                                shares
                             </span>
                         )}
                     </div>

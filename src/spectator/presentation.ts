@@ -10,12 +10,13 @@ export function websiteBoard(board: Board): DisplayBoard
     return {
         game: { ...board.game, prices: reveal?.prices
           ?? board.stocks.map((stock) => ({ stockKey: stock.key, value: stock.value })),
-        suspended: reveal?.suspended ?? [], suspensionPeriod: reveal?.suspensionPeriod, priceHistory: board.history },
+        suspended: reveal?.suspended ?? [], targetedSuspensions: reveal?.targetedSuspensions,
+        suspensionPeriod: reveal?.suspensionPeriod, priceHistory: board.history },
         stocks: reveal?.stocks ?? board.stocks.map((stock) => ({
             ...stock, display: true, imagePath: stockLogo(stock.key, stock.imagePath),
-            secondaryImagePath: stockLogo(stock.key, stock.imagePath),
+            secondaryImagePath: stockLogo(stock.key, stock.secondaryImagePath),
         })),
-        trades: reveal?.trades,
+        trades: (board.trades ?? reveal?.trades)?.map((trade) => ({ ...trade, imageRoot: portrait(trade.imageRoot) })),
         insights: reveal?.insights ?? [],
         players: board.players.map(({ id, profileRoot, ...player }) => ({ ...player, _id: id,
             profileRoot: portrait(profileRoot), ranking: ranked.findIndex((item) => item.id === id) + 1 })),

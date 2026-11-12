@@ -1,12 +1,14 @@
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, usePlotArea, XAxis, YAxis, ZIndexLayer } from "recharts";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
-import { chartSeries } from "./price-history";
+import { chartDateAxis, chartRoundCount, chartSeries } from "./price-history";
 import type { ChartPoint, ChartTrade } from "./price-history";
 import type { Board, Stock } from "./display-types";
 import { periodLabel, tooltipLabel, tradeLabel, tradeMarkerLayout, TradeStack } from "./TradeMarkers";
+import { presentationForPack } from "./pack-presentation";
 
 const chartMargin = { top: 8, right: 12, bottom: 0, left: 0 };
+const dateChartMargin = { ...chartMargin, right: 38 };
 const priceAxisWidth = 48;
 const emptyTrades: ChartTrade[] = [];
 const priceLabel = (value: number) => `£${value.toFixed(2)}`;
@@ -107,8 +109,15 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
     const [touch, setTouch] = useState<TouchSelection | null>();
     const data = useMemo(() => chartSeries(game, stock.key, trades), [game, stock.key, trades]);
     const known = data.filter((point) => point.value !== null);
-    const roundCount = game.periodCount + 1;
-    const plotWidth = chartSize.width - priceAxisWidth - chartMargin.right;
+    const hasOnePrice = known.filter((point) => !point.trades).length === 1;
+    const { priceDots: showPriceDots } = presentationForPack(game.pack).chart;
+    const roundCount = chartRoundCount(game);
+    const tickStep = Math.max(1, Math.ceil(roundCount / 10));
+    const ticks = Array.from({ length: Math.ceil(roundCount / tickStep) + 1 }, (_, index) =>
+        Math.min(index * tickStep, roundCount));
+    const dateAxis = chartDateAxis(game, roundCount, chartSize.width - priceAxisWidth - dateChartMargin.right);
+    const margin = dateAxis ? dateChartMargin : chartMargin;
+    const plotWidth = chartSize.width - priceAxisWidth - margin.right;
     const markers = tradeMarkerLayout(data, plotWidth, chartSize.height, roundCount);
     const tooltipHeight = Math.max(36, chartSize.height - 12);
 
@@ -149,16 +158,16 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
                     minWidth={0}
                     onResize={(width, height) => setChartSize({ width, height })}
                 >
-                    <LineChart data={data} margin={chartMargin}>
+                    <LineChart data={data} margin={margin}>
                         <PeriodBands rounds={roundCount} />
                         <CartesianGrid strokeDasharray="2 3" vertical={false} stroke="#b8c1b7" />
                         <XAxis
                             dataKey="round"
                             type="number"
                             domain={[0, roundCount]}
-                            ticks={Array.from({ length: roundCount + 1 }, (_, round) => round)}
+                            ticks={dateAxis?.ticks ?? ticks}
                             interval={0}
-                            tickFormatter={(round: number) => round === 0 ? "Start" : String(round)}
+                            tickFormatter={dateAxis?.format ?? ((round: number) => round === 0 ? "Start" : String(round))}
                             tickLine={false}
                             axisLine={false}
                             tick={{ fontSize: 10 }}
@@ -181,7 +190,7 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
                             {
                                 const round = Number(label);
 
-                                return tooltipLabel(round, data.find((point) => point.round === round)?.trades);
+                                return tooltipLabel(round, data.find((point) => point.round === round));
                             }}
                             formatter={(value) => [priceLabel(Number(value)), "Share price"]}
                         />
@@ -198,11 +207,15 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
                                     return null;
                                 }
 
-                                return point?.trades
-                                    ? <TradeStack trades={point.trades} x={cx} y={cy} layout={markers} />
-                                    : <circle cx={cx} cy={cy} r={known.length === 1 ? 4 : 2} fill="#56a8f5" />;
+                                if (point?.trades)
+                                {
+                                    return <TradeStack trades={point.trades} x={cx} y={cy} layout={markers} />;
+                                }
+
+                                return showPriceDots
+                                    ? <circle cx={cx} cy={cy} r={hasOnePrice ? 4 : 2} fill="#56a8f5" /> : null;
                             }}
-                            activeDot={touch === undefined ? { r: 5 } : false}
+                            activeDot={showPriceDots && touch === undefined ? { r: 5 } : false}
                             connectNulls={false}
                             isAnimationActive={false}
                         />
@@ -220,12 +233,12 @@ export default function StockPriceChart({ game, stock, trades = emptyTrades }: {
                             left: `clamp(0.25rem, ${touch.left + 8}px, calc(100% - min(12rem, 55vw) - 0.25rem))`,
                         }}
                     >
-                        {tooltipLabel(touch.point.round, touch.point.trades)}
+                        {tooltipLabel(touch.point.round, touch.point)}
                         <div>{`Share price: ${priceLabel(touch.point.value)}`}</div>
                     </div>
                 )}
             </div>
-            {known.length === 1 && <p className="stock-chart-hint">More prices appear after each round settles.</p>}
+            {hasOnePrice && <p className="stock-chart-hint">More prices appear after each round settles.</p>}
             <div className="visually-hidden">
                 <table>
                     <caption>{`${stock.name} price history`}</caption>

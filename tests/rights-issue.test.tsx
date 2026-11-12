@@ -157,8 +157,12 @@ it("renders purchase, waiting and spectator variants using the shared trade cont
     expect(own).toContain("Rights Issue price");
     expect(own).not.toContain("game-grid");
     expect(waiting).toContain("Rights Issue shareholders");
+    expect(waiting).toContain("Buy one extra share for every two you own at £1.");
     expect(waiting).not.toContain("trade-inputs");
     expect(spectator).toContain("Player portfolios");
+    const frantic = renderToStaticMarkup(<RightsIssue board={{ ...board, game: { ...board.game, pack: "frantic" } }} spectator />);
+
+    expect(frantic.match(/Buy up to 10 extra shares at £1 each for every share you held when the issue opened\./g)).toHaveLength(2);
     expect(spectator).toContain("is-muted");
     expect(spectator).not.toContain("trade-inputs");
     expect(rightsEntitlement(6001)).toBe(3000);
@@ -220,7 +224,7 @@ it("offers only companies with shareholders in the shared selector, including ba
         </ConvexProvider>,
     );
 
-    expect(html).toContain("buy one extra share for every two you own at £1");
+    expect(html).toContain("Buy one extra share for every two you own at £1.");
     expect(html).toContain("trading pauses while stakeholders purchase stock");
     expect(html).not.toContain("Single use. Activating takes one turn.");
     expect(html.match(/type="radio"/g)).toHaveLength(1);

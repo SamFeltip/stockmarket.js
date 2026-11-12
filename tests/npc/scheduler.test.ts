@@ -121,7 +121,7 @@ describe("NPC scheduler and privacy", () =>
         );
         const job = { pendingId: pending._id, generation: pending.generation };
 
-        await expect(t.mutation(internal.npc.worker.run, job)).rejects.toThrow("Missing pinned");
+        await expect(t.mutation(internal.npc.worker.run, job)).rejects.toThrow("has no saved deck");
         expect((await sam.query(api.board.get, { code: "test" })).game.turn).toBe(1);
         await t.run(async (context) => context.db.patch(pending._id, { attempts: 3 }));
         await t.mutation(internal.npc.worker.run, job);
@@ -185,21 +185,17 @@ describe("NPC scheduler and privacy", () =>
 
         expect(board.insights).toHaveLength(10);
     });
-    it("rejects unsupported special catalogs before an NPC game starts", async () =>
+    it("rejects a missing tradable deck stock before an NPC game starts", async () =>
     {
         const { t, sam } = await setup(5, 1);
 
         await sam.mutation(api.npc.lobby.add, { code: "test", required: true });
         await t.run(async (context) =>
-            context.db.insert("insights", {
-                key: 999,
-                stockKey: 999,
-                value: 0,
-                description: "Hold",
-            }),
-        );
-        await expect(sam.mutation(api.games.start, { code: "test" })).rejects.toThrow(
-            "ordinary-only",
-        );
+        {
+            const stock = await context.db.query("stocks").withIndex("by_key", (q) => q.eq("key", 8)).unique();
+
+            await context.db.patch(stock!._id, { display: false });
+        });
+        await expect(sam.mutation(api.games.start, { code: "test" })).rejects.toThrow("ordinary stocks to be tradable");
     });
 });

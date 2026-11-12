@@ -1,3 +1,4 @@
+import { PackIcon } from "./PackIcon";
 import { money } from "./shared";
 import type { Board } from "./types";
 
@@ -54,7 +55,7 @@ export function Profile({ board, view, setView }: { board: Board; view: "stocks"
                 >
                     <img
                         id="show-users"
-                        className={`rounded border border-primary border-2 ${view === "stocks" ? "infront" : "behind"}`}
+                        className={`rounded ${view === "stocks" ? "infront" : "behind"}`}
                         height={60}
                         width={60}
                         src={user.profileRoot}
@@ -64,20 +65,19 @@ export function Profile({ board, view, setView }: { board: Board; view: "stocks"
                 <button
                     type="button"
                     className="p-0 border-0 bg-transparent"
+                    aria-label="Show stocks"
                     onClick={() =>
                     {
                         setView("stocks");
                     }}
                 >
-                    <img
+                    <span
                         id="show-stocks"
                         className={`rounded border border-primary border-2 p-2 ${view === "players" ? "infront" : "behind"}`}
                         style={{ backgroundColor: "var(--bs-primary)" }}
-                        height={60}
-                        width={60}
-                        src="/static/imgs/icons/Stock.svg"
-                        alt="stocks icon"
-                    />
+                    >
+                        <PackIcon pack={board.game.pack} />
+                    </span>
                 </button>
             </div>
             <div className="d-none d-lg-block">

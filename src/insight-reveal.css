@@ -1,0 +1,16 @@
+.round-reveal .game-insight-card[data-fast-reveal],
+.cash-reveal .game-insight-card[data-fast-reveal] {
+    animation: tech-insight-fade 65ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .round-reveal .game-insight-card[data-fast-reveal],
+    .cash-reveal .game-insight-card[data-fast-reveal] {
+        animation: none;
+    }
+}
+
+@keyframes tech-insight-fade {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
+}

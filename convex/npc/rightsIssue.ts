@@ -1,12 +1,9 @@
 import { v } from "convex/values";
 import { internalMutation } from "../_generated/server";
 import { purchase } from "../rightsIssue";
-import { members } from "../library";
-import { rightsAvailable } from "../../shared/rights-issue";
-import { chooseNpcAction } from "../../../stockmarket-shared/src/npc";
 
-import { advanceNpcRights as advance } from "../../../stockmarket-shared/src/engine/npcRights";
-import { runEngine } from "../engine";
+import { advanceNpcRights as advance, npcRightsQuantity } from "../../../stockmarket-shared/src/engine/npcRights";
+import { readEngine, runEngine } from "../engine";
 import type { MutationCtx as MutationContext } from "../_generated/server";
 import type { Doc as Document_ } from "../_generated/dataModel";
 export function advanceNpcRights(context: MutationContext, game: Document_<"games">,
@@ -36,11 +33,8 @@ export const run = internalMutation({
             return;
         }
 
-        const price = game.prices.find((item) => item.stockKey === issue.stockKey)?.value ?? 0;
-        const available = rightsAvailable(await members(context, gameId), issue.stockKey);
-        const { action } = chooseNpcAction({ phase: "rights", price, maximum: offer.maximum,
-            cash: player.cash, available });
+        const quantity = await npcRightsQuantity(readEngine(context), game, issue, player);
 
-        await advanceNpcRights(context, await purchase(context, game, action.quantity), purchase);
+        await advanceNpcRights(context, await purchase(context, game, quantity), purchase);
     },
 });

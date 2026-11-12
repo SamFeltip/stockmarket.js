@@ -1,5 +1,6 @@
+import { tradingQuote } from "../shared/suspensions";
 import { TradeStockSummary } from "./TradeStockSummary";
-import { Change } from "./shared";
+import { StockInsightChange } from "./StockInsightChange";
 import type { Board, Stock } from "./types";
 
 export function StockPreview({ board, stock, large = false, active = false }: {
@@ -9,12 +10,13 @@ export function StockPreview({ board, stock, large = false, active = false }: {
     active?: boolean;
 })
 {
-    const price = board.game.prices.find((item) => item.stockKey === stock.key)?.value ?? 0;
-    const value = board.insights.filter((insight) => insight.stockKey === stock.key)
-        .reduce((sum, insight) => sum + insight.value, 0);
+    const price = tradingQuote(board.game, stock.key, board.player._id) ?? 0;
+    const change = (
+        <StockInsightChange insights={board.insights} stockKey={stock.key} game={board.game} />
+    );
     if (large)
     {
-        return <TradeStockSummary stock={stock} price={price} detail={<Change value={value} />} />;
+        return <TradeStockSummary stock={stock} price={price} detail={change} />;
     }
 
     return (
@@ -35,7 +37,7 @@ export function StockPreview({ board, stock, large = false, active = false }: {
                     £
                     {price.toFixed(2)}
                 </p>
-                <Change value={value} />
+                {change}
             </div>
         </div>
     );

@@ -73,7 +73,7 @@ Original images were recovered from the iCloud copy at `Documents/Code/Decent Pr
 
 The original `BigCaslonRom.otf` file was missing from both source copies. Big Caslon was recovered from the Mac's installed fonts and bundled as `public/static/fonts/BigCaslon.ttf`. The authored stylesheet overrides the missing font source, so the title renders in Big Caslon on every device while the original stylesheets remain unchanged.
 
-The original PostgreSQL database was inspected through Portainer on 16 October 2026. It contains six ordinary stocks and 92 insights, and no hidden/special stock records. A canonical checksum over every insight ID, stock ID, description and value matched this migration exactly (`c5048da3c6a51ab02da732905f5743c4`). The database container was temporarily started for read-only queries and stopped again afterward. Both copies of `database/setup.sql` contain only the six ordinary stocks and their insights. There are no currency or hold-stock seed records, although the Go code supports them. Those mechanics are implemented and tested with fixtures, but the recovered base catalog uses the exact supplied SQL. New games supplement it at launch with 16 retail special cards (eight cash and eight chance cards), as described above. To restore special cards from your original database, load their original records through the internal `catalogAdmin:importCatalog` function before creating new games. Input shape:
+The original PostgreSQL database was inspected through Portainer on 16 October 2026. It contains six ordinary stocks and 92 insights, and no hidden/special stock records. A canonical checksum over every insight ID, stock ID, description and value matched this migration exactly (`c5048da3c6a51ab02da732905f5743c4`). The database container was temporarily started for read-only queries and stopped again afterward. Both copies of `database/setup.sql` contain only the six ordinary stocks and their insights. There are no currency or hold-stock seed records, although the Go code supports them. Those mechanics are implemented and tested with fixtures, but the recovered base catalog uses the exact supplied SQL. New Classic games assemble those same 92 stock cards from the checked-in catalog, add 16 retail special cards (eight cash and eight chance cards), and save the completed deck at launch. Other play styles use the same assembly path with their own card definitions. The internal `catalogAdmin:importCatalog` function can restore archived database records for inspection. Input shape:
 
 ```json
 {
@@ -82,7 +82,7 @@ The original PostgreSQL database was inspected through Portainer on 16 October 2
 }
 ```
 
-The JSON above illustrates the schema, not an original card to add. Load your own exported records using the Convex dashboard or `npx convex run catalogAdmin:importCatalog --prod '<your JSON>'`. Internal functions cannot be called from the browser. Catalog descriptions changed in the editor apply to future deals; dealt insights are immutable snapshots.
+The JSON above illustrates the schema, not an original card to add. Load your own exported records using the Convex dashboard or `npx convex run catalogAdmin:importCatalog --prod '<your JSON>'`. Internal functions cannot be called from the browser. The legacy editor changes archived database records. Edit the checked-in card definitions to change future games. Games with saved decks keep their original cards.
 
 ## Hosting costs
 

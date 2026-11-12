@@ -1,9 +1,11 @@
+import type { Pack } from "../shared/packs";
 import { GameMetrics } from "./GameMetrics";
 import "./spectator-header.css";
 
 interface HeaderBoard {
-    game: { code: string; turn?: number; currentPlayerId?: string; currentPeriod: number; periodCount: number };
-    players: { _id: string; name: string }[];
+    game: { turn?: number; currentPlayerId?: string; currentPeriod: number;
+        periodCount: number; pack?: Pack };
+    players: { _id: string; name: string; profileRoot?: string }[];
 }
 
 export function SpectatorHeader({ board, paused = false }: { board: HeaderBoard; paused?: boolean })
@@ -11,17 +13,17 @@ export function SpectatorHeader({ board, paused = false }: { board: HeaderBoard;
     const current = board.players.find((player) => player._id === board.game.currentPlayerId);
 
     return (
-        <header className="spectator-desktop-header" aria-label="Spectator game header">
-            <div className="spectator-header-lobby">
-                <img src="/static/imgs/icons/Stock.svg" alt="" />
+        <header className={`spectator-desktop-header${paused ? "" : " spectator-live-header"}`} aria-label="Spectator game header">
+            <div className="spectator-header-player" role="status">
+                {current?.profileRoot && <img src={current.profileRoot} alt="" />}
                 <div>
-                    <h2>Spectator view</h2>
-                    <p>{`Lobby: ${board.game.code.toUpperCase()}`}</p>
+                    <p>Current player</p>
+                    <strong>{current?.name ?? "—"}</strong>
                 </div>
             </div>
             <div className="spectator-header-progress">
                 <GameMetrics board={{ ...board, game: { ...board.game, turn: board.game.turn ?? 0 } }} />
-                <small>{paused ? "Gameplay paused during Rights Issue" : `${current?.name ?? "Next investor"}’s turn`}</small>
+                {paused && <small>Gameplay paused during Rights Issue</small>}
             </div>
             <div className="spectator-header-brand">
                 <h1>Stockmarket!</h1>

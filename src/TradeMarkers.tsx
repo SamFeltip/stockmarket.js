@@ -2,14 +2,21 @@ import type { ChartPoint, ChartTrade } from "./price-history";
 
 export const periodLabel = (round: number) => round === 0 ? "Start" : `Period ${Math.ceil(round)}`;
 
-export const tradeLabel = (trade: ChartTrade) =>
-    `${trade.title} ${trade.quantity > 0 ? "bought" : "sold"} ${Math.abs(trade.quantity).toLocaleString("en-GB")} shares`;
+const fullDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
-export function tooltipLabel(round: number, trades?: ChartTrade[])
+export const tradeLabel = (trade: ChartTrade) =>
+    trade.debenturePayout === undefined
+        ? `${trade.title} ${trade.quantity > 0 ? "bought" : "sold"} ${Math.abs(trade.quantity).toLocaleString("en-GB")} shares`
+        : `${trade.title} redeemed ${Math.abs(trade.quantity).toLocaleString("en-GB")} shares with a ${trade.redemptionName ?? "Debenture"} for £${trade.debenturePayout.toLocaleString("en-GB")}`;
+
+export function tooltipLabel(round: number, point?: ChartPoint)
 {
+    const label = point?.date ? fullDate.format(new Date(point.date)) : periodLabel(round);
+    const trades = point?.trades;
+
     return trades ? (
         <>
-            {periodLabel(round)}
+            {label}
             {trades.map((trade, index) => (
                 <div key={index}>
                     {trade.bargainRound !== undefined && trade.bargainRound !== trades[index - 1]?.bargainRound
@@ -19,10 +26,10 @@ export function tooltipLabel(round: number, trades?: ChartTrade[])
                 </div>
             ))}
         </>
-    ) : periodLabel(round);
+    ) : label;
 }
 
-export function tradeMarkerLayout(data: ChartPoint[], plotWidth: number, height: number, rounds: number)
+export function tradeMarkerLayout(data: ChartPoint[], plotWidth: number, height: number, rounds: number, maxSize = 16)
 {
     const positions = data.filter((point) => point.trades).map((point) => point.round);
     let gap = Infinity;
@@ -45,14 +52,15 @@ export function tradeMarkerLayout(data: ChartPoint[], plotWidth: number, height:
     }
 
     const columnWidth = gap === Infinity ? 18 : gap * plotWidth / rounds;
-    const horizontalLimit = columnWidth - Math.min(2, columnWidth / 4);
-    // Leave room for the price movement even when one period has many trades.
-    const markerBudget = Math.max(0, (height - 38) * 0.65);
-    const verticalLimit = markerBudget / Math.max(1, maxBuys + maxSells);
-    const size = Math.max(0, Math.min(16, horizontalLimit, verticalLimit * 0.8));
-    const spacing = Math.min(3, size / 4);
-    const stride = size + spacing;
-    const padding = { top: maxBuys * stride, bottom: maxSells * stride };
+    // Keep faces readable and overlap the stack when space is tight.
+    const size = Math.min(maxSize, Math.max(Math.min(10, maxSize), columnWidth - 2));
+    const sides = Number(maxBuys > 0) + Number(maxSells > 0);
+    const spacing = 2;
+    const budget = Math.max(sides * (size + spacing), (height - 38) * 0.65);
+    const stride = Math.max(1, Math.min(size + spacing,
+        (budget - sides * (size + spacing)) / Math.max(1, maxBuys + maxSells - sides)));
+    const extent = (count: number) => count ? size + spacing + (count - 1) * stride : 0;
+    const padding = { top: extent(maxBuys), bottom: extent(maxSells) };
 
     return { size, spacing, stride, padding };
 }
@@ -62,29 +70,29 @@ export function TradeStack({ trades, x, y, layout }: {
 })
 {
     const { size, spacing, stride } = layout;
-    if (size === 0)
-    {
-        return null;
-    }
 
     const strokeWidth = Math.min(1, size / 6);
     const inset = strokeWidth / 2;
+    const round = trades.every((trade) => trade.bargainRound === trades[0].bargainRound)
+        ? trades[0].bargainRound : undefined;
 
     return (
-        <g data-trade-column="" data-trade-period={trades[0].period + 1} data-trade-round={trades[0].bargainRound}>
+        <g data-trade-column="" data-trade-period={trades[0].period + 1} data-trade-round={round}>
             <title>{trades.map((trade) => tradeLabel(trade)).join("\n")}</title>
             {([true, false] as const).map((buy) =>
             {
                 const side = trades.filter((trade) => (trade.quantity > 0) === buy);
                 const colour = buy ? "#198754" : "#c5283d";
+                const direction = buy ? "buy" : "sell";
 
                 return side.map((trade, index) =>
                 {
                     const left = x - size / 2;
-                    const top = buy ? y - stride * (index + 1) : y + spacing + stride * index;
+                    const offset = spacing + stride * index;
+                    const top = buy ? y - size - offset : y + offset;
 
                     return (
-                        <g data-trade-side={buy ? "buy" : "sell"} key={`${buy}:${index}`}>
+                        <g data-trade-side={direction} key={`${direction}:${index}`}>
                             <image href={trade.imageRoot} x={left} y={top} width={size} height={size} />
                             <rect
                                 x={left + inset}
@@ -98,7 +106,7 @@ export function TradeStack({ trades, x, y, layout }: {
                             />
                         </g>
                     );
-                });
+                }).toReversed();
             })}
         </g>
     );

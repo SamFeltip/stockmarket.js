@@ -1,3 +1,5 @@
+import { gamePeriodCount } from "../shared/packs";
+import { PackControl } from "./PackControl";
 import { GameLengthControl } from "./GameLengthControl";
 import { maximumPlayers, minimumPlayers } from "../shared/rules";
 import { useEffect, useState } from "react";
@@ -16,6 +18,7 @@ import { LaunchGameButton } from "./npc/LaunchGameButton";
 
 export function Waiting({ board }: { board: Board })
 {
+    const setPack = useMutation(api.games.setPack);
     const setLength = useMutation(api.games.setLength);
     const start = useMutation(api.games.start);
     const leave = useMutation(api.games.leave);
@@ -37,10 +40,19 @@ export function Waiting({ board }: { board: Board })
                     {`/ ${maximumPlayers})`}
                 </p>
                 <NpcLobbyControls board={board} />
+                <PackControl
+                    pack={game.pack}
+                    busy={busy}
+                    onChange={host ? (pack) =>
+                    {
+                        void run(() => setPack({ code: game.code, pack }));
+                    } : undefined}
+                />
                 <div className="py-3">
                     <p className="pb-2">Game length</p>
                     <GameLengthControl
-                        periods={game.periodCount + 1}
+                        periods={gamePeriodCount(game)}
+                        pack={game.pack}
                         busy={busy}
                         onChange={host ? (periods) =>
                         {

@@ -51,7 +51,7 @@ button.nav-link { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
  
 
-.lobby-page:has(.create-game-form) { height: 100dvh; min-height: 0; }
+.lobby-page:has(.create-game-form) { min-height: 100dvh; }
 .create-game-form { padding: 1.5rem; gap: 1.25rem; }
 .create-game-form p { margin-bottom: 0; }
 .spectate-option { text-align: center; }
@@ -269,14 +269,14 @@ button.nav-link { cursor: pointer; }
     .round-reveal .game-stock-view img { max-height: 90px !important; }
 }
 
-.round-end { min-height: 100dvh; align-content: start; }
+.round-end { width: 100%; min-width: 0; min-height: 100dvh; grid-template-columns: minmax(0, 1fr); align-content: start; }
+.round-end > * { min-width: 0; }
 .round-navigation { justify-self: end; max-width: 100%; padding: 0 !important; background: transparent; }
 .round-navigation p { margin-bottom: 0.5rem; }
 .round-reveal-chart { grid-column: 1 / -1; }
 .round-reveal-chart .stock-price-chart { height: 10rem; }
 .player-round-end .round-reveal-chart .stock-chart-hint { display: none; }
 .player-round-end .round-reveal .game-insight-card {
-    animation: popIn 250ms ease;
     overflow-y: auto;
     justify-content: safe center !important;
 }
@@ -288,7 +288,6 @@ button.nav-link { cursor: pointer; }
 .round-overview .stock-result { padding: 0.5rem !important; }
 .wealth-gain { color: #a5ed94; }
 .wealth-loss { color: #ffb4b4; }
-#player-view > div { flex-wrap: wrap; }
 
 
 #game-grid > aside { grid-template-rows: minmax(0, 1fr) auto; width: 100%; }
@@ -312,7 +311,9 @@ button.nav-link { cursor: pointer; }
     #game-stock-info .stock-mobile-price p { font-size: 1rem; }
 }
 
+.round-wealth-stock-name { display: none; }
 .round-wealth-players { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 6rem), 1fr)); gap: 1rem; }
+.round-wealth-card { padding: 0.4rem 0.5rem; min-width: 0; }
 .round-wealth-players img { width: clamp(2rem, 5dvh, 4rem); aspect-ratio: 1; object-fit: cover; }
 .round-player-name { font-size: 0.85rem; overflow-wrap: anywhere; text-align: center; }
 .net-worth-number { position: relative; display: inline-block; white-space: nowrap; }
@@ -413,7 +414,7 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
     .game-results { height: 100dvh; min-height: 0; grid-template-rows: auto minmax(0, 1fr) auto auto; }
 }
 
-.round-end:not(:has(.round-overview)) { padding-bottom: 5rem !important; }
+.round-end:not(.suspension-round, :has(.round-overview)) { padding-bottom: 5rem !important; }
 .round-end:not(:has(.round-overview)) .round-navigation { position: fixed; bottom: 0; right: 0; padding: 1rem !important; z-index: 10; }
 
 .round-overview-stocks article > img { align-self: center; max-width: 100%; flex-shrink: 0; }
@@ -559,7 +560,9 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 /* Anchor both animated cards to the same centred stack. */
 .profile-toggle { position: relative; justify-self: center; margin: 5px 0 15px 10px; }
 .profile-toggle > button { position: absolute; inset: 0; width: 60px; height: 60px; }
-.profile-toggle img { top: 0; left: 0; }
+.profile-toggle img, .profile-toggle #show-stocks { top: 0; left: 0; }
+.profile-toggle #show-stocks { display: grid; place-items: center; width: 60px; height: 60px; color: #111; }
+.profile-toggle #show-stocks > .pack-icon { width: 100%; height: 100%; }
 #game-stock-info > .trade-actions { grid-area: actions; display: flex; align-items: center; gap: 0.5rem; align-self: end; }
 .trade-actions > #buy-button, .trade-actions > #sell-button { flex: 1; min-height: 2.75rem; text-transform: uppercase; font-size: 0.9rem; }
 .trade-actions > #pass-button { flex: 0 0 auto; min-height: 2.75rem; font-size: 0.75rem; padding: 0.35rem 0.65rem; }
@@ -572,7 +575,7 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 #now-playing .now-playing-heading p { margin-bottom: 0; }
 #now-playing #insightModalButton { position: relative !important; right: auto; flex-shrink: 0; }
 .game-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; min-width: 0; width: 100%; max-width: 24rem; }
-.game-metric { display: grid; gap: 0.2rem; min-width: 0; }
+.game-metric { display: grid; align-content: start; gap: 0.2rem; min-width: 0; }
 .game-metric-label { color: #c6d7c3; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1; }
 .game-metric-value { display: flex; align-items: baseline; gap: 0.35rem; line-height: 1.15; font-variant-numeric: tabular-nums; }
 .game-metric-value strong { font-size: 1.1rem; font-weight: 600; color: #fff284; }
@@ -660,12 +663,6 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 
 .round-player-cash .net-worth-number, .round-player-cash .wealth-delta { font-size: inherit; }
 
-.game-length-control { display: flex; justify-content: center; align-items: stretch; gap: 0.5rem; }
-.game-length-control > button { width: 2.75rem; min-height: 2.75rem; padding: 0.25rem; font-size: 1.25rem; }
-.game-length-value { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 6rem; padding: 0.25rem 1rem; line-height: 1.2; }
-.game-length-value strong { font-size: 1.1rem; }
-.game-length-value span { font-size: 0.75rem; }
-
 .lobby-empty-seat { display: none; }
 
 @media (max-width: 767.98px), (max-width: 991.98px) and (pointer: coarse) {
@@ -713,10 +710,8 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
     .npc-waiting-room .npc-lobby-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 
-@media (max-width: 767.98px), (max-width: 991.98px) and (pointer: coarse),
-    (height < 720px) and (max-width: 991.98px),
-    (height < 720px) and (min-width: 992px) and (pointer: coarse) {
-    .round-end.player-round-end {
+@media (max-width: 999.98px), (height < 720px) {
+    .round-end:is(.player-round-end, .spectator-round-end) {
         --round-text-size: clamp(0.75rem, 3.3vw, 0.875rem);
         height: 100dvh;
         min-height: 0;
@@ -728,144 +723,180 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
         padding: max(0.5rem, var(--app-safe-top, 0px)) max(0.5rem, var(--app-safe-right, 0px))
             calc(0.5rem + var(--app-safe-bottom, env(safe-area-inset-bottom, 0px))) max(0.5rem, var(--app-safe-left, 0px)) !important;
     }
-    .round-end.player-round-end:has(.round-overview) { grid-template-rows: auto minmax(0, 1fr) auto; }
-    .player-round-end > div:first-child h1 { font-size: clamp(1.25rem, 4dvh, 1.65rem); margin: 0; }
-    .player-round-end h2 { font-size: 1rem; margin: 0; }
-    .player-round-end .round-overview-compact {
+    .web-spectator .website-presentation { padding-block: 0; }
+    .round-end.spectator-round-end { grid-template-rows: auto minmax(0, 1fr) auto auto auto; }
+    .spectator-round-end #stock-view {
+        display: flex;
+        align-items: center;
+        padding: 0.25rem !important;
+        gap: 0.2rem;
+    }
+    .spectator-round-end #stock-view h2 { font-size: 0.8rem; }
+    .spectator-round-end #stock-view > div {
+        width: 100%;
+        display: grid !important;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 0.15rem !important;
+    }
+    .spectator-round-end .game-stock { min-width: 0; font-size: 0.7rem; overflow-wrap: anywhere; }
+    .spectator-round-end .game-stock img { height: 1.35rem; padding: 0.1rem !important; }
+    .spectator-round-end #next-step-wrapper { flex-wrap: wrap; }
+    .round-end:is(.player-round-end, .spectator-round-end):has(.round-overview) { grid-template-rows: auto minmax(0, 1fr) auto; }
+    :is(.player-round-end, .spectator-round-end) > div:first-child h1 { font-size: clamp(1.25rem, 4dvh, 1.65rem); margin: 0; }
+    :is(.player-round-end, .spectator-round-end) h2 { font-size: 1rem; margin: 0; }
+    :is(.player-round-end, .spectator-round-end) .round-overview-compact {
         grid-template-columns: minmax(0, 1fr);
-        align-content: start;
-        gap: clamp(0.25rem, 1.2dvh, 0.75rem) !important;
-        padding-top: clamp(0rem, (100dvh - 568px) / 8, 3rem);
-        overflow: visible;
+        grid-template-rows: auto minmax(0, 1fr) auto auto;
+        gap: 0.375rem !important;
+        overflow: clip;
     }
     .round-overview-compact > h2 { padding-inline: 0.25rem; }
-    .round-overview-compact > h2:not(:first-child) { margin-top: clamp(0rem, (100dvh - 568px) / 24, 1rem); }
-    .round-overview-compact .round-overview-stocks { display: block; min-width: 0; }
-    .round-overview-compact .history-viewport { touch-action: pan-x pinch-zoom; }
+    .round-overview-compact .round-overview-stocks { display: block; min-height: 0; }
+    .round-overview-compact .history-viewport {
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: 100%;
+        overscroll-behavior-x: contain;
+        touch-action: pan-x pinch-zoom;
+    }
+    .round-overview-compact .history-viewport:focus-visible { outline: 2px solid #fff284; outline-offset: -2px; }
+    .round-overview-compact .history-track { flex: none; height: min(100%, 12rem); }
     .round-overview-compact .history-group { gap: 0.5rem !important; padding-right: 0.5rem; }
     .round-overview-compact .round-overview-stocks article {
-        width: clamp(15rem, 83vw, 24rem);
-        min-height: clamp(5.5rem, 19dvh, 10rem);
-        justify-content: flex-start;
-        padding: 0.5rem 0.65rem !important;
+        flex: none;
+        width: clamp(15rem, 82vw, 23rem);
+        padding: 0.5rem !important;
     }
     .round-overview-stock-summary {
         display: grid;
         flex: 1;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr) auto;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.125rem 0.3rem;
     }
-    .round-overview-stock-summary > img { width: 100%; height: clamp(2rem, 8dvh, 4rem); object-fit: contain; }
-    .round-overview-stock-summary > svg { display: block; width: 100%; height: clamp(2rem, 8dvh, 4rem); }
+    .round-overview-stock-summary > img { width: 100%; height: clamp(1.25rem, 4dvh, 2.75rem); object-fit: contain; }
+    .round-overview-stock-summary > svg { display: block; width: 100%; height: clamp(1.25rem, 5dvh, 3.5rem); grid-area: 2 / 1; }
+    .round-overview-stock-summary > .stock-result { grid-area: 1 / 2 / span 2; }
     .round-overview-compact .stock-result {
-        grid-template-columns: auto;
-        grid-template-areas: "was" "before" "change" "now" "after";
-        justify-content: end;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-areas: "was now" "before after" "change change";
         gap: 0;
         padding: 0 !important;
         line-height: 1.15;
-        text-align: right !important;
+        text-align: center !important;
         font-variant-numeric: tabular-nums;
     }
     .round-overview-compact .stock-result > p { margin: 0; }
+    .round-overview-compact .stock-result > p:first-child { grid-area: was; }
+    .round-overview-compact .stock-result > h2:nth-child(2) { grid-area: before; }
+    .round-overview-compact .stock-result-change { grid-area: change; }
+    .round-overview-compact .stock-result > p:nth-child(4) { grid-area: now; }
+    .round-overview-compact .stock-result > h2:last-child { grid-area: after; }
     .round-overview-compact .stock-result > p:not(.stock-result-change) { font-size: 0.7rem; color: #555; }
-    .round-overview-compact .stock-result > h2 { font-size: clamp(1rem, 3dvh, 1.4rem); line-height: inherit; }
+    .round-overview-compact .stock-result > h2 { font-size: clamp(0.85rem, 2.2dvh, 1.2rem); line-height: inherit; overflow-wrap: anywhere; }
     .round-overview-compact .stock-result .stock-result-change { font-size: 0.9rem; }
     .round-overview-compact .round-overview-suspension { margin: 0.25rem 0 0; font-size: 0.75rem; color: #555; }
-    .round-overview-compact .stock-role-footer {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.25rem;
-        padding: 0.375rem 0 0;
-        margin-top: 0.375rem;
+    .round-overview-compact .stock-role-footer-compact {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.3rem;
+        margin-top: 0.25rem;
+        padding-top: 0.25rem;
     }
-    .round-overview-compact .stock-role-footer:has(.stock-role-entry:only-child) { grid-template-columns: minmax(0, 1fr); }
-    .round-overview-compact .stock-role-entry { gap: 0.35rem; }
-    .round-overview-compact .stock-role-entry p { font-size: 0.7rem; line-height: 1.2; margin: 0; }
-    .round-overview-compact .stock-role-footer .role-portrait .investor-photo { width: 1.5rem; height: 1.5rem; }
-    .round-overview-compact .stock-role-footer .role-portrait .company-role-badge { width: 0.75rem; height: 0.75rem; }
+    .round-overview-compact .stock-role-entry { min-width: 0; }
+    .round-overview-compact .stock-role-footer .role-portrait .investor-photo { width: 1rem; height: 1rem; }
+    .round-overview-compact .stock-role-footer .role-portrait .company-role-badge { width: 0.6rem; height: 0.6rem; }
     .round-overview-compact .round-overview-players {
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 0.5rem;
     }
     .round-overview-compact .round-overview-players article { padding: clamp(0.25rem, 1dvh, 0.625rem) 0.2rem !important; }
-    .round-overview-compact .round-overview-players img { width: clamp(1.5rem, 4dvh, 2.25rem); }
+    .round-overview-compact .round-overview-players img { width: clamp(1.25rem, 3.5dvh, 2rem); }
     .round-overview-compact .round-overview-players :is(h3, h4) {
-        font-size: clamp(0.75rem, 3.4vw, 0.9rem);
-        margin-block: 0.2rem;
+        font-size: clamp(0.7rem, 2.8vw, 0.85rem);
+        margin-block: 0.1rem;
     }
-    .round-overview-compact .round-overview-players p { font-size: clamp(0.7rem, 3.1vw, 0.8rem); }
+    .round-overview-compact .round-overview-players p { font-size: clamp(0.65rem, 2.7vw, 0.8rem); }
     .round-overview-compact .round-overview-players :is(h3, h4, p) { line-height: 1.2; }
-    .round-overview-compact .history-viewport:focus-visible { outline: 2px solid #fff284; outline-offset: -2px; }
-    .player-round-end:has(.round-overview-compact) #next-step-wrapper,
+    :is(.player-round-end, .spectator-round-end):has(.round-overview-compact) #next-step-wrapper,
     .player-round-end:has(.round-overview-compact) .round-navigation .btn { width: 100%; }
-    .player-round-end:has(.round-overview-compact) .round-navigation { text-align: center; }
-    .player-round-end #insight-view { padding: 0.375rem !important; border-width: 2px !important; overflow: auto; }
-    .player-round-end .round-reveal {
+    .spectator-round-end #next-step-wrapper > .btn { flex: 1 1 auto; }
+    :is(.player-round-end, .spectator-round-end):has(.round-overview-compact) .round-navigation { text-align: center; }
+    :is(.player-round-end, .spectator-round-end) #insight-view { min-height: 0; padding: 0.375rem !important; border-width: 2px !important; }
+    :is(.player-round-end, .spectator-round-end) .round-reveal {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-template-rows: minmax(min(9rem, 65%), 1fr) minmax(0, 1.35fr);
         gap: 0.375rem !important;
     }
-    .player-round-end .round-reveal:not(:has(.round-reveal-chart)) { grid-template-rows: minmax(0, 1fr); }
-    .player-round-end .round-reveal > * { min-width: 0; min-height: 0; padding: 0.375rem !important; }
-    .player-round-end .round-reveal p { margin: 0; font-size: var(--round-text-size); line-height: 1.2; text-align: center; }
-    .player-round-end .game-stock-view { text-align: center; }
-    .player-round-end .round-reveal-stock :is(.game-stock-view h2, .insight-company-name) { display: none; }
-    .player-round-end .game-stock-view img { max-height: clamp(2rem, 7dvh, 4rem) !important; padding: 0.2rem !important; }
-    .player-round-end .game-stock-view + div h1 { font-size: 1.5rem; margin: 0; }
-    .player-round-end :is(.round-reveal, .cash-reveal) .game-insight-card {
+    :is(.player-round-end, .spectator-round-end) .round-reveal:not(:has(.round-reveal-chart)) { grid-template-rows: minmax(0, 1fr); }
+    :is(.player-round-end, .spectator-round-end) .round-reveal > * { min-width: 0; min-height: 0; padding: 0.375rem !important; }
+    :is(.player-round-end, .spectator-round-end) .round-reveal p { margin: 0; font-size: var(--round-text-size); line-height: 1.2; text-align: center; }
+    :is(.player-round-end, .spectator-round-end) .game-stock-view { text-align: center; }
+    :is(.player-round-end, .spectator-round-end) .round-reveal-stock :is(.game-stock-view h2, .insight-company-name) { display: none; }
+    :is(.player-round-end, .spectator-round-end) .game-stock-view img { max-height: clamp(2rem, 7dvh, 4rem) !important; padding: 0.2rem !important; }
+    :is(.player-round-end, .spectator-round-end) .game-stock-view + div h1 { font-size: 1.5rem; margin: 0; }
+    :is(.player-round-end, .spectator-round-end) .cash-reveal .game-insight-card:not([data-fast-reveal]) {
         animation: round-insight-enter 360ms ease-out both;
     }
-    .player-round-end .game-insight-card > img { height: clamp(1.75rem, 6dvh, 3.25rem); max-width: 100%; object-fit: contain; }
-    .player-round-end .game-insight-card .role-portrait .investor-photo { width: 2.5rem; height: 2.5rem; }
-    .player-round-end .game-insight-card .role-portrait .company-role-badge { width: 1rem; height: 1rem; top: -0.25rem; left: -0.25rem; }
-    .player-round-end .total-insight { font-size: 1.15rem; }
-    .player-round-end .total-insight span { font-size: inherit; }
-    .player-round-end .total-insight img { max-height: 1.25rem; }
-    .player-round-end .round-result .stock-result { padding: 0.25rem !important; }
-    .player-round-end .round-reveal-chart { position: relative; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
-    .player-round-end .round-reveal-chart > .visually-hidden { top: 0; left: 0; }
-    .player-round-end .round-reveal-chart .stock-price-chart { height: 100%; min-height: 0; position: relative; }
-    .player-round-end .round-reveal-chart .recharts-responsive-container { position: absolute; inset: 0; }
-    .player-round-end #player-view { padding: 0.375rem 0.5rem !important; }
-    .player-round-end .round-wealth-players {
-        grid-template-columns: none;
-        grid-auto-flow: column;
-        grid-auto-columns: minmax(6.75rem, 1fr);
+    :is(.player-round-end, .spectator-round-end) .game-insight-card > img { height: clamp(1.75rem, 6dvh, 3.25rem); max-width: 100%; object-fit: contain; }
+    :is(.player-round-end, .spectator-round-end) .game-insight-card .role-portrait .investor-photo { width: 2.5rem; height: 2.5rem; }
+    :is(.player-round-end, .spectator-round-end) .game-insight-card .role-portrait .company-role-badge { width: 1rem; height: 1rem; top: -0.25rem; left: -0.25rem; }
+    :is(.player-round-end, .spectator-round-end) .total-insight { font-size: 1.15rem; }
+    :is(.player-round-end, .spectator-round-end) .total-insight span { font-size: inherit; }
+    :is(.player-round-end, .spectator-round-end) .total-insight img { max-height: 1.25rem; }
+    :is(.player-round-end, .spectator-round-end) .round-result .stock-result { padding: 0.25rem !important; }
+    :is(.player-round-end, .spectator-round-end) .round-result .stock-result h2 { font-size: clamp(1rem, 3dvh, 1.4rem); margin: 0; }
+    :is(.player-round-end, .spectator-round-end) .round-result .stock-result-change { font-size: 0.95rem; }
+    :is(.player-round-end, .spectator-round-end) .round-reveal-chart { position: relative; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
+    :is(.player-round-end, .spectator-round-end) .round-reveal-chart > .visually-hidden { top: 0; left: 0; }
+    :is(.player-round-end, .spectator-round-end) .round-reveal-chart .stock-price-chart { height: 100%; min-height: 0; position: relative; }
+    :is(.player-round-end, .spectator-round-end) .round-reveal-chart .recharts-responsive-container { position: absolute; inset: 0; }
+    :is(.player-round-end, .spectator-round-end) .round-wealth-players {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 5.25rem), 1fr));
         gap: 0.375rem;
-        padding-block: 0.25rem;
-        overflow-x: auto;
-        overscroll-behavior-inline: contain;
-        scroll-snap-type: x proximity;
-        scrollbar-width: thin;
     }
-    .player-round-end .round-wealth-players > div { min-width: 0; gap: 0.125rem; scroll-snap-align: start; }
-    .player-round-end .round-wealth-players span { font-size: var(--round-text-size); line-height: 1.2; }
-    .player-round-end .round-wealth-players img { width: clamp(1.75rem, 5dvh, 2.25rem); }
-    .player-round-end .round-wealth-players .net-worth-number { min-block-size: 2.4em; }
-    .player-round-end .round-wealth-players .wealth-delta {
+    :is(.player-round-end, .spectator-round-end) .round-wealth-card { gap: 0.125rem; padding: 0.3rem; }
+    :is(.player-round-end, .spectator-round-end) .round-wealth-players span { font-size: var(--round-text-size); line-height: 1.2; }
+    :is(.player-round-end, .spectator-round-end) .round-wealth-players img { width: clamp(1.75rem, 5dvh, 2.25rem); }
+    :is(.player-round-end, .spectator-round-end) .round-wealth-players .wealth-delta {
         position: static;
         display: block;
         text-align: center;
         animation: none !important;
     }
-    .player-round-end .round-player-name { max-width: 100%; overflow-wrap: anywhere; text-align: center; }
-    .player-round-end .round-wealth-players .round-player-holdings { font-size: 0.7rem; }
-    .round-end.player-round-end #next-step-wrapper { position: static; padding: 0 !important; }
-    .player-round-end .round-navigation .btn { min-height: 2.75rem; font-size: 0.9rem; }
-    .player-round-end .cash-reveal { height: 100%; gap: 0.375rem; }
-    .player-round-end .cash-reveal-total, .player-round-end .cash-reveal-card { min-height: 0; padding: 0.5rem; gap: 0.375rem; }
-    .player-round-end .cash-reveal-identity img { width: clamp(2.5rem, 12vw, 5rem); }
-    .player-round-end .cash-reveal-total h1 { font-size: 1.75rem; }
-    .player-round-end .cash-reveal-card p { font-size: 0.9rem; }
-    .player-round-end .hold-stock-decision { padding: 0.5rem !important; }
-    .player-round-end .hold-stock-decision label { padding: 0.25rem; min-width: 0; }
-    .player-round-end .hold-stock-decision label img { width: 100%; height: clamp(1.5rem, 6dvh, 3rem); object-fit: contain; }
-    .player-round-end .hold-stock-decision label p { margin: 0; }
+    :is(.player-round-end, .spectator-round-end) .round-player-name,
+    :is(.player-round-end, .spectator-round-end) .round-wealth-players .round-player-holdings {
+        max-width: 100%; overflow-wrap: anywhere; text-align: center;
+    }
+    :is(.player-round-end, .spectator-round-end) .round-wealth-players .round-player-holdings { font-size: 0.7rem; }
+    .round-end:is(.player-round-end, .spectator-round-end) #next-step-wrapper { position: static; padding: 0 !important; }
+    :is(.player-round-end, .spectator-round-end) .round-navigation .btn { min-height: 2.75rem; font-size: 0.9rem; }
+    :is(.player-round-end, .spectator-round-end) .cash-reveal { height: 100%; gap: 0.375rem; }
+    :is(.player-round-end, .spectator-round-end) .cash-reveal-total, :is(.player-round-end, .spectator-round-end) .cash-reveal-card { min-height: 0; padding: 0.5rem; gap: 0.375rem; }
+    :is(.player-round-end, .spectator-round-end) .cash-reveal-identity img { width: clamp(2.5rem, 12vw, 5rem); }
+    :is(.player-round-end, .spectator-round-end) .cash-reveal-total h1 { font-size: 1.75rem; }
+    :is(.player-round-end, .spectator-round-end) .cash-reveal-card p { font-size: 0.9rem; }
+    :is(.player-round-end, .spectator-round-end) .hold-stock-decision { padding: 0.5rem !important; }
+    :is(.player-round-end, .spectator-round-end) .hold-stock-decision label { padding: 0.25rem; min-width: 0; }
+    :is(.player-round-end, .spectator-round-end) .hold-stock-decision label img { width: 100%; height: clamp(1.5rem, 6dvh, 3rem); object-fit: contain; }
+    :is(.player-round-end, .spectator-round-end) .hold-stock-decision label p { margin: 0; }
 }
 
-@media (min-width: 600px) and (min-height: 481px) and (max-width: 991.98px) {
-    .round-overview-compact .round-overview-stocks article { width: clamp(16rem, 43vw, 24rem); }
+@media (max-width: 575.98px) {
+    :is(.player-round-end, .spectator-round-end) .round-wealth-players,
+    .round-overview-compact .round-overview-players { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    :is(.player-round-end, .spectator-round-end) .round-wealth-players:has(> :nth-child(5)),
+    .round-overview-compact .round-overview-players:has(> :nth-child(5)) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .round-wealth-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+    .round-wealth-stock-name { display: block; font-size: 0.7rem; text-align: right; }
+    .round-holding-stock-name { display: none; }
+}
+
+@media (min-width: 576px) {
+    .round-overview-compact .round-overview-players { grid-template-columns: repeat(auto-fit, minmax(min(100%, 5rem), 1fr)); }
 }
 
 @media (max-height: 600px) {
@@ -904,6 +935,7 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
     .player-round-end .round-overview-compact {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-template-areas: "stocks-title players-title" "stocks players";
+        grid-template-rows: auto minmax(0, 1fr);
         column-gap: 0.75rem !important;
         align-items: start;
     }
@@ -911,7 +943,6 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
     .round-overview-compact > h2:not(:first-child) { grid-area: players-title; }
     .round-overview-compact .round-overview-stocks { grid-area: stocks; }
     .round-overview-compact .round-overview-players { grid-area: players; }
-    .round-overview-compact .round-overview-stocks article { width: clamp(13rem, 38vw, 20rem); }
     .round-overview-compact .round-overview-players article { padding: 0.2rem !important; }
     .round-overview-compact .round-overview-players img { width: 1.25rem; }
     .round-overview-compact .round-overview-players :is(h3, h4) { font-size: 0.75rem; margin-block: 0.125rem; }

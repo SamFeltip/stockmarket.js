@@ -17,6 +17,8 @@ import "./tv-display.css";
 export function SpectatorScreen({ board }: { board: Board })
 {
     const skipRights = useMutation(api.rightsIssue.skip);
+    const setLength = useMutation(api.games.setLength);
+    const setPack = useMutation(api.games.setPack);
     const start = useMutation(api.games.start);
     const nextSpectator = useMutation(api.rounds.nextSpectator);
     const beginSuspensions = useMutation(api.rounds.beginSuspensions);
@@ -24,18 +26,12 @@ export function SpectatorScreen({ board }: { board: Board })
     const { run, busy, error } = useAction();
     const { game } = board;
     const phoneUrl = globalThis.location.origin;
-    const current = board.players.find((player) => player.id === game.currentPlayerId);
     const display = websiteBoard(board);
 
     const back = () =>
     {
         globalThis.location.assign("/");
     };
-
-    const totalTurns = board.players.length * 3;
-    const status = game.status === "playing"
-        ? `${current?.name ?? "Next investor"}’s turn · ${Math.min(game.turn + 1, totalTurns)} / ${totalTurns}`
-        : "Market closed · host continues on their display";
     if (game.rightsIssue)
     {
         const issue = game.rightsIssue;
@@ -85,6 +81,14 @@ export function SpectatorScreen({ board }: { board: Board })
                 phoneUrl={phoneUrl}
                 busy={busy}
                 error={error}
+                onPack={(pack) =>
+                {
+                    void run(() => setPack({ code: game.code, pack }));
+                }}
+                onLength={(periods) =>
+                {
+                    void run(() => setLength({ code: game.code, periodCount: periods - 1 }));
+                }}
                 onStart={() =>
                 {
                     void run(() => start({ code: game.code }));
@@ -97,23 +101,6 @@ export function SpectatorScreen({ board }: { board: Board })
         <>
             <main className="game-screen">
                 <SpectatorHeader board={display} />
-                <header className="game-header legacy-spectator-header">
-                    <div className="card card-green spectator-heading">
-                        <img src="/static/imgs/icons/Stock.svg" alt="" />
-                        <div>
-                            <h2>Spectator view</h2>
-                            <p>{`Lobby: ${game.code.toUpperCase()}`}</p>
-                        </div>
-                    </div>
-                    <div className="card card-green turn-heading">
-                        <h3 className="primary">{status}</h3>
-                        <p>Public portfolios and market prices</p>
-                    </div>
-                    <div className="card card-green title-heading">
-                        <h1 id="stockmarket-header">Stockmarket!</h1>
-                        <p>{`Period ${game.currentPeriod + 1} / ${game.periodCount + 1}`}</p>
-                    </div>
-                </header>
                 <div className="game-layout">
                     <Dashboard board={board} phoneUrl={phoneUrl} />
                     <div className="sidebar">

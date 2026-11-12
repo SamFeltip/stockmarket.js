@@ -6,6 +6,7 @@ import { Alert, Modal, useAction } from "./shared";
 import { hideModal } from "./bootstrap";
 import { StockChoice } from "./StockChoice";
 import type { Board } from "./types";
+import { presentationForPack } from "./pack-presentation";
 
 export type RightsActivation = (insightId: Board["insights"][number]["_id"], stockKey: number) => Promise<unknown>;
 
@@ -18,8 +19,11 @@ export function RightsIssueModal({ board, insightId, used, onActivate }: {
     const { run, busy, error } = useAction();
     const myTurn = board.game.status === "playing" && !board.game.rightsIssue
       && board.game.currentPlayerId === board.player._id;
-    const stocks = board.stocks.filter((stock) => stock.display && board.players.some((player) =>
-        player.holdings.some((holding) => holding.stockKey === stock.key && holding.quantity > 0)));
+    const { pack } = board.game;
+    const { rightsDescription } = presentationForPack(pack);
+    const stocks = board.stocks.filter((stock) => stock.display
+      && board.players.some((player) => player.holdings.some((holding) =>
+          holding.stockKey === stock.key && holding.quantity > 0)));
     const selectedStock = stocks.find((stock) => stock.key === selected);
     const id = `chance-card-${insightId}`;
 
@@ -37,7 +41,7 @@ export function RightsIssueModal({ board, insightId, used, onActivate }: {
         <Modal id={id} title="Rights Issue" mobileDrawer>
             <div className="modal-body loan-detail debenture-detail rights-issue-detail d-grid gap-3">
                 <h2 className="text-black mb-0">Rights Issue</h2>
-                <p>buy one extra share for every two you own at £1</p>
+                <p>{rightsDescription}</p>
                 <p>trading pauses while stakeholders purchase stock</p>
                 <div className="debenture-stock-list" role="radiogroup" aria-label="Rights Issue company">
                     {stocks.map((stock) => (

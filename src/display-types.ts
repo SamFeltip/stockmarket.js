@@ -3,7 +3,7 @@ import type { Board as PlayerBoard } from "./types";
 
 export type Stock = Pick<PlayerBoard["stocks"][number], "key" | "name" | "display" | "imagePath" | "secondaryImagePath"> & { variation?: number; startingValue?: number };
 
-export type Insight = Pick<PlayerBoard["insights"][number], "_id" | "playerId" | "stockKey" | "value" | "description" | "resolved" | "chanceKind" | "used" | "period" | "bonusRole" | "removedInsightId">;
+export type Insight = Pick<PlayerBoard["insights"][number], "_id" | "playerId" | "stockKey" | "value" | "description" | "resolved" | "chanceKind" | "used" | "period" | "bonusRole" | "removedInsightId" | "forecast" | "marketSteps">;
 
 export type Player = Pick<PlayerBoard["players"][number],
     "_id" | "name" | "profileRoot" | "cash" | "holdings" | "netWorth" | "ranking"> & {
@@ -12,10 +12,11 @@ export type Player = Pick<PlayerBoard["players"][number],
     };
 
 export interface Board {
-    game: Pick<PlayerBoard["game"], "code" | "status" | "currentPeriod" | "periodCount" | "prices" | "priceHistory" | "suspended" | "suspensionPeriod" | "rightsIssue"> & { turn?: number; currentPlayerId?: string };
+    game: Pick<PlayerBoard["game"], "code" | "status" | "currentPeriod" | "periodCount" | "prices" | "priceHistory" | "suspended" | "targetedSuspensions" | "suspensionPeriod" | "rightsIssue" | "pack" | "tradingDates">
+      & Partial<Pick<PlayerBoard["game"], "tradingSuspensions">> & { turn?: number; currentPlayerId?: string };
     trades?: PlayerBoard["trades"];
     stocks: Stock[];
     insights: Insight[];
     players: Player[];
-    feed: Pick<PlayerBoard["feed"][number], "_id" | "_creationTime" | "period" | "title" | "message" | "colour" | "imageRoot" | "stockKey" | "quantity" | "cashBonus" | "debenturePayout" | "roleBefore" | "roleAfter">[];
+    feed: Pick<PlayerBoard["feed"][number], "_id" | "_creationTime" | "period" | "title" | "message" | "colour" | "imageRoot" | "stockKey" | "quantity" | "cashBonus" | "debenturePayout" | "redemptionName" | "roleBefore" | "roleAfter">[];
 }

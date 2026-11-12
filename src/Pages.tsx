@@ -78,7 +78,7 @@ export function GameList()
                 {games.map((game) => (
                     <div className="row border rounded px-3 py-4" key={game._id}>
                         <div className="col-md-4">
-                            <h2>
+                            <h2 className="text-break">
                                 ID:
                                 {game.code}
                             </h2>
@@ -101,7 +101,7 @@ export function Users({ single = false }: { single?: boolean })
     }
 
     return (
-        <div>
+        <div className="text-break">
             {single ? users.find((user) => user._id === id)?.name ?? "No user found!"
                 : users.map((user) => <p key={user._id}>{user.name}</p>)}
         </div>
@@ -120,7 +120,8 @@ export function CatalogEditor()
 
     return (
         <div className="container">
-            <h1>Insights</h1>
+            <h1>Legacy insights</h1>
+            <p>Active games use the decks saved at launch. This editor is for archived insight records.</p>
             <Alert message={error} />
             {insights.map((insight) => (
                 <div className="card mb-2" key={insight._id} id={`insight-${insight.key}`}>
@@ -141,10 +142,10 @@ export function CatalogEditor()
                             void run(() => update({ insightId: insight._id, description }));
                         }}
                         >
-                            <div className="row">
-                                <div className="col-2"><input className="form-control text-center" aria-label="Value" value={`£${insight.value.toFixed(2)}`} disabled /></div>
+                            <div className="row g-2">
+                                <div className="col-4 col-sm-2"><input className="form-control text-center" aria-label="Value" value={`£${insight.value.toFixed(2)}`} disabled /></div>
                                 <div className="col-8"><input className="form-control" name="Description" aria-label="Description" defaultValue={insight.description} required /></div>
-                                <input type="submit" className="col-2 btn btn-secondary" value="Update" disabled={busy} />
+                                <div className="col-12 col-sm-2"><button type="submit" className="btn btn-secondary w-100" disabled={busy}>Update</button></div>
                             </div>
                         </form>
                     </div>

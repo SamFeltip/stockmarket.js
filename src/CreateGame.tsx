@@ -1,4 +1,5 @@
-import { gameLengths } from "../shared/rules";
+import { PackControl } from "./PackControl";
+import { packDefaultPeriods, rulesForPack, type Pack } from "../shared/packs";
 import { useState } from "react";
 import { GameLengthControl } from "./GameLengthControl";
 import { useMutation } from "convex/react";
@@ -9,13 +10,16 @@ import { LobbyCard } from "./LobbyCard";
 
 export function CreateGame()
 {
-    const [periods, setPeriods] = useState(gameLengths[0]);
+    const [periods, setPeriods] = useState({ standard: packDefaultPeriods(), extended: packDefaultPeriods("tech") });
+    const [pack, setPack] = useState<Pack>("classic");
+    const { lengthGroup } = rulesForPack(pack);
+    const selectedPeriods = periods[lengthGroup];
     const create = useMutation(api.games.create);
     const navigate = useNavigate();
     const { run, busy, error } = useAction();
 
     return (
-        <LobbyCard title="Create a game">
+        <LobbyCard>
             <form
                 className="create-game-form bg-dark text-white rounded d-grid"
                 aria-busy={busy}
@@ -27,7 +31,7 @@ export function CreateGame()
                     void run(async () =>
                     {
                         const code = await create({
-                            code: formText(form, "code"), periodCount: periods - 1,
+                            code: formText(form, "code"), periodCount: selectedPeriods - 1, pack,
                             spectate: form.get("spectate") === "on",
                         });
 
@@ -56,9 +60,15 @@ export function CreateGame()
                         Share with friends. Use letters, numbers, hyphens or underscores.
                     </p>
                 </div>
+                <PackControl pack={pack} busy={busy} onChange={setPack} />
                 <fieldset disabled={busy}>
                     <legend className="form-label fs-5">Game length</legend>
-                    <GameLengthControl periods={periods} busy={busy} onChange={setPeriods} />
+                    <GameLengthControl
+                        periods={selectedPeriods}
+                        pack={pack}
+                        busy={busy}
+                        onChange={(length) => setPeriods((current) => ({ ...current, [lengthGroup]: length }))}
+                    />
                 </fieldset>
                 <div className="spectate-option">
                     <div className="form-check form-switch spectate-toggle">

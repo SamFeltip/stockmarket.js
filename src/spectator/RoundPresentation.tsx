@@ -1,3 +1,5 @@
+import { nextRoundLabel } from "../pack-presentation";
+import { insightRevealMs } from "../../shared/presentation";
 import { pendingSuspensions } from "../../shared/suspensions";
 import { ShareSuspended } from "../ShareSuspended";
 import { useAction } from "../shared";
@@ -10,6 +12,7 @@ import { roundProgress } from "../round-preview";
 import { RoundReveal } from "../RoundReveal";
 import { RoundOverview } from "../RoundOverview";
 import { useRevealReady } from "../use-reveal-ready";
+import { useWideRoundOverview } from "../use-wide-round-overview";
 import { RoundWealth } from "../RoundWealth";
 
 function unavailableAction()
@@ -30,6 +33,7 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
     const beginSuspensions = onBeginSuspensions;
     const skipSuspension = onSkipSuspension;
     const decision = useAction();
+    const wideOverview = useWideRoundOverview();
     const groups = revealGroups(board.stocks, board.insights);
     const [step, setStep] = useState(overview ? groups.length : 0);
     const [index, setIndex] = useState(0);
@@ -43,6 +47,7 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
     const lastPlay = snapshot.feed.find((item) => item.period === snapshot.game.currentPeriod
       && item.colour !== "grey" && (item.quantity || item.cashBonus || item.message === "passed their go"));
     const ready = useRevealReady(lastPlay?.at);
+    const revealMs = insightRevealMs(board.game.pack);
     const pendingHolds = board.insights.some((insight) => !insight.resolved
       && board.stocks.find((item) => item.key === insight.stockKey)?.name === "Hold Stock Price");
     const { preview, wealth } = roundProgress(board, reviewed ? groups.length : step, index);
@@ -57,10 +62,10 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
             return;
         }
 
-        const timer = globalThis.setTimeout(() => setIndex((current) => current + 1), 2500);
+        const timer = globalThis.setTimeout(() => setIndex((current) => current + 1), revealMs);
 
         return () => globalThis.clearTimeout(timer);
-    }, [index, visible.length, unresolved, step, reviewed, ready]);
+    }, [index, visible.length, unresolved, step, reviewed, ready, revealMs]);
 
     if (!ready)
     {
@@ -105,12 +110,12 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
 
     return (
         <main className="website-presentation">
-            <div className="round-end gap-3 p-4 d-grid">
+            <div className="round-end spectator-round-end gap-3 p-4 d-grid">
                 <div className="d-flex flex-column align-items-center justify-content-center">
                     <h1>End of round</h1>
                     {stock && !stock.display && !cash && <h2>Additional insights</h2>}
                 </div>
-                {reviewed ? <RoundOverview before={board} after={preview} /> : (
+                {reviewed ? <RoundOverview before={board} after={preview} layout={wideOverview ? undefined : "compact"} /> : (
                     <>
                         <div id="insight-view" className="card card-green p-4 rounded border border-5 border-white">
                             {unresolved ? (
@@ -170,7 +175,7 @@ export function RoundPresentation({ snapshot, onNext, busy, error, onBack, overv
                         <>
                             {pendingHolds && <p>Waiting for players to resolve their hold-stock insights.</p>}
                             <button className="btn btn-primary" disabled={busy || pendingHolds} onClick={onNext}>
-                                {busy ? "Starting…" : (board.game.currentPeriod >= board.game.periodCount ? "Finish Game" : "Next Period")}
+                                {busy ? "Starting…" : nextRoundLabel(board.game)}
                                 {" "}
                                 →
                             </button>

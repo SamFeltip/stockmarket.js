@@ -1,9 +1,12 @@
 import { cashStockKey } from "../shared/chance-cards";
+import { sumInsightChanges } from "../shared/settlement";
+import { insightRevealPresentation } from "../shared/presentation";
 import { CashReveal } from "./CashReveal";
 import { lazy, Suspense } from "react";
 import { RolePortrait } from "./RolePortrait";
 import { Change } from "./shared";
 import type { Board, Insight, Stock } from "./display-types";
+import "./insight-reveal.css";
 
 const StockPriceChart = lazy(async () => import("./StockPriceChart"));
 
@@ -28,18 +31,22 @@ export function RoundReveal({ board, preview, stock, insights, index }: {
     board: Board; preview: Board; stock: Stock; insights: Insight[]; index: number;
 })
 {
+    const { fastAnimation } = insightRevealPresentation(board.game.pack);
     if (stock.key === cashStockKey)
     {
-        return <CashReveal insights={insights} index={index} />;
+        return <CashReveal insights={insights} index={index} fast={fastAnimation} />;
     }
 
     const special = !stock.display;
     const active = insights[index];
     const description = active?.bonusRole === "chairman" ? "chairman influence" : active?.description;
     const bonusPlayer = active?.bonusRole ? board.players.find((player) => player._id === active.playerId) : undefined;
-    const sum = insights.slice(0, index + 1).reduce((total, insight) => total + insight.value, 0);
     const before = board.game.prices.find((price) => price.stockKey === stock.key)?.value ?? 0;
     const after = preview.game.prices.find((price) => price.stockKey === stock.key)?.value ?? before;
+    const marketPrice = insights.some((insight) => insight.marketSteps)
+        ? preview.game.priceHistory?.at(-1)?.steps?.find((step) => step.stockKey === stock.key)?.values.at(-1)
+        : undefined;
+    const sum = marketPrice === undefined ? sumInsightChanges(insights.slice(0, index + 1)) : marketPrice - before;
 
     return (
         <div className={`round-reveal gap-3 h-100 d-grid${special ? "" : " round-reveal-stock"}`}>
@@ -54,7 +61,11 @@ export function RoundReveal({ board, preview, stock, insights, index }: {
                 </div>
             </div>
             {active ? (
-                <div key={active._id} className="game-insight-card p-4 gap-2 rounded bg-white text-black d-flex flex-column align-items-center justify-content-center">
+                <div
+                    key={active._id}
+                    data-fast-reveal={fastAnimation ? "" : undefined}
+                    className="game-insight-card p-4 gap-2 rounded bg-white text-black d-flex flex-column align-items-center justify-content-center"
+                >
                     {bonusPlayer ? (
                         <RolePortrait
                             name={bonusPlayer.name}

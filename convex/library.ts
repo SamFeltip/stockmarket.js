@@ -57,19 +57,14 @@ export async function member(context: QueryContext, code: string)
     return { user, game, player: prepared };
 }
 
-export function seedCatalog(context: MutationContext, ...arguments_: Arguments<typeof engine.seedCatalog>)
+export function seedStocks(context: MutationContext)
 {
-    return runEngine(context, (runtime) => engine.seedCatalog(runtime, ...arguments_));
+    return runEngine(context, engine.seedStocks);
 }
 
 export function roundInsights(context: QueryContext, ...arguments_: Arguments<typeof engine.roundInsights>)
 {
     return engine.roundInsights(readEngine(context), ...arguments_);
-}
-
-export function deal(context: MutationContext, ...arguments_: Arguments<typeof engine.deal>)
-{
-    return runEngine(context, (runtime) => engine.deal(runtime, ...arguments_));
 }
 
 export function feedItem(context: MutationContext, ...arguments_: Arguments<typeof engine.feedItem>)
@@ -84,8 +79,9 @@ export async function tradeHistory(context: QueryContext, gameId: Id<"games">, s
 {
     const feed = await context.db.query("feed").withIndex("by_game", (q) => q.eq("gameId", gameId))
         .filter((q) => q.neq(q.field("quantity"), undefined)).collect();
-    const trades = feed.flatMap(({ stockKey, period, title, imageRoot, quantity, debenturePayout }) =>
-        stockKey !== undefined && quantity ? [{ stockKey, period, title, imageRoot, quantity, debenturePayout }] : []);
+    const trades = feed.flatMap(({ stockKey, period, title, imageRoot, quantity, debenturePayout, redemptionName }) =>
+        stockKey !== undefined && quantity
+            ? [{ stockKey, period, title, imageRoot, quantity, debenturePayout, redemptionName }] : []);
     if (trades.length === 0)
     {
         return [];
@@ -114,8 +110,10 @@ export async function tradeHistory(context: QueryContext, gameId: Id<"games">, s
                 : trade.debenturePayout === undefined && trade.quantity === (action.kind === "buy" ? 1 : -1) * action.quantity;
         });
 
-        return events.map(({ stockKey, title, imageRoot, quantity }, index) => ({
+        return events.map(({ stockKey, title, imageRoot, quantity, debenturePayout, redemptionName }, index) => ({
             stockKey, period, title, imageRoot, quantity,
+            ...(debenturePayout !== undefined && { debenturePayout }),
+            ...(redemptionName && { redemptionName }),
             bargainRound: matched ? Math.floor(recorded[index].turn / seatCount) + 1 : undefined,
         }));
     });

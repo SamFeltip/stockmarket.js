@@ -38,7 +38,7 @@ it("publishes Rights Issue activation, purchases, skips and resumption to the sp
 
         expect(html).toContain("Gameplay paused during Rights Issue");
         expect(html).toContain("Game feed");
-        expect(html).toContain("Combined wealth");
+        expect(html).toContain("<h3>Play style</h3><strong>Classic</strong>");
         expect(html).toContain("is deciding how much");
         expect(html).toContain("opened a Rights Issue");
         await sam.mutation(api.rightsIssue.decide, { code: "test", insightId, expectedIndex: 0, quantity: 1000 });

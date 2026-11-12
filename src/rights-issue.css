@@ -25,8 +25,6 @@
 .rights-holders .is-current { background: white; color: #111; }
 .rights-holders .net-worth-number { font-size: 1rem; }
 .rights-holders strong { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rights-screen:not(.rights-spectator) .rights-panel { height: 100%; position: relative; justify-content: center; padding-top: 6.5rem; padding-bottom: 6.5rem; }
-.rights-screen:not(.rights-spectator) .rights-progress { position: absolute; top: 0; }
 .rights-spectator .rights-progress { padding-inline: 1.5rem; }
 .rights-spectator .rights-progress .game-metrics { grid-template-columns: repeat(2, minmax(8.5rem, max-content)); gap: 3rem; }
 .rights-spectator .rights-panel { width: min(100%, 80rem); }
@@ -61,7 +59,6 @@
     .rights-company { width: 5rem; height: 5rem; }
 }
 @media (max-height: 700px) {
-    .rights-own .rights-panel { padding-top: 6rem; padding-bottom: 0; }
     .rights-purchase .trade-role-progress { display: none; }
     .rights-purchase .btn { min-height: 2rem; padding-block: 0.15rem; }
 }
@@ -86,8 +83,6 @@
 @media (min-height: 760px) {
     .rights-screen:not(.rights-own, .rights-spectator) .rights-panel {
         width: min(100%, 24rem, calc((100dvh - 27rem) * 0.714286));
-        padding-top: 8rem;
-        padding-bottom: 5rem;
     }
     .rights-screen:not(.rights-own, .rights-spectator) .rights-summary {
         aspect-ratio: 5 / 7;
@@ -96,15 +91,16 @@
     .rights-screen:not(.rights-own, .rights-spectator) .rights-waiting { flex: 1; justify-content: center; }
 }
 
-/* Three stable regions keep shareholders above the bottom safe area. */
+/* Let the purchase form establish its row's minimum height before placing shareholders. */
+.rights-screen:not(.rights-spectator), .rights-spectator-mobile { overflow-y: auto; align-items: safe center; }
 .rights-screen:not(.rights-spectator) .rights-panel {
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(min-content, 1fr) auto;
+    min-height: 100%;
+    max-height: none;
     justify-items: center;
     align-items: center;
-    padding-block: 0;
 }
-.rights-screen:not(.rights-spectator) .rights-progress { position: static; }
 .rights-screen:not(.rights-spectator) .rights-summary { align-self: center; }
 .rights-screen:not(.rights-spectator) .rights-holders { align-self: end; }
 .rights-own .rights-summary { gap: 1rem; }
@@ -119,7 +115,7 @@
     .rights-own .trade-role-progress { display: none; }
     .rights-own .trade-inputs { row-gap: 0.4rem; }
 }
-@media (max-height: 650px) {
+@media (max-height: 480px) {
     .rights-screen:not(.rights-spectator) .rights-holders > div {
         display: grid;
         grid-template-columns: auto 1fr;

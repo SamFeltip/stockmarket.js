@@ -28,9 +28,11 @@ it("shows and redeems the current user's entire holding at the game's original p
     });
     const current = await sam.query(api.board.get, { code: "test" });
 
-    expect(current.debentureOffers).toContainEqual({ stockKey: 8, quantity: 68_000, unitPrice: 2,
+    expect(current.debentureOffers.bankruptcy).toContainEqual({ stockKey: 8, quantity: 68_000, unitPrice: 2,
         amount: 136_000, claimUntilPeriod: 2, unavailableReason: null });
-    expect((await bob.query(api.board.get, { code: "test" })).debentureOffers).toEqual([]);
+    const otherClaims = (await bob.query(api.board.get, { code: "test" })).debentureOffers;
+
+    expect(otherClaims.bankruptcy ?? []).toEqual([]);
     const client = new ConvexReactClient("https://debenture-opening.invalid");
 
     try

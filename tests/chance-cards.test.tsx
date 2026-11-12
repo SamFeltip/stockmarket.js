@@ -30,7 +30,25 @@ describe("board-game special cards", () =>
 
         for (const card of chanceCards)
         {
-            expect(special.filter((item) => item.chanceKind === card.kind)).toHaveLength(card.kind === "option" ? 0 : 2);
+            const absent = card.kind === "option" || card.kind === "print-money" || card.kind === "bankruptcy-buyout";
+
+            expect(special.filter((item) => item.chanceKind === card.kind)).toHaveLength(absent ? 0 : 2);
+        }
+    });
+
+    it("deals the stock redemption card specified by each deck", () =>
+    {
+        for (const [pack, kind, rule, count] of [
+            ["classic", "debenture", "bankruptcy", 2], ["frantic", "bankruptcy-buyout", "fixed-bankruptcy", 5],
+            ["tech", "debenture", "price-drop", 2],
+        ] as const)
+        {
+            const cards = specialDeck(pack);
+            const debentures = cards.filter((card) => card.chanceKind === kind);
+
+            expect(debentures.map((card) => card.debentureRule)).toEqual(Array.from({ length: count }, () => rule));
+            expect(cards.filter((card) => card.debentureRule).map((card) => card.id))
+                .toEqual(debentures.map((card) => card.id));
         }
     });
 
@@ -131,7 +149,7 @@ describe("board-game special cards", () =>
 
         expect(rights).toContain("disabled=\"\">Activate");
         expect(rights).toContain("Buy extra shares at £1 each");
-        expect(rights).toContain("buy one extra share for every two you own at £1");
+        expect(rights).toContain("Buy one extra share for every two you own at £1.");
         expect(rights).toContain("trading pauses while stakeholders purchase stock");
         expect(rights).not.toContain("50% extra shares");
         const suspended = renderDock({ ...own, insights: own.insights.map((card) => ({ ...card, chanceKind: "hold" })) });
