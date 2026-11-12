@@ -4,7 +4,7 @@ import { pendingSuspensions } from "../shared/suspensions";
 import { revealGroups } from "../shared/reveals";
 import { readEngine, runEngine } from "./engine";
 import type { MutationCtx as MutationContext } from "./_generated/server";
-import type { Doc as Document_, Id } from "./_generated/dataModel";
+import type { Doc as Document_ } from "./_generated/dataModel";
 import { advanceNpcSuspensions } from "./npc/suspensions";
 import { checkSuspensionPhase, spendSuspension } from "./suspensions";
 import { mutation } from "./_generated/server";
@@ -149,13 +149,7 @@ export const suspendShare = mutation({
         const { game, player } = await member(context, code);
 
         checkSuspensionPhase(game, expectedPeriod);
-        const card = await currentSuspension(context, game, insightId);
-        if (card.playerId !== player._id)
-        {
-            fail("Wait for your Share Suspended card");
-        }
-
-        const updated = await spendSuspension(context, game, card, stockKey, playerIds);
+        const updated = await spendSuspension(context, game, insightId, stockKey, playerIds, player._id);
 
         await advanceNpcSuspensions(context, updated);
     },
@@ -169,14 +163,8 @@ export const skipSuspension = mutation({
         const game = await gameByCode(context, code);
 
         checkSuspensionPhase(game, expectedPeriod);
-        const card = await currentSuspension(context, game, insightId);
-        const updated = await spendSuspension(context, game, card);
+        const updated = await spendSuspension(context, game, insightId);
 
         await advanceNpcSuspensions(context, updated);
     },
 });
-
-function currentSuspension(context: MutationContext, game: Document_<"games">, insightId: Id<"playerInsights">)
-{
-    return runEngine(context, (runtime) => engine.currentSuspension(runtime, game, insightId));
-}

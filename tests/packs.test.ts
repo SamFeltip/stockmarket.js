@@ -3,6 +3,7 @@ import { insightCatalog } from "../../stockmarket-shared/src/catalog";
 import { api } from "../convex/_generated/api";
 import { chooseTechStart, techPrices } from "../../stockmarket-shared/src/engine/techMarket";
 import { techDefaultPeriods } from "../shared/packs";
+import { cashStockKey } from "../shared/chance-cards";
 import { roundPrices, roundPriceSteps } from "../shared/settlement";
 import { setup, skipDealtSuspensions } from "./game-setup";
 import { buildNpcObservation } from "../convex/npc/observation";
@@ -90,6 +91,7 @@ describe("stock packs", () =>
         expect(franticStocks.at(-2)?.variation).toBe(franticStocks.at(-1)?.variation);
         const allDealt = boards.flatMap((board) => board.insights);
         const catalog = (await t.run((context) => context.db.query("gameCatalogs").first()))!.cards;
+        const cashLosses = catalog.filter((card) => card.stockKey === cashStockKey && card.value < 0);
         const extra = (card: { id?: string; catalogCardId?: string }) =>
             (card.id ?? card.catalogCardId)?.startsWith("frantic:downside:") ?? false;
 
@@ -98,6 +100,8 @@ describe("stock packs", () =>
           && board.insights.filter((card) => extra(card)).length > 12)).toBe(true);
         expect(new Set(allDealt.map((card) => card.catalogCardId)).size).toBe(allDealt.length);
         expect(allDealt.filter((card) => extra(card)).every((card) => card.value < 0)).toBe(true);
+        expect(cashLosses).toHaveLength(6);
+        expect(cashLosses.every((card) => card.value === -0.3 && card.description === "Cash -30%")).toBe(true);
 
         for (const stock of franticStocks)
         {
@@ -112,7 +116,7 @@ describe("stock packs", () =>
             const loss = -negatives.reduce((sum, value) => sum + value, 0);
 
             expect(positives).toEqual(oldFrantic.map((value) => Math.round(value * 200) / 100));
-            const downsideMultiplier = stock.key === 8 ? 2 : 1;
+            const downsideMultiplier = stock.key === 8 ? 6 : 2;
 
             expect(negatives.every((value) => classic.some((card) =>
                 card.value * 2 * downsideMultiplier === value))).toBe(true);

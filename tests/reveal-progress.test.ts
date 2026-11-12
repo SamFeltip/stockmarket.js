@@ -28,10 +28,10 @@ it("shares manual reveal jumps and opens suspensions after the last group", asyn
     expect((await sam.query(api.board.get, { code: round.code })).game.suspensionPeriod).toBe(1);
 });
 
-it("lets a Frantic NPC deny a rival's gain even when it holds no shares", async () =>
+it("lets a Frantic NPC deny gains on one stock to its shareholders without targeting other rivals", async () =>
 {
     const { t, sam, board, bobCard } = await suspensionFixture("frantic");
-    const [rival, npc] = board.players;
+    const [rival, npc, otherRival] = board.players;
 
     await t.run(async (context) =>
     {
@@ -40,12 +40,20 @@ it("lets a Frantic NPC deny a rival's gain even when it holds no shares", async 
         await context.db.patch(rival._id, {
             holdings: [{ stockKey: 8, quantity: 5000 }, { stockKey: 12, quantity: 3000 }],
         });
+        await context.db.patch(otherRival._id, {
+            holdings: [{ stockKey: 8, quantity: 2000 }, { stockKey: 12, quantity: 0 }],
+        });
+        await context.db.insert("playerInsights", { gameId: board.game._id, playerId: rival._id,
+            period: 1, stockKey: 8, value: 2, description: "Test movement", resolved: false });
     });
 
     await sam.mutation(api.rounds.beginSuspensions, { code: "test", expectedPeriod: 1 });
     await t.mutation(internal.npc.suspensions.run, { gameId: board.game._id, insightId: bobCard });
     const after = await sam.query(api.board.get, { code: "test" });
 
-    expect(after.game.targetedSuspensions).toEqual([{ stockKey: 12, playerIds: [rival._id] }]);
+    expect(after.game.targetedSuspensions).toEqual([{ stockKey: 8, playerIds: [rival._id, otherRival._id] }]);
     expect(after.insights.find((card) => card._id === bobCard)?.used).toBe(true);
+    await t.mutation(internal.npc.suspensions.run, { gameId: board.game._id, insightId: bobCard });
+    expect((await sam.query(api.board.get, { code: "test" })).game.targetedSuspensions)
+        .toEqual(after.game.targetedSuspensions);
 });

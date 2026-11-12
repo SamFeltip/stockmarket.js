@@ -42,13 +42,15 @@ it("enforces the phase, owner, queue, stock and period; spending freezes just on
     await expect(sam.mutation(api.rounds.suspendShare, { ...arguments_, insightId: samCard })).rejects.toThrow("already changed");
     await expect(bob.mutation(api.rounds.suspendShare, { ...arguments_, expectedPeriod: 0 })).rejects.toThrow("round has already changed");
     await expect(bob.mutation(api.rounds.suspendShare, { ...arguments_, stockKey: -1 })).rejects.toThrow("tradable");
+    await expect(bob.mutation(api.rounds.suspendShare, { ...arguments_, playerIds: [board.players[1]._id] }))
+        .rejects.toThrow("Shareholder selection is unavailable");
     await bob.mutation(api.rounds.suspendShare, arguments_);
     const after = await sam.query(api.board.get, { code: "test" });
 
     expect(after.game.suspended).toEqual([8]);
     expect(after.game.turn).toBe(12); // This is a period-end choice, not an extra trading turn.
     expect(after.insights.find((card) => card._id === bobCard)).toMatchObject({ used: true, resolved: true });
-    await expect(bob.mutation(api.rounds.suspendShare, arguments_)).rejects.toThrow("already changed");
+    await expect(bob.mutation(api.rounds.suspendShare, { ...arguments_, stockKey: 12 })).rejects.toThrow("already changed");
     await expect(sam.mutation(api.rounds.suspendShare, { ...arguments_, insightId: samCard })).rejects.toThrow("already suspended");
     await sam.mutation(api.rounds.suspendShare, { ...arguments_, insightId: samCard, stockKey: undefined });
     await sam.mutation(api.rounds.next, { code: "test", expectedPeriod: 1 });

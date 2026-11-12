@@ -35,7 +35,7 @@ it("caps Frantic purchases at ten times the opening holding with no allowance fo
     expect(bought.player.holdings).toContainEqual({ stockKey: 8, quantity: 22_000 });
 });
 
-it("applies the old quote for one trading period except to existing unticked shareholders", async () =>
+it("applies the old quote for one trading period only to the selected shareholders", async () =>
 {
     const { t, sam, bob, clients, board, samCard, bobCard } = await suspensionFixture("frantic");
     const stockKey = 8;
@@ -43,6 +43,9 @@ it("applies the old quote for one trading period except to existing unticked sha
     await t.run(async (context) =>
     {
         await context.db.patch(board.player._id, { cash: 10_000, holdings: [{ stockKey, quantity: 2000 }] });
+        await context.db.patch(board.players[2]._id, {
+            holdings: [{ stockKey, quantity: 0 }, { stockKey: 12, quantity: 2000 }],
+        });
     });
     await sam.mutation(api.rounds.beginSuspensions, { code, expectedPeriod: 1 });
     const choice = { code, expectedPeriod: 1, insightId: bobCard, stockKey };
@@ -51,7 +54,11 @@ it("applies the old quote for one trading period except to existing unticked sha
     await expect(bob.mutation(api.rounds.suspendShare, choice)).rejects.toThrow("Choose one or more shareholders");
     await expect(bob.mutation(api.rounds.suspendShare, { ...choice, playerIds: [board.players[2]._id] }))
         .rejects.toThrow("players who hold this stock");
+    await expect(bob.mutation(api.rounds.suspendShare, { ...choice, playerIds: [bobId, board.players[2]._id] }))
+        .rejects.toThrow("players who hold this stock");
     await bob.mutation(api.rounds.suspendShare, { ...choice, playerIds: [bobId] });
+    await expect(bob.mutation(api.rounds.suspendShare, { ...choice, stockKey: 12, playerIds: [board.players[2]._id] }))
+        .rejects.toThrow("already changed");
     const selected = (await t.query(api.tv.board, { code }))?.reveal;
 
     expect(selected?.targetedSuspensions).toEqual([{ stockKey, playerIds: [bobId] }]);
@@ -67,7 +74,8 @@ it("applies the old quote for one trading period except to existing unticked sha
     expect(settled.player.cash).toBe(11_000);
     expect(settled.players.find((player) => player._id === bobId)?.cash).toBe(11_000);
     expect(settled.game.tradingSuspensions).toEqual([
-        { stockKey, value: opening, excludedPlayerIds: [board.player._id] },
+        { stockKey, value: opening, excludedPlayerIds: board.players.filter((player) => player._id !== bobId)
+            .map((player) => player._id) },
     ]);
     expect(settled.game.targetedSuspensions).toBeUndefined();
 
@@ -84,7 +92,7 @@ it("applies the old quote for one trading period except to existing unticked sha
         .filter((entry) => entry.period === 2 && entry.unitPrice !== undefined)
         .map((entry) => entry.unitPrice));
 
-    expect(pricesPaid).toEqual([opening, opening - 1, opening, opening, opening - 1]);
+    expect(pricesPaid).toEqual([opening - 1, opening - 1, opening, opening - 1, opening - 1]);
     await skipDealtSuspensions(sam, code);
     await sam.mutation(api.rounds.next, { code, expectedPeriod: 2 });
     expect((await sam.query(api.board.get, { code })).game.tradingSuspensions).toBeUndefined();
