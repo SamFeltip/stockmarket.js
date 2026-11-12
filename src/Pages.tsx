@@ -42,7 +42,7 @@ export function Home({ user }: { user: Board["user"] })
                             placeholder="Lobby number"
                             aria-label="Lobby number"
                             maxLength={32}
-                            pattern="[a-zA-Z0-9_-]+"
+                            pattern="[a-zA-Z0-9_\-]+"
                             required
                         />
                         <div className="home-join-actions d-flex justify-content-center gap-2">

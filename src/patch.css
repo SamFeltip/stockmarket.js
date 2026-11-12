@@ -138,7 +138,7 @@ button.nav-link { cursor: pointer; }
     .trade-drawer-handle > span { display: block; position: absolute; top: 14px; left: 50%; transform: translateX(-50%); width: 2.5rem; height: 4px; margin: 0; border-radius: 2px; background: #adb5aa; pointer-events: none; }
     .trade-drawer-handle:focus-visible { outline: 2px solid #3c5f2f; outline-offset: -3px; }
     .trade-dialog .modal-body { min-height: 0; overflow: clip; overscroll-behavior: none; justify-content: center; padding-block: 0.75rem; }
-    :is(#buyModal, #sellModal) .modal-body { justify-content: flex-start; }
+    :is(#buyModal, #sellModal) .modal-body { overflow: auto; justify-content: flex-start; }
     .trade-dialog .modal-body > p { margin: 0; }
     .trade-dialog .purchase-form { row-gap: 0.75rem; }
     .trade-dialog .equals, .trade-dialog .transaction-body p { margin: 0; }
@@ -666,7 +666,7 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
 .lobby-empty-seat { display: none; }
 
 @media (max-width: 767.98px), (max-width: 991.98px) and (pointer: coarse) {
-    .npc-waiting-room { overflow: hidden; padding-block: 0; }
+    .npc-waiting-room { padding-block: 0; }
     .npc-waiting-room > .container-fluid {
         padding: 0.5rem;
         padding-top: max(0.5rem, var(--app-safe-top, 0px));
