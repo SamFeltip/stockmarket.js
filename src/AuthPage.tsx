@@ -2,7 +2,7 @@ import { ConvexError } from "convex/values";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { authDestination } from "../shared/auth-destination";
-import { avatarPaths } from "../shared/avatars";
+import { avatarOptions } from "../shared/avatars";
 import { validUsername } from "../shared/names";
 import { usernameHelp } from "./errors";
 import { Alert, useAction, formText } from "./shared";
@@ -53,14 +53,14 @@ export function AuthPage({ signup = false }: { signup?: boolean })
                         }}
                     >
                         {signup && (
-                            <div className="d-grid gap-2 mb-2" style={{ gridTemplateColumns: "repeat(6, 1fr)" }}>
-                                {avatarPaths.map((path, index) => (
-                                    <label key={path} className="img-label rounded overflow-hidden" htmlFor={`image${index + 1}`}>
-                                        <input className="visually-hidden" type="radio" id={`image${index + 1}`} name="profile" value={index + 1} defaultChecked={index === 0} />
+                            <fieldset className="avatar-picker mb-2" aria-label="Choose an avatar">
+                                {avatarOptions.map(({ path, id }, index) => (
+                                    <label key={path} className="img-label rounded overflow-hidden" htmlFor={`image${id}`}>
+                                        <input className="visually-hidden" type="radio" id={`image${id}`} name="profile" value={id} defaultChecked={index === 0} />
                                         <img className="w-100" src={path} alt={`Avatar ${index + 1}`} />
                                     </label>
                                 ))}
-                            </div>
+                            </fieldset>
                         )}
                         <input
                             id="name"

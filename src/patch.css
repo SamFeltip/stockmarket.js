@@ -40,10 +40,17 @@ html, body, main:has(> #game-grid) { background-color: var(--bs-body-bg, #0f2c12
 .lobby-hint { color: #c6d7c3; font-size: 1rem; line-height: 1.5; }
 h2.primary { overflow-wrap: anywhere; }
 @media (min-width: 768px) { #home-screen { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.img-label { border: #204712 2px solid; }
+.avatar-picker {
+    display: flex;
+    gap: 0.5rem;
+    min-width: 0;
+    overflow-x: auto;
+    padding: 0.25rem;
+}
+.img-label { position: relative; flex: 0 0 4.75rem; border: #204712 2px solid; }
 .img-label:has(input:checked) { border-color: white; }
 .img-label:has(input:focus-visible) { outline: 2px solid white; outline-offset: 2px; }
-.img-label img { aspect-ratio: 1; object-fit: cover; }
+.img-label img { display: block; aspect-ratio: 1; object-fit: cover; }
 .btn-check:checked + .btn { background-color: #FFF284 !important; color: black; }
 button.nav-link { cursor: pointer; }
 #game-stock-info > #buy-button { grid-area: buy-button; }
