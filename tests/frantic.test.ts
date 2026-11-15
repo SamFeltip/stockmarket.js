@@ -8,7 +8,7 @@ import { fixture } from "./rights-issue-setup";
 
 const code = "test";
 
-it("caps Frantic purchases at ten times the opening holding with no allowance for a zero-share opener", async () =>
+it("lets only the Frantic card player buy up to 5,000 shares without an opening holding", async () =>
 {
     const { t, bob, clients, board, command, insightId } = await fixture();
 
@@ -22,15 +22,23 @@ it("caps Frantic purchases at ten times the opening holding with no allowance fo
     const issue = (await bob.query(api.board.get, { code: "test" })).game.rightsIssue!;
 
     expect(issue.offers.map(({ playerId, maximum }) => [playerId, maximum]))
-        .toEqual([[board.players[3]._id, 20_000], [board.players[0]._id, 40_000]]);
+        .toEqual([[board.player._id, 5000], [board.players[3]._id, 20_000], [board.players[0]._id, 40_000]]);
     const choice = { code: "test", insightId, expectedIndex: 0 };
 
-    await expect(bob.mutation(api.rightsIssue.decide, { ...choice, quantity: 1000 })).rejects.toThrow("Wait for your");
-    await expect(clients[3].mutation(api.rightsIssue.decide, { ...choice, quantity: 21_000 }))
-        .rejects.toThrow("up to 10 extra shares");
-    await clients[3].mutation(api.rightsIssue.decide, { ...choice, quantity: 20_000 });
-    const bought = await clients[3].query(api.board.get, { code: "test" });
+    await expect(bob.mutation(api.rightsIssue.decide, { ...choice, quantity: 6000 })).rejects.toThrow("up to 5,000 shares");
+    await bob.mutation(api.rightsIssue.decide, { ...choice, quantity: 5000 });
+    const next = { ...choice, expectedIndex: 1 };
 
+    await expect(bob.mutation(api.rightsIssue.decide, { ...next, quantity: 1000 })).rejects.toThrow("Wait for your");
+    await expect(clients[3].mutation(api.rightsIssue.decide, { ...next, quantity: 21_000 }))
+        .rejects.toThrow("up to 10 extra shares");
+    await clients[3].mutation(api.rightsIssue.decide, { ...next, quantity: 20_000 });
+    const [opener, bought] = await Promise.all([
+        bob.query(api.board.get, { code }), clients[3].query(api.board.get, { code }),
+    ]);
+
+    expect(opener.player.cash).toBe(5000);
+    expect(opener.player.holdings).toContainEqual({ stockKey: 8, quantity: 5000 });
     expect(bought.player.cash).toBe(5000);
     expect(bought.player.holdings).toContainEqual({ stockKey: 8, quantity: 22_000 });
 });

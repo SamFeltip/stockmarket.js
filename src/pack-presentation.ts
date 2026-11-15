@@ -18,7 +18,7 @@ export const packPresentation = {
         ...standardDisplay,
         name: "Frantic", summary: "Trade at triple the opening prices with bigger swings and extra chance cards.",
         icon: "m13 2-9 12h7l-1 8 10-12h-7l1-8Z",
-        rightsDescription: "Buy up to 10 extra shares at £1 each for every share you held when the issue opened.",
+        rightsDescription: "Choose any stock. Shareholders can buy up to 10 extra shares per share they own. If you play this card on a stock you don’t own, you can buy up to 5,000 shares. All shares cost £1 each.",
         chanceEffects: { hold: "Suspend the price change for chosen shareholders" },
     },
     tech: {

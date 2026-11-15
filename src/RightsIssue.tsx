@@ -49,7 +49,7 @@ export function RightsIssue({ board, playerId, spectator = false, onDecision }: 
                             <p>Chance Card</p>
                             <h1>Rights Issue</h1>
                             <p>
-                                {own ? `Optionally buy more ${stock.name} shares at ${purchasePrice} per extra share.`
+                                {own ? `Optionally buy ${stock.name} shares at ${purchasePrice} each.`
                                     : rightsDescription}
                             </p>
                         </header>
@@ -129,7 +129,7 @@ function RightsPurchase({ board, onDecision }: { board: Board; onDecision?: (qua
     const issuePrice = rightsPriceFor(board.game.pack, price);
     const limit = maxRightsPurchase(offer.maximum, player.cash, available, issuePrice);
     const { quantity, shares, cash } = resolveTradeDraft(draft, issuePrice, limit);
-    const reason = rightsPurchaseError(quantity, offer.maximum, player.cash, board.game.pack, issuePrice)
+    const reason = rightsPurchaseError(quantity, offer.maximum, player.cash, board.game.pack, issuePrice, offer.held)
       || (quantity > available ? "There aren't enough shares available. Try fewer shares." : "");
     const valid = !reason && quantity > 0;
     const projected = Number.isSafeInteger(quantity) && quantity >= 0 ? quantity : 0;

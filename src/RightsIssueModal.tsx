@@ -7,6 +7,7 @@ import { hideModal } from "./bootstrap";
 import { StockChoice } from "./StockChoice";
 import type { Board } from "./types";
 import { presentationForPack } from "./pack-presentation";
+import { rulesForPack } from "../shared/packs";
 
 export type RightsActivation = (insightId: Board["insights"][number]["_id"], stockKey: number) => Promise<unknown>;
 
@@ -21,9 +22,10 @@ export function RightsIssueModal({ board, insightId, used, onActivate }: {
       && board.game.currentPlayerId === board.player._id;
     const { pack } = board.game;
     const { rightsDescription } = presentationForPack(pack);
+    const allowsUnowned = Boolean(rulesForPack(pack).rights.unownedActorMaximum);
     const stocks = board.stocks.filter((stock) => stock.display
-      && board.players.some((player) => player.holdings.some((holding) =>
-          holding.stockKey === stock.key && holding.quantity > 0)));
+      && (allowsUnowned || board.players.some((player) => player.holdings.some((holding) =>
+          holding.stockKey === stock.key && holding.quantity > 0))));
     const selectedStock = stocks.find((stock) => stock.key === selected);
     const id = `chance-card-${insightId}`;
 
@@ -58,7 +60,9 @@ export function RightsIssueModal({ board, insightId, used, onActivate }: {
                             showName
                         />
                     ))}
-                    {stocks.length === 0 && <div className="debenture-empty">No companies with shareholders</div>}
+                    {stocks.length === 0 && (
+                        <div className="debenture-empty">{allowsUnowned ? "No tradable stocks" : "No companies with shareholders"}</div>
+                    )}
                 </div>
                 {!myTurn && <p>Wait for your turn to activate.</p>}
                 <Alert message={error} />

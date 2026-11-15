@@ -162,7 +162,8 @@ it("renders purchase, waiting and spectator variants using the shared trade cont
     expect(spectator).toContain("Player portfolios");
     const frantic = renderToStaticMarkup(<RightsIssue board={{ ...board, game: { ...board.game, pack: "frantic" } }} spectator />);
 
-    expect(frantic.match(/Buy up to 10 extra shares at £1 each for every share you held when the issue opened\./g)).toHaveLength(2);
+    expect(frantic.match(/you can buy up to 5,000 shares/g)).toHaveLength(2);
+    expect(frantic).toContain("10 extra shares per share they own");
     expect(spectator).toContain("is-muted");
     expect(spectator).not.toContain("trade-inputs");
     expect(rightsEntitlement(6001)).toBe(3000);
