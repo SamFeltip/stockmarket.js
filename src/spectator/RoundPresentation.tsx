@@ -52,7 +52,7 @@ export function RoundPresentation({ snapshot, forceWide = false, canAdvance = tr
       && item.colour !== "grey" && (item.quantity || item.cashBonus || item.message === "passed their go"));
     const ready = useRevealReady(lastPlay?.at);
     const index = useRoundReveal({ step, summary, count: visible.length,
-        paused: !ready || reviewed || Boolean(unresolved), delay: insightRevealMs(board.game.pack) });
+        paused: !ready || reviewed || Boolean(unresolved), delay: insightRevealMs(board.game.pack, stock?.display) });
     const pendingHolds = board.insights.some((insight) => !insight.resolved
       && board.stocks.find((item) => item.key === insight.stockKey)?.name === "Hold Stock Price");
     const { preview, wealth } = roundProgress(board, reviewed ? groups.length : step, index);

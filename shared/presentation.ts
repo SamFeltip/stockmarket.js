@@ -19,9 +19,9 @@ export function insightRevealPresentation(pack: Pack = "classic")
     return insightReveals[pack];
 }
 
-export function insightRevealMs(pack?: Pack)
+export function insightRevealMs(pack?: Pack, companyStock = false)
 {
-    return insightRevealPresentation(pack).interval;
+    return pack === "frantic" && companyStock ? 1250 : insightRevealPresentation(pack).interval;
 }
 
 export function revealDelay(lastActionAt: number | undefined, now = Date.now())

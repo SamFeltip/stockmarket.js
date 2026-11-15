@@ -48,7 +48,7 @@ export function RoundEnd({ board, onBeginSuspensions, onSuspensionDecision }: {
       && item.colour !== "grey" && (item.quantity || item.cashBonus || item.message === "passed their go"));
     const ready = useRevealReady(lastPlay?._creationTime);
     const index = useRoundReveal({ step, summary, count: visible.length,
-        paused: !ready || reviewed || Boolean(unresolved), delay: insightRevealMs(game.pack) });
+        paused: !ready || reviewed || Boolean(unresolved), delay: insightRevealMs(game.pack, activeStock?.display) });
     const { preview, wealth } = roundProgress(board, reviewed ? groups.length : step, index);
 
     const afterCash = suspensions.length > 0 ? "Next: Share Suspended" : "Show round summary";

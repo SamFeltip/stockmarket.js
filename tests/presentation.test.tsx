@@ -8,10 +8,12 @@ import { api } from "../convex/_generated/api";
 
 describe("round presentation", () =>
 {
-    it("reveals Tech insight cards every quarter second and keeps the Classic interval", () =>
+    it("reveals Frantic stock insight cards at an interval between Tech and Classic", () =>
     {
-        expect(insightRevealMs("classic")).toBe(2500);
-        expect(insightRevealMs("tech")).toBe(250);
+        expect(insightRevealMs("classic", true)).toBe(2500);
+        expect(insightRevealMs("frantic", true)).toBe(1250);
+        expect(insightRevealMs("frantic", false)).toBe(2500);
+        expect(insightRevealMs("tech", true)).toBe(250);
     });
 
     it("waits through the final action animation and a pause, without delaying old rounds", () =>
