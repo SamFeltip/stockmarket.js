@@ -3,7 +3,7 @@ import { companyRoles } from "../shared/company-roles";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { fail, gameByCode, members, tradeHistory, netWorth, normalizeCode, roundInsights } from "./library";
+import { fail, gameByCode, members, tradeHistory, netWorth, normalizeCode, revealProgress, roundInsights } from "./library";
 import { publicIdentity } from "./npc/identity";
 import { spectatorHost } from "./game/hosting";
 import { launchGame } from "./launch";
@@ -69,7 +69,7 @@ export const create = mutation({
         await context.db.insert("games", {
             code, tvTokenHash: hash, ...market, currentPeriod: 0,
             turn: 0, status: "waiting", suspended: [],
-            rulesVersion: 2, npcDifficulty: "medium", rosterRevision: 0,
+            tradeHistoryStart: 0, rulesVersion: 2, npcDifficulty: "medium", rosterRevision: 0,
         });
 
         return code;
@@ -132,11 +132,17 @@ export const next = mutation({
     },
 });
 
+// Trade markers are public on the spectator board during trading.
+export const trades = query({
+    args: { gameId: v.id("games"), seatCount: v.number(), start: v.optional(v.number()) },
+    handler: (context, { gameId, seatCount, start }) => tradeHistory(context, gameId, seatCount, start),
+});
+
 // Explicit allowlist: insight cards become public only after trading closes.
 // Never return a raw game, account, capability, or an open-period insight.
 export const board = query({
-    args: { code: v.string() },
-    handler: async (context, { code }) =>
+    args: { code: v.string(), separateSubscriptions: v.optional(v.boolean()) },
+    handler: async (context, { code, separateSubscriptions }) =>
     {
         const normalized = normalizeCode(code);
         const game = await context.db.query("games").withIndex("by_code", (q) => q.eq("code", normalized)).unique();
@@ -151,13 +157,14 @@ export const board = query({
         const canReveal = game.status === "closed" || game.status === "special_insights";
         const [revealed, trades] = await Promise.all([
             canReveal ? roundInsights(context, game) : [],
-            tradeHistory(context, game._id, seats.length),
+            separateSubscriptions ? [] : tradeHistory(context, game._id, seats.length, game.tradeHistoryStart),
         ]);
         const reveal = canReveal ? {
             period: game.currentPeriod, trades,
             prices: game.prices.map((price) => ({ stockKey: price.stockKey, value: price.value })),
             suspended: game.suspended,
-            revealProgress: game.revealProgress, suspensionPeriod: game.suspensionPeriod,
+            revealProgress: separateSubscriptions ? game.revealProgress : await revealProgress(context, game),
+            suspensionPeriod: game.suspensionPeriod,
             targetedSuspensions: game.targetedSuspensions,
             stocks: catalog.map((stock) => ({ key: stock.key, name: stock.name, display: stock.display,
                 imagePath: stock.imagePath,
@@ -187,7 +194,7 @@ export const board = query({
         }));
         const feed = await context.db.query("feed").withIndex("by_game", (q) => q.eq("gameId", game._id))
             .order("desc").take(24);
-        const purchase = await context.db.query("feed").withIndex("by_game", (q) => q.eq("gameId", game._id))
+        const purchase = feed.find((item) => (item.quantity ?? 0) > 0) ?? await context.db.query("feed").withIndex("by_game", (q) => q.eq("gameId", game._id))
             .filter((q) => q.gt(q.field("quantity"), 0)).order("desc").first();
 
         const viewerId = await getAuthUserId(context);
@@ -197,7 +204,8 @@ export const board = query({
             canControl: Boolean(viewerId && viewerId === (displayHost ?? game.hostId) && !game.tvTokenHash),
             reveal, trades,
             latestPurchase: purchase ? { title: purchase.title, message: purchase.message } : null,
-            game: { code: game.code, pack: game.pack, tradingDates: publicTradingDates(game),
+            game: { id: game._id, tradeHistoryStart: game.tradeHistoryStart, code: game.code, pack: game.pack,
+                tradingDates: publicTradingDates(game),
                 status: game.status, currentPeriod: game.currentPeriod,
                 tvControlled: Boolean(game.tvTokenHash), spectatorControlled: Boolean(displayHost),
                 tradingSuspensions: game.tradingSuspensions,

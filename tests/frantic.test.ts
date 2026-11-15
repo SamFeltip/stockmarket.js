@@ -157,6 +157,8 @@ it("redeems a Frantic Bankruptcy Buyout for £100 per share of the selected bank
     expect(after.player.holdings.find((holding) => holding.stockKey === 8)?.quantity).toBe(0);
     expect(after.game.turn).toBe(before.game.turn + 1);
     expect(after.feed[0]).toMatchObject({ debenturePayout: 2_000_000, redemptionName: "Bankruptcy Buyout" });
+    expect(after.trades.at(-1)).toMatchObject({ period: 1, bargainRound: 1,
+        quantity: -20_000, debenturePayout: 2_000_000, redemptionName: "Bankruptcy Buyout" });
     expect(await t.run((context) => context.db.get(insightId))).toMatchObject({ used: true });
 });
 

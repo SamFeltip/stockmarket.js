@@ -167,6 +167,9 @@ describe("board-game special cards", () =>
             expectedPeriod: own.game.currentPeriod, insightId: own.insights[0]._id });
         const redeemed = renderDock(await sam.query(api.board.get, { code: "test" }));
 
+        expect(await sam.query(api.tv.trades, { gameId: own.game._id, seatCount: own.players.length, start: 0 }))
+            .toEqual(own.trades);
+
         expect(redeemed).not.toContain("dock-power-card dock-power-loan");
         expect(redeemed).toContain("No Chance Cards");
     });

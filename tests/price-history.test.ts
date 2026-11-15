@@ -193,6 +193,12 @@ for (const pack of packIds)
 
                 expect(publicBoard.reveal).toBeNull();
                 expect(publicBoard.trades).toEqual(live.trades);
+                const history = { gameId: live.game._id, seatCount: live.players.length };
+
+                expect(await t.query(api.tv.trades, { ...history, start: 0 }))
+                    .toEqual(await t.query(api.tv.trades, history));
+                expect((await t.query(api.tv.board, { code, separateSubscriptions: true }))?.trades).toEqual([]);
+                expect((await sam.query(api.board.get, { code, separateSubscriptions: true })).trades).toEqual([]);
                 expect(points.every((point) => point.value === opening)).toBe(true);
                 expect(points.flatMap((point) => point.trades?.map((trade) => trade.quantity) ?? []))
                     .toEqual([1000, -1000]);

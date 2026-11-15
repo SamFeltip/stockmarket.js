@@ -4,6 +4,7 @@ import { useConvexAuth, useConvexConnectionState, useMutation, useQuery } from "
 import { Link, useParams } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { useAction } from "../shared";
+import { useBoardSubscriptions } from "../use-board-subscriptions";
 import { useRememberRecentGame } from "../recent-games";
 import { GameResults } from "../GameResults";
 import { PlayAnimation } from "../PlayAnimation";
@@ -126,12 +127,14 @@ export default function SpectatorPage()
     const { code = "" } = useParams();
     const { isAuthenticated, isLoading } = useConvexAuth();
     const connection = useConvexConnectionState();
-    const board = useQuery(api.tv.board, isLoading ? "skip" : { code });
+    const board = useQuery(api.tv.board, isLoading ? "skip" : { code, separateSubscriptions: true });
+    const { cursor, trades, loading } = useBoardSubscriptions(board?.game.id, board?.game.currentPeriod,
+        board?.game.status === "waiting", board?.players.length ?? 0, board?.game.tradeHistoryStart);
     const user = useQuery(api.users.me, isAuthenticated ? {} : "skip");
 
     useRememberRecentGame(user?._id, board?.game.code, "spectate");
     let screen;
-    if (board === undefined)
+    if (board === undefined || loading)
     {
         screen = (
             <main className="center">
@@ -152,7 +155,10 @@ export default function SpectatorPage()
     }
     else
     {
-        screen = <SpectatorScreen key={board.game.code} board={board} />;
+        const reveal = board.reveal
+            ? { ...board.reveal, revealProgress: cursor ?? board.reveal.revealProgress } : null;
+
+        screen = <SpectatorScreen key={board.game.code} board={{ ...board, reveal, trades: trades ?? board.trades }} />;
     }
 
     return (

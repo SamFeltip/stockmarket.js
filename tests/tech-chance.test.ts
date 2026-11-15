@@ -113,6 +113,8 @@ it("redeems a Tech debenture at the price before a qualifying drop", async () =>
     await sam.mutation(api.trading.redeemDebenture, { code, insightId, stockKey, expectedPeriod: 1, expectedTurn: 0 });
     const after = await sam.query(api.board.get, { code });
 
+    expect(after.trades.at(-1)).toMatchObject({ stockKey, period: 1, bargainRound: 1,
+        quantity: -2000, debenturePayout: 200_000 });
     expect(after.player.cash - board.player.cash).toBe(200_000);
     expect(after.player.holdings.find((holding) => holding.stockKey === stockKey)?.quantity).toBe(0);
 });

@@ -7,9 +7,9 @@ import type { MutationCtx as MutationContext } from "./_generated/server";
 import type { Doc as Document_ } from "./_generated/dataModel";
 import { advanceNpcSuspensions } from "./npc/suspensions";
 import { checkSuspensionPhase, spendSuspension } from "./suspensions";
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { currentUser, gameByCode, fail, member, members, roundInsights } from "./library";
+import { currentUser, gameByCode, fail, member, members, revealCursor, roundInsights } from "./library";
 
 import { spectatorHost } from "./game/hosting";
 import { advancePeriod } from "./advancePeriod";
@@ -75,6 +75,16 @@ export const nextSpectator = mutation({
     },
 });
 
+export const progress = query({
+    args: { gameId: v.id("games") },
+    handler: async (context, { gameId }) =>
+    {
+        const cursor = await revealCursor(context, gameId);
+
+        return cursor ? { period: cursor.period, step: cursor.step, summary: cursor.summary } : null;
+    },
+});
+
 // As with nextSpectator, public displays can move the round presentation.
 export const moveReveal = mutation({
     args: { code: v.string(), expectedPeriod: v.number(), step: v.number(), summary: v.boolean() },
@@ -83,7 +93,9 @@ export const moveReveal = mutation({
         const game = await gameByCode(context, code);
 
         checkSuspensionPhase(game, expectedPeriod);
-        const previous = game.revealProgress ?? { step: 0, summary: false };
+        const cursor = await revealCursor(context, game._id);
+        const previous = (cursor?.period === expectedPeriod ? cursor : game.revealProgress)
+          ?? { step: 0, summary: false };
         if (game.suspensionPeriod === expectedPeriod || step < previous.step
           || (step === previous.step && (!summary || previous.summary)))
         {
@@ -108,7 +120,9 @@ export const moveReveal = mutation({
 
         const revealProgress = { step, summary };
 
-        await context.db.patch(game._id, { revealProgress });
+        await (cursor
+            ? context.db.patch(cursor._id, { period: expectedPeriod, ...revealProgress })
+            : context.db.insert("revealCursors", { gameId: game._id, period: expectedPeriod, ...revealProgress }));
 
         if (step === groups.length && pendingSuspensions(expectedPeriod, players, cards).length > 0)
         {

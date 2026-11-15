@@ -8,6 +8,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../convex/_generated/api";
 import { Alert, Loading, useAction } from "./shared";
 import { JoinError } from "./JoinError";
+import { useBoardSubscriptions } from "./use-board-subscriptions";
 import { useRememberRecentGame } from "./recent-games";
 import { Playing } from "./Playing";
 import { PlayAnimation } from "./PlayAnimation";
@@ -96,15 +97,19 @@ export function Waiting({ board }: { board: Board })
 
 function ConnectedGame({ code }: { code: string })
 {
-    const board = useQuery(api.board.get, { code });
+    const live = useQuery(api.board.get, { code, separateSubscriptions: true });
+    const { cursor, trades, loading } = useBoardSubscriptions(live?.game._id, live?.game.currentPeriod,
+        live?.game.status === "waiting", live?.players.length ?? 0, live?.game.tradeHistoryStart);
 
-    useRememberRecentGame(board?.user._id, board?.game.code, "play");
+    useRememberRecentGame(live?.user._id, live?.game.code, "play");
 
-    if (!board)
+    if (!live || loading)
     {
         return <Loading />;
     }
 
+    const board = { ...live, trades: trades ?? live.trades,
+        game: { ...live.game, revealProgress: cursor ?? live.game.revealProgress } };
     if (board.game.status === "waiting")
     {
         return <Waiting board={board} />;

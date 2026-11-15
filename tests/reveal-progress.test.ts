@@ -7,17 +7,33 @@ it("shares manual reveal jumps and opens suspensions after the last group", asyn
     const { t, sam, bob, board } = await suspensionFixture();
     const round = { code: "test", expectedPeriod: 1 };
     const move = api.rounds.moveReveal;
+    const split = { code: round.code, separateSubscriptions: true };
+    const cursor = { gameId: board.game._id };
+    const playerBefore = await bob.query(api.board.get, split);
+    const displayBefore = await t.query(api.tv.board, split);
+    const gameBefore = await t.run((context) => context.db.get(board.game._id));
+
+    expect(await t.query(api.rounds.progress, cursor)).toBeNull();
 
     await t.mutation(move, { ...round, step: 0, summary: true });
     const phone = await bob.query(api.board.get, { code: round.code });
 
     expect(phone.game.revealProgress).toEqual({ step: 0, summary: true });
+    expect(await bob.query(api.rounds.progress, cursor)).toEqual({ period: 1, step: 0, summary: true });
+    expect(await bob.query(api.board.get, split)).toEqual(playerBefore);
+    expect(await t.query(api.tv.board, split)).toEqual(displayBefore);
+    expect(await t.run((context) => context.db.get(board.game._id))).toEqual(gameBefore);
     await expect(t.mutation(move, { ...round, step: 2, summary: false })).rejects.toThrow("Invalid reveal step");
-    await sam.mutation(move, { ...round, step: 1, summary: false });
+    await Promise.all([
+        sam.mutation(move, { ...round, step: 1, summary: false }),
+        t.mutation(move, { ...round, step: 1, summary: false }),
+    ]);
     await t.mutation(move, { ...round, step: 0, summary: true }); // A delayed click can't rewind other screens.
     const display = await t.query(api.tv.board, { code: round.code });
 
     expect(display?.reveal?.revealProgress).toEqual({ step: 1, summary: false });
+    expect(await t.query(api.rounds.progress, cursor)).toEqual({ period: 1, step: 1, summary: false });
+    expect(await sam.query(api.rounds.progress, cursor)).toEqual(await bob.query(api.rounds.progress, cursor));
 
     const end = board.stocks.filter((stock) => stock.display).length + 1;
     for (let step = 2; step <= end; step++)
@@ -25,7 +41,8 @@ it("shares manual reveal jumps and opens suspensions after the last group", asyn
         await t.mutation(move, { ...round, step, summary: false });
     }
 
-    expect((await sam.query(api.board.get, { code: round.code })).game.suspensionPeriod).toBe(1);
+    expect((await sam.query(api.board.get, split)).game.suspensionPeriod).toBe(1);
+    expect(await t.query(api.rounds.progress, cursor)).toEqual({ period: 1, step: end, summary: false });
 });
 
 it("lets a Frantic NPC deny gains on one stock to its shareholders without targeting other rivals", async () =>

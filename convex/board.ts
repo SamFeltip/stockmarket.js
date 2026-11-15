@@ -2,28 +2,29 @@ import { debentureClaims } from "./game/debenture";
 import { companyRoles } from "../shared/company-roles";
 import { query } from "./_generated/server";
 import { v } from "convex/values";
-import { member, members, netWorth, roundInsights, tradeHistory } from "./library";
+import { member, members, netWorth, revealProgress, roundInsights, tradeHistory } from "./library";
 
 import { phoneHost, spectatorHost } from "./game/hosting";
 import { publicIdentity } from "./npc/identity";
 import { displayGameStocks, revealInsights, type SettlementCard } from "../../stockmarket-shared/src/engine/packRules";
 import { readEngine } from "./engine";
-import { privateForecasts, retainedDebentures } from "../../stockmarket-shared/src/engine/dealing";
+import { playerPeriodInsights, privateForecasts, retainedDebentures } from "../../stockmarket-shared/src/engine/dealing";
 import { publicTradingDates } from "./packSettings";
 import { legacyTechRounds } from "../shared/packs";
 import { techForecastDescription } from "../../stockmarket-shared/src/engine/techMarket";
 
 export const get = query({
-    args: { code: v.string() },
-    handler: async (context, { code }) =>
+    args: { code: v.string(), separateSubscriptions: v.optional(v.boolean()) },
+    handler: async (context, { code, separateSubscriptions }) =>
     {
         const { game, player, user } = await member(context, code);
         const seats = await members(context, game._id);
         const stocks = await displayGameStocks(readEngine(context), game);
-        const allInsights = await roundInsights(context, game);
+        const reveal = game.status === "closed" || game.status === "special_insights" || game.status === "finished";
+        const allInsights = reveal ? await roundInsights(context, game)
+            : await playerPeriodInsights(readEngine(context), player._id, game.currentPeriod);
         const retained = await retainedDebentures(readEngine(context), game, player._id);
         const claims = await debentureClaims(context, game, player, allInsights.concat(retained));
-        const reveal = game.status === "closed" || game.status === "special_insights" || game.status === "finished";
         const players = await Promise.all(seats.map(async (seat) =>
         {
             const display = await publicIdentity(context, seat);
@@ -40,7 +41,7 @@ export const get = query({
         const ranking = [...players].toSorted((a, b) => b.netWorth - a.netWorth);
         const [feed, trades] = await Promise.all([
             context.db.query("feed").withIndex("by_game", (q) => q.eq("gameId", game._id)).order("desc").take(100),
-            tradeHistory(context, game._id, seats.length),
+            separateSubscriptions ? [] : tradeHistory(context, game._id, seats.length, game.tradeHistoryStart),
         ]);
 
         const legacyRounds = legacyTechRounds(game);
@@ -58,7 +59,10 @@ export const get = query({
                 currentUserId: game.currentUserId, currentPeriod: game.currentPeriod, periodCount: game.periodCount,
                 tvControlled: Boolean(game.tvTokenHash), spectatorControlled: Boolean(spectatorHost(game, seats)),
                 prices: game.prices, priceHistory: game.priceHistory, status: game.status, turn: game.turn,
-                suspended: game.suspended, revealProgress: game.revealProgress, suspensionPeriod: game.suspensionPeriod,
+                suspended: game.suspended, suspensionPeriod: game.suspensionPeriod,
+                tradeHistoryStart: game.tradeHistoryStart,
+                revealProgress: reveal && !separateSubscriptions
+                    ? await revealProgress(context, game) : game.revealProgress,
                 targetedSuspensions: game.targetedSuspensions, tradingSuspensions: game.tradingSuspensions,
                 rightsIssue: game.rightsIssue, npcDifficulty: game.npcDifficulty ?? "medium" },
             debentureOffers: claims,

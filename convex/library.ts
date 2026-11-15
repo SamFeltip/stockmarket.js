@@ -3,7 +3,7 @@ import { readEngine, runEngine, type Arguments } from "./engine";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError } from "convex/values";
 import type { MutationCtx as MutationContext, QueryCtx as QueryContext } from "./_generated/server";
-import type { Id } from "./_generated/dataModel";
+import type { Doc as Document_, Id } from "./_generated/dataModel";
 
 export function fail(message: string): never
 {
@@ -74,10 +74,27 @@ export function feedItem(context: MutationContext, ...arguments_: Arguments<type
 
 export const netWorth = engine.netWorth;
 
-/** Public trades outlive the rolling activity feed used by the interface. */
-export async function tradeHistory(context: QueryContext, gameId: Id<"games">, seatCount: number)
+export function revealCursor(context: QueryContext, gameId: Id<"games">)
 {
-    const feed = await context.db.query("feed").withIndex("by_game", (q) => q.eq("gameId", gameId))
+    return context.db.query("revealCursors").withIndex("by_game", (q) => q.eq("gameId", gameId)).unique();
+}
+
+export async function revealProgress(context: QueryContext, game: Document_<"games">)
+{
+    const cursor = await revealCursor(context, game._id);
+
+    return cursor?.period === game.currentPeriod ? { step: cursor.step, summary: cursor.summary } : game.revealProgress;
+}
+
+async function legacyTradeHistory(context: QueryContext, gameId: Id<"games">, seatCount: number,
+    before: number | undefined)
+{
+    const feed = await context.db.query("feed").withIndex("by_game_period", (q) =>
+    {
+        const range = q.eq("gameId", gameId);
+
+        return before === undefined ? range : range.lt("period", before);
+    })
         .filter((q) => q.neq(q.field("quantity"), undefined)).collect();
     const trades = feed.flatMap(({ stockKey, period, title, imageRoot, quantity, debenturePayout, redemptionName }) =>
         stockKey !== undefined && quantity
@@ -88,7 +105,12 @@ export async function tradeHistory(context: QueryContext, gameId: Id<"games">, s
     }
 
     const actions = await context.db.query("gameActions")
-        .withIndex("by_game_period_turn", (q) => q.eq("gameId", gameId)).collect();
+        .withIndex("by_game_period_turn", (q) =>
+        {
+            const range = q.eq("gameId", gameId);
+
+            return before === undefined ? range : range.lt("period", before);
+        }).collect();
     const periods = new Set(trades.map((trade) => trade.period));
 
     return [...periods].flatMap((period) =>
@@ -117,4 +139,28 @@ export async function tradeHistory(context: QueryContext, gameId: Id<"games">, s
             bargainRound: matched ? Math.floor(recorded[index].turn / seatCount) + 1 : undefined,
         }));
     });
+}
+
+// New trades carry the exact chart position in the same row as the public activity event.
+export async function tradeHistory(context: QueryContext, gameId: Id<"games">, seatCount: number,
+    start?: number)
+{
+    const legacy = start === 0 ? [] : await legacyTradeHistory(context, gameId, seatCount, start);
+    if (start === undefined)
+    {
+        return legacy;
+    }
+
+    const recorded = await context.db.query("feed")
+        .withIndex("by_game_chart_period", (q) => q.eq("gameId", gameId).gte("chartPeriod", start))
+        .collect();
+
+    return legacy.concat(recorded.flatMap((item) =>
+    {
+        const { period, title, imageRoot, stockKey, quantity, bargainRound, debenturePayout, redemptionName } = item;
+
+        return stockKey !== undefined && quantity ? [{ period, title, imageRoot, stockKey, quantity,
+            bargainRound, ...(debenturePayout !== undefined && { debenturePayout }),
+            ...(redemptionName && { redemptionName }) }] : [];
+    }));
 }

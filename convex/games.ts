@@ -31,7 +31,7 @@ export const create = mutation({
             code, hostId: user._id, spectatorHostId: arguments_.spectate ? user._id : undefined,
             currentUserId: user._id, ...market,
             currentPeriod: 0, turn: 0, status: "waiting", suspended: [],
-            rulesVersion: 2, npcDifficulty: "medium", rosterRevision: 0,
+            tradeHistoryStart: 0, rulesVersion: 2, npcDifficulty: "medium", rosterRevision: 0,
         });
         if (arguments_.spectate)
         {

@@ -35,6 +35,13 @@ it("offers the retail one-for-two £1 purchase, in cyclic play order, without ad
     const completed = await sam.query(api.board.get, { code: "test" });
 
     expect(completed.game.rightsIssue?.completed).toBe(true);
+    const history = { gameId: board.game._id, seatCount: board.players.length };
+    const trades = await t.query(api.tv.trades, { ...history, start: 0 });
+
+    expect(trades.map(({ title, quantity, bargainRound }) => ({ title, quantity, bargainRound }))).toEqual([
+        { title: "bob", quantity: 3000, bargainRound: 2 }, { title: "sam", quantity: 2000, bargainRound: 2 },
+    ]);
+    expect(trades).toEqual(await t.query(api.tv.trades, history));
     expect(completed.game.turn).toBe(6);
     await t.finishAllScheduledFunctions(vi.runAllTimers);
     const finished = await sam.query(api.board.get, { code: "test" });

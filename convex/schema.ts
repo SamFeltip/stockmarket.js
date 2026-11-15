@@ -47,7 +47,7 @@ export default defineSchema({
         code: v.string(), hostId: v.optional(v.id("users")), currentUserId: v.optional(v.id("users")),
         currentPlayerId: v.optional(v.id("players")), npcDifficulty: v.optional(difficultyValidator),
         rulesVersion: v.optional(v.number()), rosterRevision: v.optional(v.number()),
-        catalogVersion: v.optional(v.string()),
+        catalogVersion: v.optional(v.string()), tradeHistoryStart: v.optional(v.number()),
         periodCount: v.number(), currentPeriod: v.number(), turn: v.number(),
         pack: v.optional(packValidator), techStart: v.optional(v.number()), standardPeriodCount: v.optional(v.number()),
         techPeriodCount: v.optional(v.number()),
@@ -73,6 +73,9 @@ export default defineSchema({
                 purchased: v.optional(v.number()) })),
         })),
     }).index("by_code", ["code"]).index("by_tv_token", ["tvTokenHash"]),
+    revealCursors: defineTable({
+        gameId: v.id("games"), period: v.number(), step: v.number(), summary: v.boolean(),
+    }).index("by_game", ["gameId"]),
     players: defineTable({
         gameId: v.id("games"), userId: v.optional(v.id("users")),
         controller: v.optional(v.union(v.object({ kind: v.literal("human"), userId: v.id("users") }),
@@ -126,5 +129,8 @@ export default defineSchema({
         cashBonus: v.optional(v.number()),
         stockKey: v.optional(v.number()), quantity: v.optional(v.number()),
         roleBefore: v.optional(companyRoleValidator), roleAfter: v.optional(companyRoleValidator),
-    }).index("by_game", ["gameId"]),
+        bargainRound: v.optional(v.number()), chartPeriod: v.optional(v.number()),
+    }).index("by_game", ["gameId"])
+        .index("by_game_period", ["gameId", "period"])
+        .index("by_game_chart_period", ["gameId", "chartPeriod"]),
 });

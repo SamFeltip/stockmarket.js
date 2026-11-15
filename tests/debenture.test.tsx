@@ -63,6 +63,11 @@ it("sells only the chosen bankrupt holding at the game opening price, consumes t
     expect((await t.run(async (context) => await context.db.get(insightId)))?.used).toBe(true);
     expect(after.feed[0]).toMatchObject({ stockKey: 8, quantity: -20_000, debenturePayout: 50_000 });
     expect(publicBoard.feed[0].debenturePayout).toBe(50_000);
+    const history = { gameId: board.game._id, seatCount: board.players.length };
+    const markers = await t.query(api.tv.trades, { ...history, start: 0 });
+
+    expect(markers).toEqual(await t.query(api.tv.trades, history));
+    expect(markers.at(-1)).toMatchObject({ period: 1, bargainRound: 1, quantity: -20_000, debenturePayout: 50_000 });
     const feed = renderToStaticMarkup(<FeedMessage item={after.feed[0]} stocks={after.stocks} />);
 
     expect(feed).toContain("Debenture sold at £50,000");
