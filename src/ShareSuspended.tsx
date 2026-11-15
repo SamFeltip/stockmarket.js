@@ -1,5 +1,5 @@
 import { DecisionPortfolios } from "./DecisionPortfolios";
-import { hasTargetedSuspension, sharesHeld, stockholders } from "../shared/suspensions";
+import { hasTargetedSuspension, sharesHeld, stockholders, suspensionTitle } from "../shared/suspensions";
 import { rulesForPack } from "../shared/packs";
 import { SuspensionStock } from "./SuspensionStock";
 import { useState } from "react";
@@ -36,7 +36,7 @@ export function ShareSuspended({ board, card, own = false, spectator = false, bu
             <div className="suspension-summary">
                 <header className="suspension-heading">
                     <p>Chance Card</p>
-                    <h1>Share Suspended</h1>
+                    <h1>{suspensionTitle(board.game.currentPeriod, board.players, board.insights, card._id)}</h1>
                     {own && (
                         <p>
                             {targetedSuspensions ? "Tap the portraits of the shareholders you want to suspend for that stock."
