@@ -13,6 +13,14 @@ describe("Joining a game", () =>
         expect(result.message).toContain("Check the code with your host");
     });
 
+    it("offers the same game in spectator mode only after it starts", () =>
+    {
+        expect(describeJoinError(new ConvexError("This game has already started"), " Game_5 ").spectatorPath)
+            .toBe("/spectate/game_5");
+        expect(describeJoinError(new ConvexError("This lobby is full"), "game_5").spectatorPath)
+            .toBeUndefined();
+    });
+
     const failures = [
         ["This lobby is full", "This game is full"],
         ["This game has already started", "This game has started"],

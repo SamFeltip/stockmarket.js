@@ -12,6 +12,9 @@ export function JoinError({ error, code }: { error: unknown; code: string })
         <LobbyCard title={description.title}>
             <div className="bg-dark text-white rounded p-3 p-sm-4 d-grid gap-4">
                 <p className="text-center" role="alert">{description.message}</p>
+                {description.spectatorPath && (
+                    <Link to={description.spectatorPath} className="btn btn-primary py-3">Join as spectator</Link>
+                )}
                 <form
                     className="d-grid gap-3"
                     onSubmit={(event) =>

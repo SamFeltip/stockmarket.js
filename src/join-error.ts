@@ -18,7 +18,11 @@ export function describeJoinError(error: unknown, code: string)
 
     if (message === "This game has already started")
     {
-        return { title: "This game has started", message: "You can join a new game once its host opens a lobby." };
+        return {
+            title: "This game has started",
+            message: "You can still watch this game as a spectator.",
+            spectatorPath: `/spectate/${encodeURIComponent(code.trim().toLowerCase())}`,
+        };
     }
 
     if (message.startsWith("Lobby code must contain"))
