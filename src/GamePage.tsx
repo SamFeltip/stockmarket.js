@@ -99,7 +99,7 @@ function ConnectedGame({ code }: { code: string })
 {
     const live = useQuery(api.board.get, { code, separateSubscriptions: true });
     const { cursor, trades, loading } = useBoardSubscriptions(live?.game._id, live?.game.currentPeriod,
-        live?.game.status === "waiting", live?.players.length ?? 0, live?.game.tradeHistoryStart);
+        live?.game.status === "waiting", live?.players.length ?? 0, live?.game.tradeHistoryStart, live?.game.periodCount);
 
     useRememberRecentGame(live?.user._id, live?.game.code, "play");
 

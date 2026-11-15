@@ -43,3 +43,33 @@ it("keeps old chart markers when an existing game starts recording trades in the
     expect(mixed[0]).toEqual(legacy[0]);
     expect(mixed[1]).toMatchObject({ ...trade, period: 1, bargainRound: 1, title: "bob" });
 });
+
+it("returns all markers in order across fixed subscription ranges and keeps earlier ranges stable", async () =>
+{
+    const { t, sam } = await setup(8);
+    const code = "test";
+    const board = await sam.query(api.board.get, { code });
+    const gameId = board.game._id;
+    const history = { gameId, seatCount: board.players.length, start: 0 };
+    const first = { ...history, range: { from: 0, before: 4 } };
+    const second = { ...history, range: { from: 4, before: 8 } };
+    const last = { ...history, range: { from: 8, before: 12 } };
+    const insertTrade = (period: number, title: string) => t.run((context) => context.db.insert("feed", {
+        gameId, period, title, message: "bought 1000 shares", imageRoot: "", colour: "",
+        chartPeriod: period, bargainRound: 1, stockKey: 8, quantity: 1000,
+    }));
+
+    await insertTrade(3, "First");
+    await insertTrade(4, "Second");
+    await insertTrade(8, "Final");
+    const earlier = await t.query(api.tv.trades, first);
+
+    await insertTrade(4, "Third");
+    expect(await t.query(api.tv.trades, first)).toEqual(earlier);
+    const current = await t.query(api.tv.trades, second);
+    const ending = await t.query(api.tv.trades, last);
+
+    expect(current.map((trade) => trade.title)).toEqual(["Second", "Third"]);
+    expect([...earlier, ...current, ...ending]).toEqual(await t.query(api.tv.trades, history));
+    expect(ending.map((trade) => trade.title)).toEqual(["Final"]);
+});

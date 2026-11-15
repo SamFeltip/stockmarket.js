@@ -134,8 +134,10 @@ export const next = mutation({
 
 // Trade markers are public on the spectator board during trading.
 export const trades = query({
-    args: { gameId: v.id("games"), seatCount: v.number(), start: v.optional(v.number()) },
-    handler: (context, { gameId, seatCount, start }) => tradeHistory(context, gameId, seatCount, start),
+    args: { gameId: v.id("games"), seatCount: v.number(), start: v.optional(v.number()),
+        range: v.optional(v.object({ from: v.number(), before: v.number() })) },
+    handler: (context, { gameId, seatCount, start, range }) =>
+        tradeHistory(context, gameId, seatCount, start, start === 0 ? range : undefined),
 });
 
 // Explicit allowlist: insight cards become public only after trading closes.

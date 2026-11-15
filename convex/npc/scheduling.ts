@@ -1,10 +1,28 @@
 import type { MutationCtx as MutationContext } from "../_generated/server";
-import type { Id } from "../_generated/dataModel";
+import type { Doc as Document_, Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
 import { members } from "../library";
 import { isCurrent, isNpc } from "../game/seats";
 import { actionAnimationMs } from "../../shared/presentation";
 import { random } from "../../../stockmarket-shared/src/shared/random";
+
+async function currentSeat(context: MutationContext, game: Document_<"games"> | null)
+{
+    if (game?.status !== "playing" || game.rightsIssue)
+    {
+        return;
+    }
+
+    if (game.currentPlayerId)
+    {
+        const seat = await context.db.get(game.currentPlayerId);
+
+        return seat?.gameId === game._id ? seat : undefined;
+    }
+
+    return (await members(context, game._id)).find((seat) => isCurrent(game, seat));
+}
+
 export async function enqueueNextNpcIfNeeded(
     context: MutationContext,
     gameId: Id<"games">,
@@ -15,8 +33,7 @@ export async function enqueueNextNpcIfNeeded(
         .query("npcTurns")
         .withIndex("by_game", (q) => q.eq("gameId", gameId))
         .unique();
-    const seats = game?.status === "playing" && !game.rightsIssue ? await members(context, gameId) : [];
-    const current = game && seats.find((seat) => isCurrent(game, seat));
+    const current = await currentSeat(context, game);
     if (
         pending
         && current

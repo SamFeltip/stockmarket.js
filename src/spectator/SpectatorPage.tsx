@@ -129,7 +129,8 @@ export default function SpectatorPage()
     const connection = useConvexConnectionState();
     const board = useQuery(api.tv.board, isLoading ? "skip" : { code, separateSubscriptions: true });
     const { cursor, trades, loading } = useBoardSubscriptions(board?.game.id, board?.game.currentPeriod,
-        board?.game.status === "waiting", board?.players.length ?? 0, board?.game.tradeHistoryStart);
+        board?.game.status === "waiting", board?.players.length ?? 0, board?.game.tradeHistoryStart,
+        board?.game.periodCount);
     const user = useQuery(api.users.me, isAuthenticated ? {} : "skip");
 
     useRememberRecentGame(user?._id, board?.game.code, "spectate");

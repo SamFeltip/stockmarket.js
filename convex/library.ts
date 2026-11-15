@@ -141,9 +141,11 @@ async function legacyTradeHistory(context: QueryContext, gameId: Id<"games">, se
     });
 }
 
+export interface TradeHistoryRange { from: number; before: number }
+
 // New trades carry the exact chart position in the same row as the public activity event.
 export async function tradeHistory(context: QueryContext, gameId: Id<"games">, seatCount: number,
-    start?: number)
+    start?: number, range?: TradeHistoryRange)
 {
     const legacy = start === 0 ? [] : await legacyTradeHistory(context, gameId, seatCount, start);
     if (start === undefined)
@@ -152,7 +154,9 @@ export async function tradeHistory(context: QueryContext, gameId: Id<"games">, s
     }
 
     const recorded = await context.db.query("feed")
-        .withIndex("by_game_chart_period", (q) => q.eq("gameId", gameId).gte("chartPeriod", start))
+        .withIndex("by_game_chart_period", (q) => range
+            ? q.eq("gameId", gameId).gte("chartPeriod", Math.max(start, range.from)).lt("chartPeriod", range.before)
+            : q.eq("gameId", gameId).gte("chartPeriod", start))
         .collect();
 
     return legacy.concat(recorded.flatMap((item) =>
