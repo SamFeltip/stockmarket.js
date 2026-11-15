@@ -30,6 +30,7 @@ html, body, main:has(> #game-grid) { background-color: var(--bs-body-bg, #0f2c12
 .home-card #stockmarket-header { font-size: clamp(1.6rem, 6vw, 2rem); margin-bottom: 0; }
 #home-screen { grid-template-columns: minmax(0, 1fr); }
 #home-screen > * { min-width: 0; }
+.home-recent { grid-column: 1 / -1; }
 .home-join, .home-start { padding: clamp(0.75rem, 3vw, 1.5rem); }
 .home-join-actions > .btn { flex: 1; min-width: 0; padding-inline: 0.5rem; }
 .lobby-page { min-height: 100vh; }

@@ -8,6 +8,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../convex/_generated/api";
 import { Alert, Loading, useAction } from "./shared";
 import { JoinError } from "./JoinError";
+import { useRememberRecentGame } from "./recent-games";
 import { Playing } from "./Playing";
 import { PlayAnimation } from "./PlayAnimation";
 import { RoundEnd } from "./RoundEnd";
@@ -96,6 +97,9 @@ export function Waiting({ board }: { board: Board })
 function ConnectedGame({ code }: { code: string })
 {
     const board = useQuery(api.board.get, { code });
+
+    useRememberRecentGame(board?.user._id, board?.game.code, "play");
+
     if (!board)
     {
         return <Loading />;

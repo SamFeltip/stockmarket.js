@@ -1,4 +1,5 @@
 import { HomeStart } from "./HomeStart";
+import { readRecentGames } from "./recent-games";
 import { useMutation, useQuery } from "convex/react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../convex/_generated/api";
@@ -8,6 +9,7 @@ import type { Board } from "./types";
 export function Home({ user }: { user: Board["user"] })
 {
     const navigate = useNavigate();
+    const recentGames = readRecentGames(user._id);
 
     return (
         <main className="home-page d-flex flex-column">
@@ -52,6 +54,22 @@ export function Home({ user }: { user: Board["user"] })
                         </div>
                     </form>
                     <HomeStart />
+                    {recentGames.length > 0 && (
+                        <section className="home-recent text-center" aria-labelledby="recent-games-heading">
+                            <h3 id="recent-games-heading">Recent games</h3>
+                            <div className="d-flex flex-wrap justify-content-center gap-2">
+                                {recentGames.map(({ code, view }) => (
+                                    <Link
+                                        key={code}
+                                        className="btn btn-outline-light text-break mw-100"
+                                        to={`${view === "spectate" ? "/spectate" : "/games/show"}/${code}`}
+                                    >
+                                        {code.toUpperCase()}
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
+                    )}
                 </div>
             </div>
         </main>

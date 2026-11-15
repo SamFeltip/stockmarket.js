@@ -4,6 +4,7 @@ import { useConvexAuth, useConvexConnectionState, useMutation, useQuery } from "
 import { Link, useParams } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { useAction } from "../shared";
+import { useRememberRecentGame } from "../recent-games";
 import { GameResults } from "../GameResults";
 import { PlayAnimation } from "../PlayAnimation";
 import { Dashboard, Feed } from "./Dashboard";
@@ -123,9 +124,12 @@ export function SpectatorScreen({ board }: { board: Board })
 export default function SpectatorPage()
 {
     const { code = "" } = useParams();
-    const { isLoading } = useConvexAuth();
+    const { isAuthenticated, isLoading } = useConvexAuth();
     const connection = useConvexConnectionState();
     const board = useQuery(api.tv.board, isLoading ? "skip" : { code });
+    const user = useQuery(api.users.me, isAuthenticated ? {} : "skip");
+
+    useRememberRecentGame(user?._id, board?.game.code, "spectate");
     let screen;
     if (board === undefined)
     {
