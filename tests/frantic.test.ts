@@ -151,3 +151,47 @@ it("redeems a Frantic Bankruptcy Buyout for £100 per share of the selected bank
     expect(after.feed[0]).toMatchObject({ debenturePayout: 2_000_000, redemptionName: "Bankruptcy Buyout" });
     expect(await t.run((context) => context.db.get(insightId))).toMatchObject({ used: true });
 });
+
+it("lets only the shareholder suspended at zero claim a Frantic buyout after the market rebounds", async () =>
+{
+    const { t, sam, bob, pat, board, samCard, bobCard } = await suspensionFixture("frantic");
+    const stockKey = 8;
+    const patId = (await pat.query(api.board.get, { code })).player._id;
+    const bobId = (await bob.query(api.board.get, { code })).player._id;
+    const prices = board.game.prices.map((price) => price.stockKey === stockKey ? { ...price, value: 0 } : price);
+    const insightId = await t.run(async (context) =>
+    {
+        await context.db.patch(board.game._id, { prices,
+            priceHistory: [{ period: 0, prices: board.game.prices }, { period: 1, prices }] });
+        await context.db.patch(patId, { holdings: [{ stockKey, quantity: 2000 }] });
+        const movement = (await context.db.query("playerInsights").collect()).find((card) => card.stockKey === stockKey)!;
+
+        await context.db.patch(movement._id, { value: 3 });
+        const card = { gameId: board.game._id, period: 1, stockKey: chanceStockKey,
+            chanceKind: "bankruptcy-buyout" as const, description: "Bankruptcy Buyout", value: 0, resolved: false };
+
+        await context.db.insert("playerInsights", { ...card, playerId: bobId });
+
+        return context.db.insert("playerInsights", { ...card, playerId: patId });
+    });
+
+    await sam.mutation(api.rounds.beginSuspensions, { code, expectedPeriod: 1 });
+    await bob.mutation(api.rounds.suspendShare, { code, expectedPeriod: 1,
+        insightId: bobCard, stockKey, playerIds: [patId] });
+    await sam.mutation(api.rounds.suspendShare, { code, expectedPeriod: 1, insightId: samCard });
+    await sam.mutation(api.rounds.next, { code, expectedPeriod: 1 });
+    const before = await pat.query(api.board.get, { code });
+
+    expect(before.game.prices.find((price) => price.stockKey === stockKey)?.value).toBe(3);
+    expect(before.debentureOffers["fixed-bankruptcy"]).toEqual([{ stockKey, quantity: 2000,
+        unitPrice: 100, amount: 200_000, claimUntilPeriod: 2, unavailableReason: null }]);
+    expect((await bob.query(api.board.get, { code })).debentureOffers["fixed-bankruptcy"]).toEqual([]);
+
+    await pat.mutation(api.trading.redeemDebenture, { code, expectedPeriod: 2, expectedTurn: 0, insightId, stockKey });
+    const after = await pat.query(api.board.get, { code });
+
+    expect(after.player.cash).toBe(before.player.cash + 200_000);
+    expect(after.player.holdings).toContainEqual({ stockKey, quantity: 0 });
+    expect(after.players.find((player) => player._id === bobId)?.holdings).toContainEqual({ stockKey, quantity: 2000 });
+    expect(await t.run((context) => context.db.get(insightId))).toMatchObject({ used: true });
+});
