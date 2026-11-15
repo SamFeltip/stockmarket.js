@@ -41,7 +41,9 @@ export async function enqueueNextNpcIfNeeded(
     const generation = `${game.currentPeriod}:${game.turn}:${Math.random()}`;
     const seed = `decision:${Math.random()}`;
     const presentationRandom = random(`${generation}:presentation`);
-    const delay = actionAnimationMs + Math.round(800 + presentationRandom() * 1000);
+    const pace = presentationRandom();
+    const thinkingDelay = game.pack === "frantic" ? 200 + pace * 300 : 800 + pace * 1000;
+    const delay = actionAnimationMs + Math.round(thinkingDelay);
     const pendingId = await context.db.insert("npcTurns", {
         gameId,
         playerId: current._id,

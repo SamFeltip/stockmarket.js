@@ -17,20 +17,29 @@ afterEach(() =>
 });
 describe("NPC scheduler and privacy", () =>
 {
-    it("does not start an NPC turn until the previous action animation has finished", async () =>
+    const testPace = it.each([
+        { pack: "classic", min: 800, max: 1800 },
+        { pack: "frantic", min: 200, max: 500 },
+    ] as const);
+
+    testPace("uses the $pack NPC pace after the previous action animation", async ({ pack, min, max }) =>
     {
         const { t, sam } = await setup(5, 1);
+        const code = "test";
 
-        await sam.mutation(api.npc.lobby.add, { code: "test", required: true });
-        await sam.mutation(api.games.start, { code: "test" });
-        await sam.mutation(api.trading.play, { code: "test", expectedTurn: 0, expectedPeriod: 0 });
+        await sam.mutation(api.games.setPack, { code, pack });
+        await sam.mutation(api.npc.lobby.add, { code, required: true });
+        await sam.mutation(api.games.start, { code });
+        await sam.mutation(api.trading.play, { code, expectedTurn: 0, expectedPeriod: 0 });
         const pending = (await t.run(async (context) => context.db.query("npcTurns").unique()))!;
+        const delay = pending.due - pending.enqueuedAt;
 
-        expect(pending.due - pending.enqueuedAt).toBeGreaterThanOrEqual(actionAnimationMs + 800);
+        expect(delay).toBeGreaterThanOrEqual(actionAnimationMs + min);
+        expect(delay).toBeLessThanOrEqual(actionAnimationMs + max);
         await vi.advanceTimersByTimeAsync(actionAnimationMs);
-        expect((await sam.query(api.board.get, { code: "test" })).game.turn).toBe(1);
+        expect((await sam.query(api.board.get, { code })).game.turn).toBe(1);
         await t.finishAllScheduledFunctions(vi.runAllTimers);
-        expect((await sam.query(api.board.get, { code: "test" })).game.turn).toBe(4);
+        expect((await sam.query(api.board.get, { code })).game.turn).toBe(4);
     });
 
     it("runs consecutive NPCs without a browser and stops at the human and reveal", async () =>
