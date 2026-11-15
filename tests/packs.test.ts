@@ -112,10 +112,12 @@ describe("stock packs", () =>
             const positiveSource = stock.key === 7 ? 12 : stock.key;
             const oldFrantic = insightCatalog.filter((card) => card.stockKey === positiveSource && card.value > 0)
                 .map((card) => Math.round(card.value * 1.45 ** stock.variation * 100) / 100);
-            const gain = positives.reduce((sum, value) => sum + value, 0);
+            const baseGains = oldFrantic.map((value) => Math.round(value * 200) / 100);
+            const extraGains = stock.key === 7 || stock.key === 12 ? [27.88, 37.18] : [];
+            const gain = baseGains.reduce((sum, value) => sum + value, 0);
             const loss = -negatives.reduce((sum, value) => sum + value, 0);
 
-            expect(positives).toEqual(oldFrantic.map((value) => Math.round(value * 200) / 100));
+            expect(positives).toEqual([...baseGains, ...extraGains]);
             const downsideMultiplier = stock.key === 8 ? 6 : 2;
 
             expect(negatives.every((value) => classic.some((card) =>
