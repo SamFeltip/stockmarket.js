@@ -41,6 +41,8 @@ h2.primary { overflow-wrap: anywhere; }
 @media (min-width: 768px) { #home-screen { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .img-label { border: #204712 2px solid; }
 .img-label:has(input:checked) { border-color: white; }
+.img-label:has(input:focus-visible) { outline: 2px solid white; outline-offset: 2px; }
+.img-label img { aspect-ratio: 1; object-fit: cover; }
 .btn-check:checked + .btn { background-color: #FFF284 !important; color: black; }
 button.nav-link { cursor: pointer; }
 #game-stock-info > #buy-button { grid-area: buy-button; }

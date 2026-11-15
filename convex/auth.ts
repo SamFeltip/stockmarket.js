@@ -1,3 +1,4 @@
+import { avatarPaths } from "../shared/avatars";
 import { validUsername } from "../shared/names";
 import { ConvexError } from "convex/values";
 import { Password } from "@convex-dev/auth/providers/Password";
@@ -16,12 +17,13 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
             }
 
             const profile = Number(parameters.profile ?? 1);
-            if (!Number.isInteger(profile) || profile < 1 || profile > 5)
+            const profileRoot = avatarPaths[profile - 1];
+            if (!profileRoot)
             {
                 throw new ConvexError("Choose a profile image");
             }
 
-            return { name, email: name.toLowerCase(), profileRoot: `/static/imgs/${profile}profile.png` };
+            return { name, email: name.toLowerCase(), profileRoot };
         },
     })],
 });

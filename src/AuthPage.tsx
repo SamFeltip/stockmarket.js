@@ -2,6 +2,7 @@ import { ConvexError } from "convex/values";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { authDestination } from "../shared/auth-destination";
+import { avatarPaths } from "../shared/avatars";
 import { validUsername } from "../shared/names";
 import { usernameHelp } from "./errors";
 import { Alert, useAction, formText } from "./shared";
@@ -52,11 +53,11 @@ export function AuthPage({ signup = false }: { signup?: boolean })
                         }}
                     >
                         {signup && (
-                            <div className="d-grid gap-2 mb-2" style={{ gridTemplateColumns: "repeat(5, 1fr)" }}>
-                                {[1, 2, 3, 4, 5].map((profile) => (
-                                    <label key={profile} className="img-label rounded overflow-hidden" htmlFor={`image${profile}`}>
-                                        <input className="image d-none" type="radio" id={`image${profile}`} name="profile" value={profile} defaultChecked={profile === 1} />
-                                        <img className="w-100" src={`/static/imgs/${profile}profile.png`} alt={`Avatar ${profile}`} />
+                            <div className="d-grid gap-2 mb-2" style={{ gridTemplateColumns: "repeat(6, 1fr)" }}>
+                                {avatarPaths.map((path, index) => (
+                                    <label key={path} className="img-label rounded overflow-hidden" htmlFor={`image${index + 1}`}>
+                                        <input className="visually-hidden" type="radio" id={`image${index + 1}`} name="profile" value={index + 1} defaultChecked={index === 0} />
+                                        <img className="w-100" src={path} alt={`Avatar ${index + 1}`} />
                                     </label>
                                 ))}
                             </div>
