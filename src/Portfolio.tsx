@@ -24,9 +24,9 @@ export function Portfolio({ board, player }: { board: Board; player: Player })
                     </div>
                 )}
                 <h4 className="text-black">Portfolio</h4>
-                <div className="p-4 p-lg-0 d-flex flex-row justify-content-between flex-wrap">
+                <div className="portfolio-holdings d-lg-flex flex-row justify-content-between flex-wrap">
                     {stocks.map((stock) => (
-                        <div className="d-flex flex-column align-items-center px-4" key={stock.key}>
+                        <div className="d-flex flex-column align-items-center px-lg-4" key={stock.key}>
                             <img height={50} src={stock.imagePath} alt={stock.name} />
                             <p className="text-black">{player.holdings.find((item) => item.stockKey === stock.key)?.quantity ?? 0}</p>
                             {own && (
