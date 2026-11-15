@@ -1,5 +1,5 @@
 import { RightsIssueModal, type RightsActivation } from "./RightsIssueModal";
-import { DebentureModal, debenturePresentation } from "./DebentureModal";
+import { DebentureModal, debentureExpiryLabel, debenturePresentation } from "./DebentureModal";
 import type { DebentureActivation } from "./DebentureModal";
 import { GovernmentLoanModal } from "./GovernmentLoanModal";
 import type { LoanActivation } from "./GovernmentLoanModal";
@@ -37,6 +37,7 @@ export function PlayerDock({ board, onActivateLoan, onRedeemDebenture, onActivat
             const effect = loan ? `Collect £${money(bonus)}` : cardEffect;
 
             return [{ ...definition, id: card._id, used: Boolean(card.used), effect,
+                expiry: isStockRedemptionCard(definition.kind) ? debentureExpiryLabel(card, board.game) : undefined,
                 description: definition.kind === "hold" && chanceEffects.hold ? chanceEffects.hold : definition.description,
                 icon: loan ? `£${bonus / 1000}k` : definition.icon }];
         });
@@ -69,11 +70,12 @@ export function PlayerDock({ board, onActivateLoan, onRedeemDebenture, onActivat
                     <h2 id="chance-cards-label">Chance Cards</h2>
                     <div className="dock-power-cards" role="region" aria-labelledby="chance-cards-label">
                         {granted.map((card) => (
-                            <button key={card.id} type="button" className={`dock-power-card dock-power-${card.kind === "print-money" ? "loan" : card.kind}`} data-bs-toggle="modal" data-bs-target={`#chance-card-${card.id}`} aria-label={`${card.name}: ${card.effect}`}>
+                            <button key={card.id} type="button" className={`dock-power-card dock-power-${card.kind === "print-money" ? "loan" : card.kind}`} data-bs-toggle="modal" data-bs-target={`#chance-card-${card.id}`} aria-label={`${card.name}: ${card.effect}${card.expiry ? `, ${card.expiry}` : ""}`}>
                                 <span className="dock-power-icon" aria-hidden="true">{card.icon}</span>
                                 <span className="dock-power-copy">
                                     <strong>{card.name}</strong>
                                     <span>{card.effect}</span>
+                                    {card.expiry && <span className="dock-card-expiry">{card.expiry}</span>}
                                 </span>
                             </button>
                         ))}

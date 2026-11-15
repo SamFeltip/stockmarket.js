@@ -65,6 +65,7 @@
     #player-dock .dock-power-icon { font-size: 1.3rem; }
     .dock-power-copy strong { font-size: 0.85rem; }
     #player-dock .dock-power-copy > span { display: none; }
+    #player-dock .dock-power-copy > .dock-card-expiry { display: block; font-size: 0.7rem; }
 }
 @media (max-height: 500px) {
     #player-dock .dock-balance { margin-bottom: 0.25rem; }

@@ -30,7 +30,8 @@ it("retains unused debentures privately across deals and removes their physical 
 
     expect(html).toContain(`data-bs-target="#chance-card-${insightId}"`);
     expect(html).toContain("Choose one bankrupt company and sell all your stocks at the opening price");
-    expect(html).toContain("Single use. Stays in your hand for 2 trading periods.");
+    expect(html).toContain("class=\"dock-card-expiry\">1 period left");
+    expect(html).toContain("1 period left in your hand. Single use.");
     expect(html).toContain("20,000 stocks");
     expect(html).toContain("£2.50 each");
     expect(html).toContain("role=\"radiogroup\"");
@@ -148,7 +149,11 @@ it("keeps the empty-state dialog useful and closes trading when a claim uses the
     const { t, sam, board, insightId, command } = await bankruptGame();
     const html = renderToStaticMarkup(
         <ConvexProvider client={client}>
-            <DebentureModal board={{ ...board, debentureOffers: {} }} insightId={insightId} used={false} />
+            <DebentureModal
+                board={{ ...board, debentureOffers: {}, game: { ...board.game, currentPeriod: 0 } }}
+                insightId={insightId}
+                used={false}
+            />
         </ConvexProvider>,
     );
 
@@ -156,7 +161,7 @@ it("keeps the empty-state dialog useful and closes trading when a claim uses the
     expect(html).not.toContain("type=\"radio\"");
     expect(html).not.toContain("Choose a stock to see its payout");
     expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Sell<\/button>/);
-    expect(html).toContain("Single use. Stays in your hand for 2 trading periods.");
+    expect(html).toContain("2 periods left in your hand. Single use.");
     const turn = board.players.length * 3 - 1;
 
     await t.run(async (context) => await context.db.patch(board.game._id, { turn }));

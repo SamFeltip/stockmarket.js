@@ -8,7 +8,15 @@ import { Alert, Modal, money, useAction } from "./shared";
 import type { Board } from "./types";
 import { inStockOrder } from "../shared/rules";
 import { bankruptcyBuyoutCard } from "../shared/chance-cards";
-import { debentureRuleFor } from "../shared/debenture";
+import { debenturePeriodsLeft, debentureRuleFor } from "../shared/debenture";
+
+export function debentureExpiryLabel(card: Board["insights"][number], game: Board["game"])
+{
+    const left = debenturePeriodsLeft(card, game.currentPeriod);
+    const unit = legacyTechRounds(game) ? "round" : "period";
+
+    return left > 0 ? `${left} ${unit}${left === 1 ? "" : "s"} left` : undefined;
+}
 
 export const debenturePresentation = {
     "fixed-bankruptcy": {
@@ -41,6 +49,7 @@ export function DebentureModal({ board, insightId, used, onActivate }: {
     const { run, busy, error } = useAction();
     const [stockKey, setStockKey] = useState<number>();
     const card = board.insights.find((insight) => insight._id === insightId);
+    const expiry = card && debentureExpiryLabel(card, board.game);
     const rule = debentureRuleFor(card ?? {}, board.game.pack);
     const offers = inStockOrder(board.debentureOffers[rule] ?? [], board.stocks).flatMap((offer) =>
     {
@@ -70,7 +79,7 @@ export function DebentureModal({ board, insightId, used, onActivate }: {
             <div className="modal-body loan-detail debenture-detail d-grid gap-3">
                 <h2 className="text-black mb-0">{title}</h2>
                 <p>{debenture.description}</p>
-                <p>{`Single use. Stays in your hand for 2 trading ${legacyTechRounds(board.game) ? "rounds" : "periods"}.`}</p>
+                {expiry && <p>{`${expiry} in your hand. Single use.`}</p>}
                 <div className="debenture-stock-list" role="radiogroup" aria-label={debenture.stockLabel}>
                     {offers.length > 0 ? offers.map((offer) => (
                         <DebentureStockChoice
