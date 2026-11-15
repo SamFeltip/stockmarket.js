@@ -72,10 +72,9 @@ export function CreateGame()
                 </fieldset>
                 <div className="spectate-option">
                     <div className="form-check form-switch spectate-toggle">
-                        <input id="spectate" name="spectate" type="checkbox" role="switch" className="form-check-input" disabled={busy} aria-describedby="spectate-help" />
+                        <input id="spectate" name="spectate" type="checkbox" role="switch" className="form-check-input" disabled={busy} />
                         <label className="form-check-label" htmlFor="spectate">Spectate</label>
                     </div>
-                    <p id="spectate-help" className="lobby-hint mt-2">Use this screen as the game display. You host without taking a player seat.</p>
                 </div>
                 <Alert message={error} />
                 <div className="d-grid gap-3 lobby-actions">
