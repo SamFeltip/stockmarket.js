@@ -5,7 +5,7 @@ export function DecisionPortfolios({ board, activePlayerId, order, mutedStockKey
     board: Board; activePlayerId: string; order?: string[]; mutedStockKey?: number; animateStockKey?: number;
 })
 {
-    const players = board.players.toSorted((a, b) => order
+    const players = [...board.players].sort((a, b) => order
         ? order.indexOf(a._id) - order.indexOf(b._id) : b.netWorth - a.netWorth);
 
     return (

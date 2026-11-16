@@ -9,7 +9,7 @@ import type { Board } from "./display-types";
 
 export function GameResults({ board, onBack }: { board: Board; onBack?: () => void })
 {
-    const players = board.players.toSorted((a, b) => b.netWorth - a.netWorth);
+    const players = [...board.players].sort((a, b) => b.netWorth - a.netWorth);
     const [selectedId, setSelectedId] = useState<string | null>(players[0]?._id ?? null);
     const selected = players.find((player) => player._id === selectedId) ?? players[0];
     const winnerId = players[0]?._id;

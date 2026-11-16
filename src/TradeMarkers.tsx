@@ -106,7 +106,7 @@ export function TradeStack({ trades, x, y, layout }: {
                             />
                         </g>
                     );
-                }).toReversed();
+                }).reverse();
             })}
         </g>
     );

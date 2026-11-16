@@ -46,7 +46,7 @@ export function JoinError({ error, code }: { error: unknown; code: string })
                         autoCapitalize="none"
                         spellCheck={false}
                         maxLength={32}
-                        pattern="[a-zA-Z0-9_-]+"
+                        pattern="[a-zA-Z0-9_\-]+"
                         required
                     />
                     <button type="submit" className="btn btn-primary py-3">Try joining again</button>

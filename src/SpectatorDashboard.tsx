@@ -117,7 +117,7 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
 })
 {
     const stocks = board.stocks;
-    const ranked = board.players.toSorted((a, b) => b.netWorth - a.netWorth);
+    const ranked = [...board.players].sort((a, b) => b.netWorth - a.netWorth);
     const finished = board.game.status === "finished";
     const total = ranked.reduce((sum, player) => sum + player.netWorth, 0);
     const invested = ranked.reduce((sum, player) => sum + player.netWorth - player.cash, 0);
@@ -174,7 +174,7 @@ export function Dashboard({ board, phoneUrl, portfolioNotice, portfolioOrder, mu
                 </div>
                 <PortfolioTable
                     stocks={stocks.map((stock) => ({ ...stock, imagePath: stockLogo(stock.key, stock.imagePath) }))}
-                    players={(portfolioOrder ? board.players.toSorted((a, b) =>
+                    players={(portfolioOrder ? [...board.players].sort((a, b) =>
                         portfolioOrder.indexOf(a.id) - portfolioOrder.indexOf(b.id)) : ranked)
                         .map((player) => ({ ...player, profileRoot: portrait(player.profileRoot) }))}
                     activePlayerId={finished ? undefined : board.game.currentPlayerId}

@@ -139,6 +139,16 @@ export default [
     },
 
     {
+        files: ["src/**/*.{ts,tsx}"],
+        name: "browser/array-compatibility",
+        rules: {
+            // Firefox 114 is in the Vite target and lacks toSorted() and toReversed().
+            "unicorn/no-array-sort": "off",
+            "unicorn/no-array-reverse": "off",
+        },
+    },
+
+    {
         files: ["**/*.test.mjs"],
         name: "tests/overrides",
         rules: {

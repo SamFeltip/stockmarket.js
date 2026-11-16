@@ -82,7 +82,7 @@ export function RoundOverview({ before, after, layout }: { before: Board; after:
             )}
             {mobile && <h2>Player results</h2>}
             <div className="round-overview-players">
-                {after.players.toSorted((a, b) => b.netWorth - a.netWorth).map((player) =>
+                {[...after.players].sort((a, b) => b.netWorth - a.netWorth).map((player) =>
                 {
                     const previous = before.players.find((item) => item._id === player._id)?.netWorth ?? 0;
                     const change = player.netWorth - previous;

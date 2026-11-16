@@ -10,7 +10,7 @@ export function StockRoleFooter({ board, stock, compact = false }: { board: Boar
         const role = player.roles?.find((item) => item.stockKey === stock.key)?.role ?? bonus?.bonusRole;
 
         return role ? [{ player, role, bonus }] : [];
-    }).toSorted((a, b) => Number(b.role === "chairman") - Number(a.role === "chairman"));
+    }).sort((a, b) => Number(b.role === "chairman") - Number(a.role === "chairman"));
     if (entries.length === 0)
     {
         return null;

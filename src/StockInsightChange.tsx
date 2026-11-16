@@ -16,7 +16,7 @@ export function StockInsightChange({ insights, stockKey, game, button }: {
     {
         const step = techMarketStep(game);
         // Prefer a window in progress, then the next upcoming window. Never sum overlapping forecasts.
-        const next = forecasts.filter(({ to }) => to > step).toSorted((a, b) =>
+        const next = forecasts.filter(({ to }) => to > step).sort((a, b) =>
             Math.max(a.from, step) - Math.max(b.from, step) || a.to - b.to)[0];
 
         return next ? <Change value={next.value} button={button} caption={next.description} /> : null;

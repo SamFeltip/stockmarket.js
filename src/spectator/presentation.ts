@@ -4,7 +4,7 @@ import { portrait, stockLogo } from "./assets";
 
 export function websiteBoard(board: Board): DisplayBoard
 {
-    const ranked = board.players.toSorted((a, b) => b.netWorth - a.netWorth);
+    const ranked = [...board.players].sort((a, b) => b.netWorth - a.netWorth);
     const reveal = board.reveal;
 
     return {
