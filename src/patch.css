@@ -40,6 +40,7 @@ html, body, main:has(> #game-grid) { background-color: var(--bs-body-bg, #0f2c12
 .lobby-hint { color: #c6d7c3; font-size: 1rem; line-height: 1.5; }
 h2.primary { overflow-wrap: anywhere; }
 @media (min-width: 768px) { #home-screen { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.auth-page { min-width: 0; }
 .avatar-picker {
     display: flex;
     gap: 0.5rem;

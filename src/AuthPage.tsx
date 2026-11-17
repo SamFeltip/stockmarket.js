@@ -17,7 +17,7 @@ export function AuthPage({ signup = false }: { signup?: boolean })
     const authLink = `${signup ? "/login" : "/signup"}?next=${encodeURIComponent(destination)}`;
 
     return (
-        <main className="d-flex flex-column justify-content-center p-2">
+        <main className="auth-page d-flex flex-column justify-content-center p-2">
             <div className="container rounded d-flex justify-content-center card card-green w-100" style={{ maxWidth: "40rem" }}>
                 <div className="card-header text-center">
                     <h1 id={signup ? undefined : "stockmarket-header"}>
