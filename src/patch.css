@@ -335,7 +335,8 @@ button.nav-link { cursor: pointer; }
 .round-wealth-stock-name { display: none; }
 .round-wealth-players { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 6rem), 1fr)); gap: 1rem; }
 .round-wealth-card { padding: 0.4rem 0.5rem; min-width: 0; }
-.round-wealth-players img { width: clamp(2rem, 5dvh, 4rem); aspect-ratio: 1; object-fit: cover; }
+.round-wealth-players .investor-photo { width: clamp(2rem, 5dvh, 4rem); height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 0.375rem; }
+.round-wealth-players .role-portrait .company-role-badge { width: 40%; height: auto; aspect-ratio: 1; top: -12%; left: -12%; }
 .round-player-name { font-size: 0.85rem; overflow-wrap: anywhere; text-align: center; }
 .net-worth-number { position: relative; display: inline-block; white-space: nowrap; }
 .wealth-delta { position: absolute; inset: 0; font-weight: 700; pointer-events: none; animation: wealth-float 1.8s ease-out both; text-shadow: 0 1px 3px #102d12; }
@@ -881,7 +882,7 @@ main:has(> .game-results) { justify-content: flex-start !important; overflow: vi
     }
     :is(.player-round-end, .spectator-round-end) .round-wealth-card { gap: 0.125rem; padding: 0.3rem; }
     :is(.player-round-end, .spectator-round-end) .round-wealth-players span { font-size: var(--round-text-size); line-height: 1.2; }
-    :is(.player-round-end, .spectator-round-end) .round-wealth-players img { width: clamp(1.75rem, 5dvh, 2.25rem); }
+    :is(.player-round-end, .spectator-round-end) .round-wealth-players .investor-photo { width: clamp(1.75rem, 5dvh, 2.25rem); }
     :is(.player-round-end, .spectator-round-end) .round-wealth-players .wealth-delta {
         position: static;
         display: block;

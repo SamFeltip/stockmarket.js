@@ -1,5 +1,6 @@
 import { cashStockKey } from "../shared/chance-cards";
 import { useState } from "react";
+import { RolePortrait } from "./RolePortrait";
 import { money } from "./shared";
 import type { Player, Stock } from "./display-types";
 
@@ -40,7 +41,13 @@ export function RoundWealth({ players, stock }: { players: Player[]; stock?: Sto
             <div className="round-wealth-players">
                 {players.map((player) => (
                     <div className="round-wealth-card card card-green align-items-center text-center" key={player._id}>
-                        <img className="rounded" src={player.profileRoot} alt="" />
+                        <RolePortrait
+                            name={player.name}
+                            profileRoot={player.profileRoot}
+                            role={stock?.display
+                                ? player.roles?.find((item) => item.stockKey === stock.key)?.role
+                                : undefined}
+                        />
                         <span className="round-player-name">{player.name}</span>
                         <NetWorthNumber value={player.netWorth} />
                         {stock?.key === cashStockKey && (

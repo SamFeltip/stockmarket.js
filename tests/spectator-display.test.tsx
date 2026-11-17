@@ -153,6 +153,20 @@ describe("TV spectator display parity", () =>
         expect(reveal).toContain("round-reveal-chart");
         expect(reveal).toContain("Net Worth");
         expect(reveal).toContain("round-player-holdings");
+        const [firstStock, secondStock] = closed.reveal!.stocks.filter((stock) => stock.display);
+        const roles = [
+            [{ stockKey: firstStock.key, role: "chairman" }],
+            [{ stockKey: firstStock.key, role: "director" }],
+            [{ stockKey: secondStock.key, role: "chairman" }],
+            [],
+        ] as const;
+        const revealWithRoles = render({ ...closed, players: closed.players.map((player, index) => ({
+            ...player, roles: [...roles[index]],
+        })) });
+        const wealthRow = revealWithRoles.match(/<section id="player-view">.*?<\/section>/)?.[0] ?? "";
+
+        expect([...wealthRow.matchAll(/alt="(Chairman|Director)"/g)].map((match) => match[1]))
+            .toEqual(["Chairman", "Director"]);
         expect(summary(closed)).toContain("Round overview");
         expect(summary(closed)).toContain("Next Period");
         expect(summary({ ...closed, canControl: false })).toContain("Next Period");
